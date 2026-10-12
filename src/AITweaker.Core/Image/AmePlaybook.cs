@@ -61,6 +61,9 @@ public sealed class AmePlaybook
 
         var root = new List<string>
         {
+            // AI Tweaker keeps no backups for changes made here, so Windows System Restore is the way back
+            Status(p.T("Точка восстановления", "Restore point")),
+            Ps(@"& .\Look\Restore-Point.ps1", exeDir: true, weight: 10),
             // HKCU actions reach new accounts only through the loaded default profile
             Ps($@"reg load {DefaultHive} $env:SystemDrive\Users\Default\NTUSER.DAT", ignoreErrors: true),
             Status(p.T("Внешний вид AI Tweaker", "The AI Tweaker look")),
@@ -108,6 +111,7 @@ public sealed class AmePlaybook
 
         p.Files[@"Executables\Look\aitweaker.theme"] = LookAssets.ThemeFile();
         p.Files[@"Executables\Look\Install-Look.ps1"] = InstallLookScript;
+        p.Files[@"Executables\Look\Restore-Point.ps1"] = RestorePointScript;
         p.Files[@"Executables\Look\Refresh-Desktop.ps1"] = p.RefreshScript(look);
         if (openShell is not null) p.Files[@"Executables\OpenShell\Install-OpenShell.ps1"] = InstallOpenShellScript;
         for (int i = 0; i < p._scripts.Count; i++) p.Files[$@"Executables\Tweaks\{i + 1:00}.ps1"] = p._scripts[i];
@@ -303,6 +307,14 @@ public sealed class AmePlaybook
     private static XElement Radio(string name, string text) => new("RadioOption", new XElement("Text", text), new XElement("Name", name));
 
     // ------------------------------------------------------------------ scripts
+
+    private static readonly string RestorePointScript = """
+        # Same restore point as the AI Tweaker app makes before applying tweaks.
+        try { Enable-ComputerRestore -Drive "$env:SystemDrive\" } catch { }
+        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name SystemRestorePointCreationFrequency -Value 0 -PropertyType DWord -Force | Out-Null
+        Checkpoint-Computer -Description 'AI Tweaker playbook' -RestorePointType MODIFY_SETTINGS
+
+        """.Replace("\r\n", "\n");
 
     private static readonly string InstallLookScript = $$"""
         # AI Tweaker look: theme and wallpapers go where the registry points at them.

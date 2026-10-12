@@ -81,7 +81,8 @@ public class AmePlaybookTests
     public void LoadsTheDefaultProfileSoNewAccountsGetTheLook()
     {
         var root = Playbook.Files[@"Configuration\custom.yml"].Split('\n').Where(l => l.StartsWith("  - ")).ToList();
-        Assert.Contains(@"reg load HKU\AME_UserHive_Default", root[0]);
+        Assert.Contains("Restore-Point.ps1", root[1]); // the way back: nothing here is in AI Tweaker's backups
+        Assert.Contains(@"reg load HKU\AME_UserHive_Default", root[2]);
         Assert.Contains(@"reg unload HKU\AME_UserHive_Default", root[^1]);
         Assert.Contains(Yaml, l => l.Contains("value: 'InstallTheme', type: REG_EXPAND_SZ"));
     }
