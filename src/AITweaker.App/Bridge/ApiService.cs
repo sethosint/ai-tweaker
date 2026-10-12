@@ -54,6 +54,10 @@ public sealed class ApiService
         "guides.list" => await GuidesAsync(),
         "programs.list" => await Task.Run(Programs),
         "features.list" => await FeaturesAsync(),
+        "display.modes" => DisplayModes.List(),
+        "display.set" => DisplayModes.Set(Str(p, "device") ?? "", Int(p, "width") ?? 0, Int(p, "height") ?? 0, Int(p, "hz") ?? 0, 15),
+        "display.keep" => DisplayModes.Keep(Str(p, "device") ?? ""),
+        "display.revert" => DisplayModes.Revert(Str(p, "device") ?? ""),
         "programs.install" => await Exclusive(async () =>
         {
             var summary = await ProgramInstaller.InstallAsync(_catalog, Ids(p) ?? [], (i, n, name) => _emit("install.progress", new { i, n, name }), NewLongTask());

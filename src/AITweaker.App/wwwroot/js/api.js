@@ -180,6 +180,15 @@
       return { results, rebootRequired: false };
     },
     "programs.repairWinget": async () => { await sleep(600); return true; },
+    "display.modes": async () => {
+      const modes = [];
+      for (const [w, h] of [[2560, 1440], [1920, 1080], [1680, 1050], [1600, 900], [1440, 1080], [1280, 1024], [1280, 960], [1280, 720]])
+        for (const hz of w === 2560 ? [180, 144, 120, 60] : [144, 120, 60]) modes.push({ width: w, height: h, hz });
+      return [{ device: "\\\\.\\DISPLAY1", name: "ASUS VG27AQ3A", current: { width: 2560, height: 1440, hz: 60 }, modes }];
+    },
+    "display.set": async () => true,
+    "display.keep": async () => true,
+    "display.revert": async () => true,
     "features.list": async () => D.features
       .map((f) => ({ id: f.id, name: f.name, used: !!f.keepByDefault || (f.usedWhen ? evalWhen(f.usedWhen) : false), tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
       .filter((f) => f.tweaks.length),

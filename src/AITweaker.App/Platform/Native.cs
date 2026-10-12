@@ -202,7 +202,26 @@ internal static partial class Native
         return list;
     }
 
-    /// <summary>Sets the refresh rate at the current resolution. Tests the mode first; returns false if the driver refuses.</summary>
+    public sealed record DisplayMode(int Width, int Height, int Hz);
+
+    /// <summary>Every progressive mode the driver offers at the current colour depth (custom CRU/NVIDIA modes included).</summary>
+    public static (DisplayMode Current, List<DisplayMode> Modes) GetModes(string device)
+    {
+        var current = NewDevMode();
+        if (!EnumDisplaySettings(device, ENUM_CURRENT_SETTINGS, ref current)) return (new DisplayMode(0, 0, 0), []);
+        var set = new HashSet<DisplayMode>();
+        var mode = NewDevMode();
+        for (int m = 0; EnumDisplaySettings(device, m, ref mode); m++)
+        {
+            if (mode.dmBitsPerPel == current.dmBitsPerPel && (mode.dmDisplayFlags & DM_INTERLACED) == 0 && mode.dmPelsWidth >= 640)
+                set.Add(new DisplayMode(mode.dmPelsWidth, mode.dmPelsHeight, mode.dmDisplayFrequency));
+            mode = NewDevMode();
+        }
+        return (new DisplayMode(current.dmPelsWidth, current.dmPelsHeight, current.dmDisplayFrequency),
+            set.OrderByDescending(x => x.Width * x.Height).ThenByDescending(x => x.Hz).ToList());
+    }
+
+    /// <summary>Sets resolution and refresh rate. Tests the mode first; returns false if the driver refuses.</summary>
     public static bool SetRefreshRate(string device, int width, int height, int hz)
     {
         var mode = NewDevMode();

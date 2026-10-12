@@ -1,6 +1,13 @@
-/* [05] Tools — network quality, startup apps, cleanup, memory. */
+/* Tools — network quality, memory, display mode (stretched resolutions), startup apps, cleanup. */
 (function () {
-  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "shader-directx", "crash-dumps"]), freed: null };
+  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "shader-directx", "crash-dumps"]), freed: null, displays: null, dev: null, res: null, hz: null };
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  function aspect(w, h) {
+    const r = w / h;
+    for (const [n, v] of [["4:3", 4 / 3], ["5:4", 5 / 4], ["16:10", 16 / 10], ["16:9", 16 / 9], ["21:9", 21 / 9], ["32:9", 32 / 9]]) if (Math.abs(r - v) < 0.02) return n;
+    const g = gcd(w, h);
+    return `${w / g}:${h / g}`;
+  }
   const mb = (b) => (b >= 1073741824 ? (b / 1073741824).toFixed(2) + " GB" : (b / 1048576).toFixed(1) + " MB");
 
   function verdict(results) {
@@ -13,6 +20,13 @@
   async function render() {
     const v = $("#v-tools");
     if (!st.startup) call("startup.list", {}, { silent: true }).then((x) => { st.startup = x; if (S.view === "tools") render(); }).catch(() => {});
+    if (!st.displays) call("display.modes", {}, { silent: true }).then((x) => { st.displays = x; if (S.view === "tools") render(); }).catch(() => {});
+    const disp = st.displays && (st.displays.find((d) => d.device === st.dev) || st.displays[0]);
+    const resList = disp ? [...new Map(disp.modes.map((m) => [`${m.width}x${m.height}`, m])).values()] : [];
+    const resKey = st.res || (disp ? `${disp.current.width}x${disp.current.height}` : "");
+    const hzList = disp ? disp.modes.filter((m) => `${m.width}x${m.height}` === resKey).map((m) => m.hz) : [];
+    const onCurrent = disp && resKey === `${disp.current.width}x${disp.current.height}`;
+    const hz = hzList.includes(st.hz) ? st.hz : onCurrent && hzList.includes(disp.current.hz) ? disp.current.hz : Math.max(0, ...hzList);
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("tools.title")}</h1><p>${t("tools.desc")}</p></div></div>
       <div class="grid cols-2" style="align-items:start">
@@ -30,6 +44,18 @@
               <button class="btn ghost" id="dnsFlush">${t("q.dns")}</button><button class="btn ghost" id="expRestart">${t("q.explorer")}</button></div></div>
         </div>
 
+        <div class="panel"><div class="panel-h">${t("disp.title")}<span class="right">${disp ? `${disp.current.width}×${disp.current.height} · ${disp.current.hz} Hz` : ""}</span></div>
+          <div class="panel-b" style="display:grid;gap:12px"><div class="td" style="color:var(--muted)">${t("disp.desc")}</div>
+            ${disp ? html`
+              ${st.displays.length > 1 ? `<label class="field">${t("disp.monitor")}<select class="input" id="dispDev">${st.displays.map((d) => `<option value="${esc(d.device)}" ${d.device === disp.device ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>` : ""}
+              <div class="grid cols-2" style="gap:10px">
+                <label class="field">${t("disp.res")}<select class="input" id="dispRes">${resList.map((m) => { const k = `${m.width}x${m.height}`; return `<option value="${k}" ${k === resKey ? "selected" : ""}>${m.width} × ${m.height} · ${aspect(m.width, m.height)}${m.width === disp.current.width && m.height === disp.current.height ? " · " + t("disp.now") : ""}</option>`; }).join("")}</select></label>
+                <label class="field">${t("disp.hz")}<select class="input" id="dispHz">${hzList.map((h) => `<option value="${h}" ${h === hz ? "selected" : ""}>${h} Hz</option>`).join("")}</select></label>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="dispApply">${t("disp.apply")}</button><button class="btn ghost" id="dispGuide">${t("disp.guide")}</button></div>` : `<div class="empty">…</div>`}
+          </div>
+        </div>
+
         <div class="panel"><div class="panel-h">${t("startup.title")}<span class="right">${st.startup ? st.startup.filter((e) => e.enabled).length + "/" + st.startup.length : ""}</span></div>
           <div class="panel-b" style="padding-bottom:0"><div class="td" style="color:var(--muted)">${t("startup.desc")}</div></div>
           <div>${st.startup ? (st.startup.length ? st.startup.map((e) => `<div class="tool-row"><div><div class="tn">${esc(e.name)}</div><div class="tdsc">${esc(e.location)} · ${esc(e.scope)} · ${esc(e.command)}</div></div><div class="switch ${e.enabled ? "on" : ""}" data-sid="${esc(e.id)}" role="switch" aria-checked="${e.enabled}"></div></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`) : `<div class="empty" style="margin:12px">…</div>`}</div>
@@ -43,6 +69,11 @@
       </div>`;
 
     $("#netCustom").oninput = (e) => (st.custom = e.target.value);
+    if ($("#dispDev")) $("#dispDev").onchange = (e) => { st.dev = e.target.value; st.res = st.hz = null; render(); };
+    if ($("#dispRes")) $("#dispRes").onchange = (e) => { st.res = e.target.value; st.hz = null; render(); };
+    if ($("#dispHz")) $("#dispHz").onchange = (e) => (st.hz = +e.target.value);
+    if ($("#dispGuide")) $("#dispGuide").onclick = () => go("apps", { guide: "cru" });
+    if ($("#dispApply")) $("#dispApply").onclick = () => applyMode(disp, resKey, +($("#dispHz").value || hz));
     $("#netRun").onclick = async () => {
       const b = busy(t("net.title"));
       const off = API.on("net.progress", (p) => b.progress(p.i / p.n, `${p.host} · ${p.i}/${p.n}`));
@@ -71,6 +102,26 @@
       try { const freed = await call("clean.run", { ids: [...st.cleanSel] }); toast(`${t("clean.freed")}: ${mb(freed)}`, "ok"); st.clean = await call("clean.analyze"); } catch { /* toast */ } finally { b.done(); }
       render();
     };
+  }
+
+  /** Switches the mode; the app switches back by itself after 15 s unless the user keeps it. */
+  async function applyMode(disp, resKey, hz) {
+    const [width, height] = resKey.split("x").map(Number);
+    if (width === disp.current.width && height === disp.current.height && hz === disp.current.hz) return;
+    const ok = await call("display.set", { device: disp.device, width, height, hz }).catch(() => false);
+    if (!ok) { toast(t("disp.refused"), "error", 6000); return; }
+    let left = 15, timer = null;
+    const res = await modal({
+      title: t("disp.keepTitle"),
+      body: html`<div>${t("disp.keepQ")}</div><div class="callout"><b id="dispLeft">${left}</b> ${t("rs.sec")} — ${t("disp.autoBack")}</div>`,
+      buttons: [{ label: t("disp.back"), value: false, cls: "ghost" }, { label: t("disp.keep"), value: true, cls: "primary" }],
+      onOpen: (ov, close) => { timer = setInterval(() => { left--; const el = $("#dispLeft", ov); if (el) el.textContent = left; if (left <= 0) { clearInterval(timer); close(null); } }, 1000); },
+    });
+    clearInterval(timer);
+    if (res === true) { await call("display.keep", { device: disp.device }); toast(t("disp.kept"), "ok"); }
+    else await call("display.revert", { device: disp.device }).catch(() => {}); // a no-op if the app already switched back
+    st.displays = null; st.res = st.hz = null;
+    setTimeout(render, 600);
   }
 
   (window.Views ||= {}).tools = render;
