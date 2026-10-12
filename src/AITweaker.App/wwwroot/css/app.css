@@ -487,7 +487,8 @@ details.cat-group > summary::-webkit-details-marker { display: none; }
 .modal { width: min(620px, calc(100vw - 40px)); max-height: calc(100vh - 60px); overflow: auto; background: var(--panel); border: 1.5px solid var(--ink); box-shadow: var(--shadow-pop); border-radius: var(--r); animation: pop .16s ease-out; }
 .modal.wide { width: min(980px, calc(100vw - 40px)); }
 .modal-h { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px dashed var(--line-2); font: 700 13px/1.2 var(--font-head); letter-spacing: .14em; text-transform: uppercase; position: sticky; top: 0; background: var(--panel); z-index: 1; }
-.modal-h.hazard { border-top: 5px solid transparent; border-image: repeating-linear-gradient(-45deg, var(--hazard-a) 0 10px, var(--hazard-b) 10px 20px) 5; }
+.modal-h.hazard { padding-top: 18px; }
+.modal-h.hazard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: repeating-linear-gradient(-45deg, var(--hazard-a) 0 10px, var(--hazard-b) 10px 20px); }
 .modal-h .x { margin-left: auto; cursor: pointer; border: 1px solid transparent; background: none; width: 28px; height: 28px; display: grid; place-items: center; color: var(--muted); border-radius: 2px; }
 .modal-h .x:hover { border-color: var(--line-2); color: var(--ink); }
 .modal-b { padding: 16px; display: grid; gap: 12px; }
