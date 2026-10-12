@@ -1,4 +1,4 @@
-/* A small set of line icons drawn for AI Tweaker (24×24 grid, 1.75 stroke, currentColor). */
+/* Line icons drawn for AI Tweaker (24×24 grid, 1.75 stroke, currentColor) and the brand mark. */
 (function () {
   const P = {
     search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
@@ -11,8 +11,23 @@
     arrow: '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
     download: '<path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 19.5h14"/>',
     power: '<path d="M12 4v7"/><path d="M7.2 6.8a7 7 0 1 0 9.6 0"/>',
+    // navigation
+    dashboard: '<path d="M4.5 17.5a8 8 0 1 1 15 0"/><path d="m12 14 3.5-4.5"/><circle cx="12" cy="14" r="1.2"/>',
+    tune: '<path d="M13 3.5 6 13.5h5.5L10.5 20.5 18 10h-5.5Z"/>',
+    tweaks: '<path d="M4 6.5h10M18 6.5h2M4 12h3M11 12h9M4 17.5h12M20 17.5h0"/><circle cx="16" cy="6.5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="17.5" r="2"/>',
+    debloat: '<path d="M5 7h14"/><path d="M9.5 7V5h5v2"/><path d="M7 7l.8 12h8.4L17 7"/><path d="M10.5 10.5v5M13.5 10.5v5"/>',
+    install: '<path d="M4 15v3.5h16V15"/><path d="M12 4v10"/><path d="m8 10 4 4 4-4"/>',
+    tools: '<path d="M14.5 5.5a3.8 3.8 0 0 0 4.9 4.9l-8.9 8.9a2 2 0 0 1-2.8-2.8l8.9-8.9Z"/><path d="M14.5 5.5 16.6 3.4"/>',
+    services: '<rect x="4" y="4.5" width="16" height="6" rx="1"/><rect x="4" y="13.5" width="16" height="6" rx="1"/><path d="M7.5 7.5h.01M7.5 16.5h.01M11 7.5h5M11 16.5h5"/>',
+    drivers: '<rect x="7" y="7" width="10" height="10" rx="1"/><path d="M10 3.5V7M14 3.5V7M10 17v3.5M14 17v3.5M3.5 10H7M3.5 14H7M17 10h3.5M17 14h3.5"/>',
+    apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+    bios: '<rect x="3.5" y="5" width="17" height="14" rx="1"/><path d="M3.5 9h17"/><path d="M7 13h4M7 16h7"/>',
+    image: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 8 8"/>',
+    ai: '<path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3"/><circle cx="12" cy="12" r="4.5"/>',
+    backup: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/><path d="M12 8v4.5l3 2"/>',
   };
   window.icon = (name, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${P[name] || ""}</svg>`;
-  /** Brand mark: two tuning sliders in a rounded square. */
-  window.brandMark = () => `<svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="var(--accent)"/><g stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"><path d="M7.5 10.5h13M7.5 17.5h13" opacity=".45"/></g><g fill="var(--accent-ink)"><circle cx="17" cy="10.5" r="2.6"/><circle cx="11" cy="17.5" r="2.6"/></g></svg>`;
+
+  /** Brand mark: corner brackets (like the panels) around a gauge needle turned to the top. */
+  window.brandMark = () => `<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor"><path d="M3 10V3h7M22 3h7v7M29 22v7h-7M10 29H3v-7" stroke-width="2.4" stroke-linecap="square"/><path d="M10.5 21.5 20 12" stroke-width="2.8" stroke-linecap="round"/><circle cx="21.6" cy="10.4" r="3.1" fill="var(--signal)" stroke="none"/></svg>`;
 })();

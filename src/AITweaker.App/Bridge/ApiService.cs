@@ -134,6 +134,7 @@ public sealed class ApiService
                 language = s.Language,
                 theme = s.Theme,
                 accent = s.Accent,
+                showAdvisor = s.ShowAdvisor,
                 profile = s.Profile,
                 model = s.ClaudeModel,
                 hasKey = SettingsStore.GetClaudeKey() is not null,
@@ -478,7 +479,8 @@ public sealed class ApiService
         var s = SettingsStore.Current;
         if (Str(p, "language") is { } lang) s.Language = lang == "en" ? "en" : "ru";
         if (Str(p, "theme") is { } theme) s.Theme = theme is "night" or "day" ? theme : "auto";
-        if (Str(p, "accent") is { } accent) s.Accent = accent == "mono" ? "mono" : "system";
+        if (Str(p, "accent") is { } accent) s.Accent = accent is "mono" or "system" ? accent : "industrial";
+        if (Bool(p, "showAdvisor") is { } adv) s.ShowAdvisor = adv;
         if (Str(p, "profile") is { } prof && Enum.TryParse<TuneProfile>(prof, true, out _)) s.Profile = prof;
         if (Str(p, "model") is { } model && ClaudeAdvisor.Models.Contains(model)) s.ClaudeModel = model;
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;

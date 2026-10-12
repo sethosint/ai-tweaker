@@ -25,7 +25,7 @@
     const ins = (S.scan && S.scan.insights) || [];
     const sc = scoreOf();
     const fresh = p && p.os.installDate && Date.now() - new Date(p.os.installDate).getTime() < 3 * 864e5 && sc < 50;
-    const C = 2 * Math.PI * 70;
+    const C = 2 * Math.PI * 64;
     const open = ins.filter((i) => ticketState(i) !== "resolved" && i.severity !== "info").length;
 
     v.innerHTML = html`
@@ -34,10 +34,10 @@
       ${fresh ? `<div class="callout ok" style="margin-bottom:16px;display:flex;gap:12px;align-items:center">${t("h.fresh")}<button class="btn sm primary" style="margin-left:auto" id="freshTune">${t("dash.tune")}</button></div>` : ""}
       <div class="grid dash">
         <div class="panel">
-          <div class="panel-h">${t("dash.health")}<span class="right">${esc(t("prof." + S.profileName))}</span></div>
+          <div class="panel-h"><span class="code">H-01</span>${t("dash.health")}<span class="right">${esc(t("prof." + S.profileName))}</span></div>
           <div class="health">
             <div class="ring ${S.busy && !S.scan ? "scanning" : ""}" id="ring">
-              <svg viewBox="0 0 160 160"><circle class="track" cx="80" cy="80" r="70"/><circle class="val" cx="80" cy="80" r="70" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - sc / 100)}"/></svg>
+              <svg viewBox="0 0 160 160"><circle class="ticks" cx="80" cy="80" r="76"/><circle class="track" cx="80" cy="80" r="64"/><circle class="val" cx="80" cy="80" r="64" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - sc / 100)}"/></svg>
               <div class="c"><b>${S.scan ? sc : "—"}<small>%</small></b><span>${t("h.index")}</span></div>
             </div>
             <div class="subs">${Object.entries(GROUPS).map(([k, cats]) => { const v2 = scoreOf(cats); return `<div class="sub"><span class="k">${t("h." + k)}</span><span class="bar"><i style="width:${v2}%"></i></span><span class="p">${S.scan ? v2 : "—"}%</span></div>`; }).join("")}</div>
@@ -46,12 +46,12 @@
         </div>
 
         <div class="panel">
-          <div class="panel-h">${t("dash.sensors")}<span class="right"><span class="led"></span>${t("live")}</span></div>
+          <div class="panel-h"><span class="code">S-02</span>${t("dash.sensors")}<span class="right"><span class="led"></span>${t("live")}</span></div>
           <div class="sensors" id="sensors">${sensors()}</div>
         </div>
 
         <div class="panel">
-          <div class="panel-h">${t("dash.system")}<span class="right">${esc((S.init && S.init.machine) || "")}</span></div>
+          <div class="panel-h"><span class="code">C-03</span>${t("dash.system")}<span class="right">${esc((S.init && S.init.machine) || "")}</span></div>
           ${p ? html`<div class="sys-lines">
             <div><b>Windows</b><span>${esc(p.os.caption.replace("Microsoft Windows ", "").replace("Microsoft ", ""))} ${esc(p.os.displayVersion)} · ${p.os.build}.${p.os.ubr}</span></div>
             <div><b>${t("sys.cpu")}</b><span>${esc(p.cpu.name)} · ${p.cpu.cores}/${p.cpu.threads}${p.cpu.isHybrid ? ` · ${p.cpu.pCores}P+${p.cpu.eCores}E` : ""}</span></div>
@@ -62,7 +62,7 @@
             <div><b>${t("sys.screen")}</b><span>${esc(p.displays.map((d) => `${d.width}×${d.height} · ${d.refreshHz}/${d.maxRefreshHz} Hz`).join(" · ") || "—")}</span></div>
             <div><b>${t("sys.board")}</b><span>${esc(p.board.manufacturer)} ${esc(p.board.product)}</span></div>
           </div>` : `<div class="empty" style="margin:0 16px 16px">${t("scanFirst")}</div>`}
-          <div class="panel-h" style="border-top:1px solid var(--line);padding-top:14px">${t("dash.quick")}</div>
+          <div class="panel-h" style="border-top:1px solid var(--line)"><span class="code">Q</span>${t("dash.quick")}</div>
           <div class="quick">
             <button class="btn sm" data-q="purge">${t("q.purge")}</button><button class="btn sm" data-q="dns">${t("q.dns")}</button>
             <button class="btn sm" data-q="net">${t("q.net")}</button><button class="btn sm" data-q="clean">${t("q.clean")}</button>
@@ -71,22 +71,22 @@
         </div>
 
         <div class="panel">
-          <div class="panel-h">${t("dash.issues")}<span class="right">${open ? `${open} ${t("dash.open")}` : ""}</span></div>
-          <div class="issues">${ins.length ? ins.map(issue).join("") : `<div class="empty">${S.scan ? t("tk.none") : t("scanFirst")}</div>`}</div>
+          <div class="panel-h"><span class="code">T-04</span>${t("dash.issues")}<span class="right">${open ? `${open} ${t("dash.open")}` : ""}</span></div>
+          <div class="issues">${ins.length ? ins.map((x, n) => issue(x, n)).join("") : `<div class="empty">${S.scan ? t("tk.none") : t("scanFirst")}</div>`}</div>
         </div>
 
         <div class="panel">
-          <div class="panel-h">${t("dash.progress")}<span class="right">${t("mx.applied")}</span></div>
+          <div class="panel-h"><span class="code">P-05</span>${t("dash.progress")}<span class="right">${t("mx.applied")}</span></div>
           ${bars()}
         </div>
 
         <div class="panel">
-          <div class="panel-h">${t("dash.stream")}<span class="right"><span class="filters" id="logFilters">${["all", "warn", "err"].map((f) => `<button data-f="${f}" class="${logFilter === f ? "on" : ""}">${t(f)}</button>`).join("")}</span></span></div>
+          <div class="panel-h"><span class="code">E-06</span>${t("dash.stream")}<span class="right"><span class="filters" id="logFilters">${["all", "warn", "err"].map((f) => `<button data-f="${f}" class="${logFilter === f ? "on" : ""}">${t(f)}</button>`).join("")}</span></span></div>
           <div class="log" id="stream">${S.log.filter(passFilter).slice(0, 150).map(logRow).join("")}</div>
         </div>
 
         <div class="panel span-3 flow">
-          <div class="panel-h">${t("dash.monitor")}<span class="right"><button class="btn sm" id="exportReport">${icon("download")}${t("dash.export")}</button></span></div>
+          <div class="panel-h"><span class="code">M-07</span>${t("dash.monitor")}<span class="right"><button class="btn sm" id="exportReport">${icon("download")}${t("dash.export")}</button></span></div>
           <div class="flow-stats">
             <div class="c1">${t("flow.cpu")}<b id="fCpu">—</b></div><div class="c2">GPU<b id="fGpu">—</b></div><div>${t("flow.ram")}<b id="fRam">—</b></div><div class="c3">${t("flow.ping")}<b id="fPing">—</b></div><div>${t("flow.proc")}<b id="fProc">—</b></div>
           </div>
@@ -146,13 +146,14 @@
   // ------------------------------------------------------------------ events / issues / charts
 
   const passFilter = (e) => logFilter === "all" || (logFilter === "warn" ? e.level === "warn" || e.level === "error" : e.level === "error");
-  const logRow = (e) => `<div class="row"><span class="t">${fmtTime(e.time)}</span><span class="lv ${e.level}" title="${e.level}"></span><span class="msg"><b>${esc(e.source)}</b>${esc(e.text)}</span></div>`;
+  const logRow = (e) => `<div class="row"><span class="t">${fmtTime(e.time)}</span><span class="lv ${e.level}">${e.level === "error" ? "ERR" : e.level.toUpperCase()}</span><span class="msg"><b>${esc(e.source)}</b>${esc(e.text)}</span></div>`;
 
-  function issue(i) {
+  function issue(i, n = 0) {
     const st = ticketState(i);
     const act = i.action || "";
     const label = act.startsWith("tweak:") ? t("tk.go.tweak") : act ? t("tk.go." + act) : "";
     return html`<div class="issue ${st === "resolved" ? "resolved" : i.severity}">
+      <div class="issue-top"><span class="code">TCK-${String(n + 1).padStart(3, "0")}</span><span class="sev">${t("sev." + (st === "resolved" ? "resolved" : i.severity))}</span></div>
       <div class="issue-title">${esc(L(i.title))}${st === "resolved" ? `<span class="chip ok">${t("tk.resolved")}</span>` : ""}</div>
       <div class="issue-detail">${esc(L(i.detail))}</div>
       ${(label && st !== "resolved") || i.metric ? `<div class="issue-foot">${label && st !== "resolved" ? `<button class="btn sm" data-tk="${esc(i.id)}">${label}</button>` : ""}${i.metric ? `<span class="issue-metric">${esc(i.metric)}</span>` : ""}</div>` : ""}

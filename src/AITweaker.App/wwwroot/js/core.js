@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "system", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
+    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -126,6 +126,17 @@
     ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
+  const CODES = { dashboard: "OPS", tune: "AUTO-TUNE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
+
+  /** Section code above every page title ("SEC 03 · CATALOG"), kept when a view re-renders itself. */
+  function kicker(section) {
+    const head = section.querySelector(".page-h > div:first-child");
+    if (!head || head.querySelector(".kicker")) return;
+    const i = navList().findIndex(([v]) => "v-" + v === section.id);
+    head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[section.id.slice(2)] || ""}</span>`);
+  }
+  const kickerWatch = new MutationObserver((list) => list.forEach((m) => kicker(m.target)));
 
   window.go = (view, opts = {}) => {
     S.view = view;
@@ -140,11 +151,11 @@
     applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
-        <div class="brand">${brandMark()}<div class="brand-name">AI Tweaker</div></div>
+        <div class="brand">${brandMark()}<div><div class="brand-name">AI Tweaker</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
         <div class="top-mid">
           <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
           <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
-          ${S.init && S.init.isAdmin ? "" : `<span class="chip crit dot">${t("notAdmin")}</span>`}
+          ${S.init && S.init.isAdmin ? `<span class="chip ok dot">${t("admin")}</span>` : `<span class="chip crit dot">${t("notAdmin")}</span>`}
           <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>${icon("refresh")}${t("rs.chip")}</button>
         </div>
         <div class="top-right">
@@ -156,12 +167,13 @@
         </div>
       </header>
       <nav class="nav">
-        ${NAV.map(([v, n], i) => `${i === 1 || i === 7 || i === 11 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
-        <div class="nav-foot">${t("nav.foot")}<br><br>AI Tweaker ${esc((S.init && S.init.version) || "1.0.0")}</div>
+        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === (all.some(([x]) => x === "ai") ? "ai" : "backup") ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        <div class="nav-foot">${t("nav.foot")}<br><br><span class="mono">AI TWEAKER ${esc((S.init && S.init.version) || "1.0.0")}${S.init && S.init.machine ? " · " + esc(S.init.machine) : ""}</span></div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
       <footer class="statusbar"><span class="led" id="statusLed"></span><span id="statusText">${t("status.ready")}</span><span class="ticker" id="ticker"></span><span id="sbTele"></span></footer>`;
 
+    $$(".view").forEach((sec) => kickerWatch.observe(sec, { childList: true }));
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
@@ -185,14 +197,14 @@
     S.theme = S.themeMode === "auto" ? (S.system.dark ? "night" : "day") : S.themeMode;
     const root = document.documentElement;
     root.dataset.theme = S.theme;
-    const panel = S.theme === "night" ? "#141416" : "#ffffff";
-    let base = S.system.accent || "#0067C0";
-    // Monochrome on request, or when the Windows accent itself is colourless (e.g. the black AI Tweaker look).
+    const panel = S.theme === "night" ? "#111316" : "#f7f5ef";
+    // Signal orange/amber by default; the Windows accent on request; monochrome on request or when that accent is colourless.
+    let base = S.accentMode === "system" ? S.system.accent || "#0067C0" : S.theme === "night" ? "#f5a524" : "#e2560b";
     const c0 = rgb(base);
-    if (S.accentMode === "mono" || Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ececec" : "#18181b";
+    if (S.accentMode === "mono" || Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ebe9e3" : "#17171a";
     const a = fit(base, panel);
     root.style.setProperty("--accent", hex(a));
-    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#111113" : "#ffffff");
+    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#111214" : "#ffffff");
     root.style.setProperty("--radar", hex(a));
     call("window.theme", { theme: S.theme }, { silent: true }).catch(() => {});
   };
@@ -225,21 +237,26 @@
     await modal({
       title: t("settings"),
       body: html`<label class="field">${t("settings.accent")}
-          <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="mono" ${S.accentMode === "mono" ? "selected" : ""}>${t("settings.accent.mono")}</option></select></label>
+          <select class="input" id="setAccent">${["industrial", "system", "mono"].map((m) => `<option value="${m}" ${S.accentMode === m ? "selected" : ""}>${t("settings.accent." + m)}</option>`).join("")}</select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="field">${t("settings.autoRestart")}
           <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
-        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
+        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>
+        <label class="check"><input type="checkbox" id="setAdv" ${s.showAdvisor ? "checked" : ""}><span class="box"></span>${t("settings.advisor")}</label>
+        <div class="td" style="color:var(--muted);margin-top:-6px;padding-left:26px">${t("settings.advisorD")}</div>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
       onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
+        const showAdvisor = $("#setAdv", ov).checked;
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode });
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds });
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode, showAdvisor });
+        const navChanged = !!s.showAdvisor !== showAdvisor;
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, showAdvisor });
+        if (navChanged) { if (!showAdvisor && S.view === "ai") S.view = "dashboard"; renderShell(); go(S.view); }
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });
@@ -249,7 +266,7 @@
 
   function searchIndex() {
     const idx = [];
-    NAV.forEach(([v]) => idx.push({ type: "page", title: t("nav." + v), desc: t(v === "dashboard" ? "dash.desc" : v + ".desc"), go: () => go(v) }));
+    navList().forEach(([v]) => idx.push({ type: "page", title: t("nav." + v), desc: t(v === "dashboard" ? "dash.desc" : v + ".desc"), go: () => go(v) }));
     S.catalog.forEach((tw) => idx.push({ type: "tweak", title: L(tw.name), desc: tw.id + " · " + L(tw.description), keys: tw.id + " " + tw.name.ru + " " + tw.name.en + " " + tw.description.ru + " " + tw.description.en, go: () => go("tweaks", { focus: tw.id }) }));
     ((window.MOCK_DATA && MOCK_DATA.guides) || S.guides || []).forEach((g) => g.sections.forEach((sec) => sec.settings.forEach((st) =>
       idx.push({ type: "setting", title: `${g.name}: ${st.name}`, desc: `${L(sec.title)} → ${st.value}`, keys: `${g.name} ${st.name} ${sec.title.ru} ${sec.title.en} ${sec.path}`, go: () => go("apps", { guide: g.id }) }))));

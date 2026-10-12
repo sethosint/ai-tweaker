@@ -136,7 +136,7 @@
     }
     S.lang = S.init.settings.language || "ru";
     S.themeMode = S.init.settings.theme || "auto";
-    S.accentMode = S.init.settings.accent || "system";
+    S.accentMode = S.init.settings.accent || "industrial";
     if (S.init.system) S.system = S.init.system;
     S.profileName = S.init.settings.profile || "Performance";
     S.rebootPending = !!S.init.rebootPending;
