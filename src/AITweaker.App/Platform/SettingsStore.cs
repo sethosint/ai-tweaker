@@ -9,7 +9,7 @@ public sealed class AppSettings
     public string Language { get; set; } = "ru";
     /// <summary>auto (follow Windows) | day | night</summary>
     public string Theme { get; set; } = "auto";
-    /// <summary>system (Windows accent color) | industrial (safety orange / amber)</summary>
+    /// <summary>system (Windows accent color) | mono (monochrome)</summary>
     public string Accent { get; set; } = "system";
     public string Profile { get; set; } = "Performance";
     public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;

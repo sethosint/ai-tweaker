@@ -44,7 +44,7 @@
       const ov = document.createElement("div");
       ov.className = "overlay";
       ov.innerHTML = html`<div class="modal ${wide ? "wide" : ""}" role="dialog">
-        <div class="modal-h ${hazard ? "hazard" : ""}"><span>${title}</span><button class="x" aria-label="close">×</button></div>
+        <div class="modal-h ${hazard ? "hazard" : ""}"><span>${title}</span><button class="x" aria-label="close">${icon("x")}</button></div>
         <div class="modal-b">${body}</div>
         ${buttons.length ? `<div class="modal-f">${buttons.map((b, i) => `<button class="btn ${b.cls || ""}" data-i="${i}">${b.label}</button>`).join("")}</div>` : ""}
       </div>`;
@@ -72,7 +72,7 @@
       const res = await modal({
         title: `${t("confirm.title")} · ${i + 1} ${t("confirm.of")} ${need.length}`,
         hazard: true,
-        body: html`<div class="tt" style="font:700 15px/1.3 var(--font-head);letter-spacing:.06em">${esc(L(tw.name))}</div>
+        body: html`<div class="confirm-title">${esc(L(tw.name))}</div>
           <div style="color:var(--ink-2)">${esc(L(tw.description))}</div>
           ${tw.confirmText ? `<div class="callout crit"><b>${t("confirm.lose")}</b><br>${esc(L(tw.confirmText))}</div>` : ""}
           <div class="tm" style="display:flex;gap:6px;flex-wrap:wrap">${badges(tw)}</div>`,
@@ -85,11 +85,11 @@
 
   window.badges = (tw) => [
     `<span class="risk ${tw.risk}">${t("risk." + tw.risk)}</span>`,
-    `<span class="lvl">${tw.level === 0 ? t("lvl.0") : "L" + tw.level}</span>`,
-    tw.reboot ? `<span class="lvl">⟳ ${t("reboot")}</span>` : "",
-    tw.logoff ? `<span class="lvl">⇄ ${t("logoff")}</span>` : "",
-    tw.restartExplorer ? `<span class="lvl">⌂ ${t("explorer")}</span>` : "",
-    tw.reversible === false ? `<span class="lvl" style="color:var(--crit)">✕ ${t("irreversible")}</span>` : "",
+    `<span class="lvl">${tw.level === 0 ? t("lvl.0") : t("lvl") + " " + tw.level}</span>`,
+    tw.reboot ? `<span class="lvl">${t("reboot")}</span>` : "",
+    tw.logoff ? `<span class="lvl">${t("logoff")}</span>` : "",
+    tw.restartExplorer ? `<span class="lvl">${t("explorer")}</span>` : "",
+    tw.reversible === false ? `<span class="risk high">${t("irreversible")}</span>` : "",
   ].join("");
 
   // ------------------------------------------------------------------ busy veil
@@ -140,27 +140,27 @@
     applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
-        <div class="brand"><div class="brand-mark"></div><div><div class="brand-name">AI TWEAKER</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
+        <div class="brand">${brandMark()}<div class="brand-name">AI Tweaker</div></div>
         <div class="top-mid">
-          <button class="search-btn" id="searchBtn">⌕ <span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
+          <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
           <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
-          ${S.init && S.init.isAdmin ? `<span class="chip ok">● ${t("admin")}</span>` : `<span class="chip crit">● ${t("notAdmin")}</span>`}
-          <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>⟳ ${t("rs.chip")}</button>
+          ${S.init && S.init.isAdmin ? "" : `<span class="chip crit dot">${t("notAdmin")}</span>`}
+          <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>${icon("refresh")}${t("rs.chip")}</button>
         </div>
         <div class="top-right">
-          <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">☀ ${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">☾ ${t("shift.night")}</button></div>
+          <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">${t("shift.night")}</button></div>
           <div class="seg" id="langSeg"><button data-v="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button><button data-v="en" class="${S.lang === "en" ? "on" : ""}">EN</button></div>
-          <button class="icon-btn" id="settingsBtn" title="${t("settings")}">⚙</button>
+          ${S.demo ? `<span class="demo-pill">${t("demo")}</span>` : ""}
+          <button class="icon-btn" id="settingsBtn" title="${t("settings")}">${icon("settings")}</button>
           <div class="clock" id="clock">${fmtTime()}</div>
         </div>
       </header>
       <nav class="nav">
-        ${NAV.map(([v, n], i) => `${i === 1 || i === 6 || i === 10 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
-        <div class="nav-foot">${t("nav.foot")}<br><br>v${esc((S.init && S.init.version) || "1.0.0")} · ${esc((S.init && S.init.machine) || "")}</div>
+        ${NAV.map(([v, n], i) => `${i === 1 || i === 6 || i === 10 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        <div class="nav-foot">${t("nav.foot")}<br><br>AI Tweaker ${esc((S.init && S.init.version) || "1.0.0")}</div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
       <footer class="statusbar"><span class="led" id="statusLed"></span><span id="statusText">${t("status.ready")}</span><span class="ticker" id="ticker"></span><span id="sbTele"></span></footer>`;
-    if (S.demo) { const b = document.createElement("div"); b.className = "demo-badge"; b.textContent = t("demo"); $("#app").append(b); }
 
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
     $("#searchBtn").onclick = openSearch;
@@ -185,14 +185,14 @@
     S.theme = S.themeMode === "auto" ? (S.system.dark ? "night" : "day") : S.themeMode;
     const root = document.documentElement;
     root.dataset.theme = S.theme;
-    const panel = S.theme === "night" ? "#14160f" : "#f6f3ea";
-    let base = S.accentMode === "industrial" ? (S.theme === "night" ? "#f2a93b" : "#e8590c") : S.system.accent || "#0078D4";
-    // A colourless Windows accent (e.g. the black AI Tweaker look) makes the app monochrome too, instead of a dull grey.
+    const panel = S.theme === "night" ? "#141416" : "#ffffff";
+    let base = S.system.accent || "#0067C0";
+    // Monochrome on request, or when the Windows accent itself is colourless (e.g. the black AI Tweaker look).
     const c0 = rgb(base);
-    if (Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ececec" : "#1a1a1a";
+    if (S.accentMode === "mono" || Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ececec" : "#18181b";
     const a = fit(base, panel);
     root.style.setProperty("--accent", hex(a));
-    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#14160f" : "#ffffff");
+    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#111113" : "#ffffff");
     root.style.setProperty("--radar", hex(a));
     call("window.theme", { theme: S.theme }, { silent: true }).catch(() => {});
   };
@@ -225,7 +225,7 @@
     await modal({
       title: t("settings"),
       body: html`<label class="field">${t("settings.accent")}
-          <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="industrial" ${S.accentMode === "industrial" ? "selected" : ""}>${t("settings.accent.industrial")}</option></select></label>
+          <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="mono" ${S.accentMode === "mono" ? "selected" : ""}>${t("settings.accent.mono")}</option></select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="field">${t("settings.autoRestart")}

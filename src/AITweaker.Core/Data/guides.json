@@ -623,8 +623,8 @@
     "when": "gpu.nvidia",
     "source": "ai",
     "summary": {
-      "ru": "Рекомендация AI Tweaker: глобальные параметры 3D для минимальной задержки.",
-      "en": "AI Tweaker recommendation: global 3D settings for the lowest latency."
+      "ru": "Глобальные параметры 3D для минимальной задержки.",
+      "en": "Global 3D settings for the lowest latency."
     },
     "sections": [
       {
@@ -658,8 +658,8 @@
     "icon": "windows",
     "source": "ai",
     "summary": {
-      "ru": "Рекомендация AI Tweaker: системные настройки дисплея и графики.",
-      "en": "AI Tweaker recommendation: system display and graphics settings."
+      "ru": "Системные настройки дисплея и графики.",
+      "en": "System display and graphics settings."
     },
     "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations"],
     "sections": [

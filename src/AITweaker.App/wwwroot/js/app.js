@@ -70,7 +70,7 @@
       hazard: true,
       body: html`${body}
         <div class="restart-box">
-          <div class="rs-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="rs-track"/><circle cx="60" cy="60" r="52" class="rs-arc" id="rsArc"/></svg><div class="rs-n" id="rsN">${total || "⟳"}</div></div>
+          <div class="rs-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="rs-track"/><circle cx="60" cy="60" r="52" class="rs-arc" id="rsArc"/></svg><div class="rs-n" id="rsN">${total || "—"}</div></div>
           <div class="rs-t"><b>${kind === "reboot" ? t("done.reboot") : t("done.logoff")}</b>
             <div>${total ? `${verb} ${t("rs.in")} <b id="rsLeft">${total}</b> ${t("rs.sec")}.` : t("rs.manual")}</div>
             <div class="td" style="color:var(--muted)">${t("rs.save")}</div></div>
@@ -110,7 +110,7 @@
     try {
       res = await call("tweaks.revert", { ids });
       const bad = res.filter((r) => !r.ok);
-      toast(`${res.length - bad.length}/${res.length} ↺`, bad.length ? "warn" : "ok");
+      toast(`${t("reverted")}: ${res.length - bad.length}/${res.length}`, bad.length ? "warn" : "ok");
     } catch { /* toast */ } finally { b.done(); }
     await App.refreshStatus();
     go(S.view);
@@ -159,9 +159,9 @@
       title: t("fr.title"),
       wide: true,
       body: html`<div class="fr-hero"><img src="img/aitweaker-graphite.webp" alt=""><div>
-          <div class="tt" style="font:700 17px/1.3 var(--font-head);letter-spacing:.08em">${t("fr.hello")}</div>
+          <div class="confirm-title">${t("fr.hello")}</div>
           <div style="color:var(--ink-2);margin-top:6px">${t("fr.desc")}</div>
-          ${img ? `<div class="chip ok" style="margin-top:10px">✓ ${t("fr.fromImage")} · Windows 11 ${esc(img.windows || "")} ${esc(img.build || "")}</div>` : ""}</div></div>
+          ${img ? `<div class="chip ok" style="margin-top:10px">${icon("check")}${t("fr.fromImage")} · Windows 11 ${esc(img.windows || "")} ${esc(img.build || "")}</div>` : ""}</div></div>
         <ol class="fr-steps">
           <li><b>${t("fr.s1")}</b><span>${esc(S.scan ? `${S.scan.profile.cpu.name} · ${(S.scan.profile.gpus[0] || {}).name || ""}` : "")}</span></li>
           <li><b>${t("fr.s2")}</b><span>${t("fr.s2d")}</span></li>
@@ -169,7 +169,7 @@
           <li><b>${t("fr.s4")}</b><span>${t("fr.s4d")}</span></li>
         </ol>
         <label class="field">${t("fr.profile")}<select class="input" id="frProf">${["Balanced", "Performance", "Extreme"].map((p) => `<option value="${p}" ${p === prof.v ? "selected" : ""}>${t("prof." + p)}${p === "Performance" ? " — " + t("fr.rec") : ""}</option>`).join("")}</select></label>`,
-      buttons: [{ label: t("fr.later"), value: "later", cls: "ghost" }, { label: t("fr.never"), value: "never", cls: "ghost" }, { label: "▶ " + t("fr.start"), value: "go", cls: "primary" }],
+      buttons: [{ label: t("fr.later"), value: "later", cls: "ghost" }, { label: t("fr.never"), value: "never", cls: "ghost" }, { label: t("fr.start"), value: "go", cls: "primary" }],
       onOpen: (ov) => { $("#frProf", ov).onchange = (e) => (prof.v = e.target.value); },
     });
     if (go1 === "never") { call("firstrun.done", {}, { silent: true }).catch(() => {}); return; }
