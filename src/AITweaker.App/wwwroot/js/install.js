@@ -31,7 +31,7 @@
           <div><div class="tt">${esc(p.name)} ${p.paid ? `<span class="chip warn">${t("inst.paid")}</span>` : ""}</div>
             ${p.note ? `<div class="td">${esc(L(p.note))}</div>` : ""}
             <div class="tm"><span class="tid">${p.winget ? "winget · " + esc(p.winget) : p.direct ? t("inst.official") : esc(p.url || "")}</span></div></div>
-          <div class="tr">${p.installed ? `<span class="status applied">${t("inst.installed")}</span>` : ""}</div></div>`).join("")}
+          <div class="tr inst-tr">${p.installed ? `<span class="status applied">${t("inst.installed")}</span>${p.winget ? `<button class="btn sm ghost" data-un="${p.id}">${t("inst.uninstall")}</button>` : ""}` : ""}</div></div>`).join("")}
       </div>`; }).join("")}
 
       <div class="cat-group">
@@ -53,6 +53,7 @@
       </div>`;
 
     v.querySelectorAll("[data-id]").forEach((c) => (c.onchange = () => { c.checked ? st.sel.add(c.dataset.id) : st.sel.delete(c.dataset.id); V.install(); }));
+    v.querySelectorAll("[data-un]").forEach((b) => (b.onclick = () => uninstall(b.dataset.un)));
     v.querySelectorAll("[data-url]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.url })));
     $("#iRec").onclick = () => { st.sel = new Set(d.programs.filter((p) => p.recommended && !p.installed).map((p) => p.id)); V.install(); };
     $("#iNone").onclick = () => { st.sel = new Set(); V.install(); };
@@ -92,6 +93,18 @@
     if (res === true) return install(bad.filter((r) => r.method !== "page").map((r) => r.id));
     if (summary.rebootRequired) await App.restartPrompt("reboot");
     if (good.some((r) => r.id === "openshell")) offerOpenShell();
+  }
+
+  async function uninstall(id) {
+    const p = st.data.programs.find((x) => x.id === id);
+    if (!(await confirmBox(t("inst.uninstall"), html`${t("inst.unQ")} <b>${esc(p.name)}</b>?`, t("inst.uninstall")))) return;
+    const b = busy(`${t("inst.uninstall")} · ${p.name}`);
+    let r;
+    try { r = await call("programs.uninstall", { id }); } catch { return; } finally { b.done(); }
+    toast(r.ok ? `${p.name}: ${t("inst.removed")}` : `${p.name}: ${r.error || ""}`, r.ok ? "ok" : "error", 6000);
+    st.data = null;
+    V.install();
+    App.scan(true);
   }
 
   /** Right after Open-Shell is installed, offer the Start menu from the reference. */

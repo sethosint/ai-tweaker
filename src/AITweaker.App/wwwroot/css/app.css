@@ -319,6 +319,24 @@ label.field { display: grid; gap: 6px; font: 500 12.5px/1.3 var(--font); color: 
 .trow:hover { background: var(--panel-2); }
 .trow.hl { animation: highlight 2.4s ease-out; }
 .trow .tt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; font-size: 13.5px; }
+.link { border: 0; background: none; padding: 0; font: 500 12px/1.4 var(--font); color: var(--accent-text, var(--ink)); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.link:hover { color: var(--ink); }
+.input.sm { height: 30px; padding: 0 8px; font-size: 12.5px; width: auto; }
+.svc-row { grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; }
+.svc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2, var(--muted)); opacity: .55; }
+.svc-dot.running { background: var(--ok); opacity: 1; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent); }
+.svc-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.svc-ctl { display: flex; gap: 8px; align-items: center; }
+.svc-ctl .btn { min-width: 104px; justify-content: center; }
+.tm .link { margin-left: 2px; }
+.inst-tr { display: flex; gap: 8px; align-items: center; }
+.dns-list { display: grid; gap: 6px; }
+.dns-opt { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; font-size: 13px; }
+.dns-opt.on { border-color: color-mix(in srgb, var(--ink) 35%, transparent); background: var(--panel-2); }
+.dns-opt input { accent-color: var(--accent); margin: 0; }
+.dns-opt .td { color: var(--muted); font-size: 12px; }
+.dns-ms { display: flex; gap: 6px; align-items: center; font: 600 12.5px var(--font); color: var(--ink-2); white-space: nowrap; }
+.rufus-opts { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 3px; }
 .trow .td { color: var(--ink-2); font-size: 12.5px; margin-top: 3px; max-width: 920px; }
 .trow .tm { display: flex; gap: 6px; margin-top: 7px; flex-wrap: wrap; align-items: center; }
 .trow .tid { font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }

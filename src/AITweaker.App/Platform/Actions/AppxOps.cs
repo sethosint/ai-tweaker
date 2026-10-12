@@ -25,6 +25,40 @@ public static class AppxOps
             .ToList();
     }
 
+    public sealed record RestoreResult(bool Ok, string Method);
+
+    /// <summary>
+    /// Brings a removed built-in app back: the Store with Windows' own <c>wsreset -i</c>, anything else from the Microsoft
+    /// Store through winget (as the signed-in user, Store apps are per-user). If that fails the Store page opens instead.
+    /// </summary>
+    public static async Task<RestoreResult> RestoreAsync(string package, string? storeId, CancellationToken ct = default)
+    {
+        if (package.Equals("Microsoft.WindowsStore", StringComparison.OrdinalIgnoreCase) || package.Equals("Microsoft.StorePurchaseApp", StringComparison.OrdinalIgnoreCase))
+        {
+            await ProgramInstaller.RunAsSignedInUserAsync(ProcessRunner.System32("wsreset.exe"), "-i", ct);
+            for (int i = 0; i < 30 && !await IsInstalledAsync(package); i++) await Task.Delay(TimeSpan.FromSeconds(4), ct); // wsreset installs in the background
+        }
+        else if (storeId is not null && ProgramInstaller.FindWinget() is { } winget)
+        {
+            await ProgramInstaller.RunAsSignedInUserAsync(winget, $"install --id {storeId} --source msstore --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity", ct);
+        }
+        if (await IsInstalledAsync(package))
+        {
+            AppLog.Ok("debloat", $"{package} restored");
+            return new RestoreResult(true, "store");
+        }
+        var page = storeId is not null ? $"ms-windows-store://pdp/?ProductId={storeId}" : $"ms-windows-store://search/?query={Uri.EscapeDataString(package)}";
+        ProcessRunner.OpenUrl(page);
+        AppLog.Warn("debloat", $"{package}: automatic reinstall failed, opened the Store page");
+        return new RestoreResult(false, "page");
+    }
+
+    private static async Task<bool> IsInstalledAsync(string package)
+    {
+        var r = await ProcessRunner.PowerShellAsync($"if (Get-AppxPackage -AllUsers -Name {ProcessRunner.PsQuote(package)}) {{ 'YES' }}", TimeSpan.FromMinutes(1));
+        return r.Output.Contains("YES");
+    }
+
     /// <summary>Removes packages for every user and from the provisioned image so they don't come back for new accounts.</summary>
     public static async Task<Dictionary<string, bool>> RemoveAsync(IReadOnlyList<string> names, Action<string>? progress = null)
     {

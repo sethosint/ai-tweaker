@@ -37,7 +37,19 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]) };
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+    services: [
+      ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
+      ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
+      ["DiagTrack", "Функциональные возможности для подключённых пользователей и телеметрия", "Сбор и отправка данных телеметрии Microsoft.", "stopped", "disabled", false, ["privacy.telemetry.services"]],
+      ["Dnscache", "DNS-клиент", "Кэширует имена DNS и регистрирует полное имя компьютера.", "running", "auto", true],
+      ["Spooler", "Диспетчер печати", "Ставит задания печати в очередь и обеспечивает работу с принтером.", "running", "auto", false, ["system.print-spooler.off"]],
+      ["SysMain", "SysMain", "Поддерживает и улучшает производительность системы со временем.", "running", "auto", false, ["system.sysmain.off"]],
+      ["WSearch", "Windows Search", "Индексирование содержимого, кэширование свойств и результаты поиска.", "running", "delayed", false, ["system.search-indexer.off"]],
+      ["XblAuthManager", "Диспетчер проверки подлинности Xbox Live", "Проверка подлинности и авторизация для Xbox Live.", "stopped", "manual", false, ["system.xbox-services.off"]],
+      ["wuauserv", "Центр обновления Windows", "Обнаружение, загрузка и установка обновлений Windows и программ.", "running", "manual", false],
+      ["WinDefend", "Служба антивирусной программы Microsoft Defender", "Защищает от вредоносных программ.", "running", "auto", true],
+    ].map(([name, displayName, description, state, start, essential, tweaks]) => ({ name, displayName, description, state, start, essential, changed: false, tweaks: tweaks || [] })) };
 
   const profile = {
     os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
@@ -131,9 +143,10 @@
     "restore.create": async () => { await sleep(800); log("ok", "restore", "restore point created"); return true; },
     "appx.list": async () => {
       await sleep(600);
-      const installed = new Set(D.apps.map((a) => a.package).filter((_, i) => i % 7 !== 3));
+      const installed = new Set(D.apps.map((a) => a.package).filter((n, i) => i % 7 !== 3 && !mock.removedApps.has(n)));
       return {
         packages: D.apps.filter((a) => installed.has(a.package)).map((a) => ({ ...a, installed: true, keep: a.keepWhen ? evalWhen(a.keepWhen) : false })),
+        removed: D.apps.filter((a) => mock.removedApps.has(a.package)).map((a) => ({ ...a, installed: false })),
         others: [{ name: "SpotifyAB.SpotifyMusic", version: "1.2.60" }, { name: "5319275A.WhatsAppDesktop", version: "2.2540" }, { name: "Microsoft.MinecraftUWP", version: "1.21" }],
       };
     },
@@ -188,6 +201,17 @@
     },
     "image.ame": async () => { await sleep(700); return { path: "C:\\Users\\demo\\Desktop\\AI Tweaker.apbx", protected: true, options: 16, files: 28 }; },
     "shell.reveal": async () => true,
+    "usb.rufus": async () => { await sleep(900); return { path: "C:\\ProgramData\\AITweaker\\Tools\\Rufus\\rufus.exe", downloaded: true }; },
+    "usb.copyTweaker": async () => { await sleep(400); return ["E:"]; },
+    "net.dns": async () => ({ current: mock.dns || "auto", adapters: [{ alias: "Ethernet", servers: ["192.168.1.1"], preset: mock.dns || "auto" }] }),
+    "net.dnsSet": async (p) => { await sleep(500); mock.dns = p.preset; return true; },
+    "net.dnsBench": async () => { await sleep(1500); return { cloudflare: 9, google: 14, quad9: 21, current: 32 }; },
+    "services.list": async () => { await sleep(300); return mock.services; },
+    "services.setStart": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.start = p.start; s.changed = true; if (p.start === "disabled") s.state = "stopped"; return true; },
+    "services.run": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.state = p.start ? "running" : "stopped"; return true; },
+    "services.restore": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.start = "manual"; s.changed = false; return true; },
+    "appx.restore": async (p) => { await sleep(900); mock.removedApps.delete(p.name); return { ok: true, method: "store" }; },
+    "programs.uninstall": async (p) => { await sleep(900); mock.installed.delete(p.id); const pr = D.programs.find((x) => x.id === p.id); return { id: p.id, name: pr.name, ok: true, method: "winget" }; },
     "display.set": async () => true,
     "display.keep": async () => true,
     "display.revert": async () => true,

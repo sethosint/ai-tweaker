@@ -159,11 +159,32 @@ public static class ProgramInstaller
         };
     }
 
+    /// <summary>Uninstalls an Install-tab program with winget (silent where the package allows it).</summary>
+    public static async Task<InstallResult> UninstallAsync(TweakCatalog catalog, string id, CancellationToken ct = default)
+    {
+        var p = catalog.Programs.FirstOrDefault(x => x.Id == id) ?? throw new InvalidOperationException("unknown program " + id);
+        if (p.Winget is null) return new InstallResult(p.Id, p.Name, false, "none", "no winget package");
+        var winget = FindWinget() ?? throw new InvalidOperationException("winget is not available");
+        var args = $"uninstall --id {p.Winget} --exact --silent --accept-source-agreements --disable-interactivity";
+        int code;
+        string output = "";
+        if (p.User) code = await RunAsSignedInUserAsync(winget, args, ct);
+        else
+        {
+            var r = await ProcessRunner.RunAsync(winget, args, TimeSpan.FromMinutes(20), encoding: Encoding.UTF8, ct: ct);
+            code = r.ExitCode;
+            output = (r.Output + r.Error).Trim();
+        }
+        bool ok = code is 0 or RebootRequiredToFinish or RebootInitiated;
+        AppLog.Write(ok ? "ok" : "warn", "install", $"{p.Name}: uninstall exit 0x{code:X8}");
+        return new InstallResult(p.Id, p.Name, ok, "winget", ok ? null : $"winget exit 0x{code:X8}" + (output.Length > 0 ? ": " + output.Split('\n', StringSplitOptions.RemoveEmptyEntries)[^1].Trim() : ""));
+    }
+
     /// <summary>
     /// Some installers refuse to run elevated. Runs the command through a one-off scheduled task as the signed-in
     /// user with limited rights, waits for it and returns its exit code.
     /// </summary>
-    private static async Task<int> RunAsSignedInUserAsync(string file, string args, CancellationToken ct)
+    internal static async Task<int> RunAsSignedInUserAsync(string file, string args, CancellationToken ct)
     {
         var name = "AITweaker-UserInstall-" + Guid.NewGuid().ToString("N")[..8];
         var script = $$"""

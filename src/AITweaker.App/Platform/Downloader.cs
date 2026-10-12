@@ -41,7 +41,11 @@ public static class Downloader
     }
 
     /// <summary>Returns the download URL of the first asset in the latest GitHub release whose name ends with <paramref name="suffix"/>.</summary>
-    public static async Task<(string Name, string Url)> LatestGitHubAssetAsync(string repo, string suffix, CancellationToken ct = default)
+    public static Task<(string Name, string Url)> LatestGitHubAssetAsync(string repo, string suffix, CancellationToken ct = default) =>
+        LatestGitHubAssetAsync(repo, n => n.EndsWith(suffix, StringComparison.OrdinalIgnoreCase), ct);
+
+    /// <summary>Returns the first asset in the latest GitHub release whose file name matches <paramref name="match"/>.</summary>
+    public static async Task<(string Name, string Url)> LatestGitHubAssetAsync(string repo, Func<string, bool> match, CancellationToken ct = default)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{repo}/releases/latest");
         req.Headers.Accept.ParseAdd("application/vnd.github+json");
@@ -51,9 +55,9 @@ public static class Downloader
         foreach (var asset in doc.RootElement.GetProperty("assets").EnumerateArray())
         {
             var name = asset.GetProperty("name").GetString() ?? "";
-            if (name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            if (match(name))
                 return (name, asset.GetProperty("browser_download_url").GetString()!);
         }
-        throw new InvalidOperationException($"No *{suffix} asset in the latest {repo} release");
+        throw new InvalidOperationException($"No matching asset in the latest {repo} release");
     }
 }

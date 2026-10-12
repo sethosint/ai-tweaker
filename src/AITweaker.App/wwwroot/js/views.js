@@ -136,11 +136,19 @@
           <div><div class="tt">${esc(L(a.name))} ${a.important ? `<span class="chip warn">${t("debloat.important")}</span>` : ""} ${a.keep ? `<span class="chip ok">${t("debloat.keep")}</span>` : ""}</div>
             ${a.warning ? `<div class="td">${esc(L(a.warning))}</div>` : ""}${a.keep && a.keepReason ? `<div class="why">${esc(L(a.keepReason))}</div>` : ""}
             <div class="tm"><span class="tid">${esc(a.package)}</span></div></div><div></div></div>`).join("")}</div>`; }).join("")}
+      ${S.appx.removed && S.appx.removed.length ? html`<div class="cat-group"><div class="cat-h">${t("debloat.removedT")}<span class="n">${S.appx.removed.length}</span></div>
+        <div class="td" style="padding:10px 16px 0;color:var(--muted)">${t("debloat.removedD")}</div>
+        ${S.appx.removed.map((a) => `<div class="trow"><span></span><div><div class="tt">${esc(L(a.name))}</div><div class="tm"><span class="tid">${esc(a.package)}</span></div></div><div class="tr"><button class="btn sm" data-restore="${esc(a.package)}">${t("debloat.restore")}</button></div></div>`).join("")}</div>` : ""}
       ${S.appx.others.length ? html`<details class="cat-group"><summary class="cat-h" style="cursor:pointer">${t("debloat.others")}<span class="n">${S.appx.others.length}</span></summary>
         ${S.appx.others.map((o) => `<div class="trow"><label class="check"><input type="checkbox" data-pkg="${esc(o.name)}" data-other="1" ${removeSel.has(o.name) ? "checked" : ""}><span class="box"></span></label><div><div class="tt">${esc(o.name)}</div><div class="tm"><span class="tid">${esc(o.version)}</span></div></div><div></div></div>`).join("")}</details>` : ""}`;
 
     v.querySelectorAll("input[data-pkg]").forEach((cb) => (cb.onchange = () => { cb.checked ? removeSel.add(cb.dataset.pkg) : removeSel.delete(cb.dataset.pkg); $("#appxRemove").textContent = `${t("debloat.remove")} (${removeSel.size})`; }));
     $("#appxReload").onclick = () => { S.appx = null; V.debloat(); };
+    v.querySelectorAll("[data-restore]").forEach((b) => (b.onclick = async () => {
+      const bz = busy(t("debloat.restoring"));
+      try { const r = await call("appx.restore", { name: b.dataset.restore }); toast(r.ok ? t("debloat.restored") : t("debloat.storeOpened"), r.ok ? "ok" : "warn", 6000); } catch { /* toast */ } finally { bz.done(); }
+      S.appx = null; V.debloat();
+    }));
     $("#appxRemove").onclick = removeApps;
   };
 
@@ -184,7 +192,7 @@
       <div class="page-h"><div><h1>${t("drivers.title")}</h1><p>${t("drivers.desc")}</p></div>
         <div class="actions"><button class="btn sm" id="drvRescan">${t("drivers.rescan")}</button><button class="btn sm" id="drvOptional">${t("drivers.optional")}${icon("external")}</button></div></div>
       <div class="cards">${S.drivers.map((d) => html`<div class="card" style="cursor:default">
-        <div class="cn"><span class="app-ico">${d.category === "gpu" ? "GPU" : d.category === "chipset" ? "CHP" : d.category === "network" ? "NET" : "!"}</span>${t("drv." + d.category)}</div>
+        <div class="cn">${t("drv." + d.category)}</div>
         <div style="font-weight:700">${esc(d.name)}</div>
         <div class="cs">${esc(d.vendor || "")}${d.version ? " · " + esc(d.version) : ""}${d.date ? " · " + fmtDate(d.date) : ""}</div>
         <div class="cf"><span class="chip ${d.status === "ok" ? "ok" : d.status === "check" ? "info" : "crit"}">${t("drv." + d.status)}</span></div>
@@ -232,6 +240,8 @@
 
   // ------------------------------------------------------------------ [07] BIOS
 
+  const onOff = (v) => (v ? t("bios.on") : t("bios.off"));
+
   V.bios = async () => {
     const v = $("#v-bios");
     if (needScan(v)) return;
@@ -241,13 +251,13 @@
       <div class="page-h"><div><h1>${t("bios.title")}</h1><p>${t("bios.desc")}</p></div>
         <div class="actions"><button class="btn danger" id="toBios">${icon("power")}${t("bios.reboot")}</button></div></div>
       <div class="grid cols-3" style="margin-bottom:14px">
-        <div class="panel"><div class="panel-h">${esc(b.board.manufacturer)}</div><div class="panel-b kv"><b>MODEL</b><span>${esc(b.board.product)}</span><b>BIOS</b><span>${esc(b.board.biosVersion)} · ${fmtDate(b.board.biosDate)}</span></div></div>
-        <div class="panel"><div class="panel-h">${esc(b.cpu.name.split(" ").slice(0, 4).join(" "))}</div><div class="panel-b kv"><b>MICROCODE</b><span>${esc(b.cpu.microcode || "—")}</span><b>RAM</b><span>${esc(b.ram.type)} ${b.ram.speed} / ${b.ram.rated} MHz</span></div></div>
-        <div class="panel"><div class="panel-h">SECURITY</div><div class="panel-b kv"><b>SECURE BOOT</b><span>${b.security.secureBoot ? "ON" : "OFF"}</span><b>TPM</b><span>${b.security.tpm ? "ON" : "OFF"}</span><b>VBS/HVCI</b><span>${b.security.vbsRunning ? "ON" : "OFF"} / ${b.security.hvciRunning ? "ON" : "OFF"}</span></div></div>
+        <div class="panel"><div class="panel-h">${esc(b.board.manufacturer)}</div><div class="panel-b kv"><b>${t("bios.k.model")}</b><span>${esc(b.board.product)}</span><b>BIOS</b><span>${esc(b.board.biosVersion)} · ${fmtDate(b.board.biosDate)}</span></div></div>
+        <div class="panel"><div class="panel-h">${esc(b.cpu.name.split(" ").slice(0, 4).join(" "))}</div><div class="panel-b kv"><b>${t("bios.k.microcode")}</b><span>${esc(b.cpu.microcode || "—")}</span><b>${t("bios.k.ram")}</b><span>${esc(b.ram.type)} ${b.ram.speed} / ${b.ram.rated} MHz</span></div></div>
+        <div class="panel"><div class="panel-h">${t("bios.k.security")}</div><div class="panel-b kv"><b>Secure Boot</b><span>${onOff(b.security.secureBoot)}</span><b>TPM</b><span>${onOff(b.security.tpm)}</span><b>VBS / HVCI</b><span>${onOff(b.security.vbsRunning)} / ${onOff(b.security.hvciRunning)}</span></div></div>
       </div>
       ${b.advice.map((a) => html`<div class="trow">
         <span class="led ${a.status === "ok" ? "" : a.status === "fix" ? "crit" : "warn"}" style="margin-top:5px"></span>
-        <div><div class="tt">${esc(L(a.title))} <span class="chip ${a.priority === "high" ? "crit" : a.priority === "medium" ? "warn" : ""}">${a.priority}</span></div>
+        <div><div class="tt">${esc(L(a.title))} <span class="chip ${a.priority === "high" ? "crit" : a.priority === "medium" ? "warn" : ""}">${t("bios.p." + a.priority)}</span></div>
           <div class="td">${esc(L(a.detail))}</div>
           <div class="tm"><code style="color:var(--accent)">${esc(a.path)}</code></div></div>
         <div class="tr"><span class="val">${esc(a.value)}</span><span class="status ${a.status === "ok" ? "applied" : a.status === "fix" ? "partial" : ""}">${t("bios." + a.status)}</span></div></div>`).join("")}`;
@@ -317,6 +327,17 @@
         </div></div>
       </div>
 
+      <div class="panel" style="margin-top:16px"><div class="panel-h">${t("rufus.title")}<span class="right"><button class="btn sm ghost" id="rufusSite">${icon("external")}rufus.ie</button></span></div>
+        <div class="panel-b" style="display:grid;gap:12px">
+          <div class="td" style="color:var(--muted)">${t("rufus.desc")}</div>
+          <ol class="ame-steps">${[1, 2, 3, 4, 5].map((i) => `<li>${t("rufus.s" + i)}</li>`).join("")}</ol>
+          <div class="callout"><b>${t("rufus.optsT")}</b><ul class="rufus-opts">${[1, 2, 3, 4, 5, 6].map((i) => `<li>${t("rufus.o" + i)}</li>`).join("")}</ul></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" id="rufusOpen">${t("rufus.open")}</button><button class="btn" id="rufusCopy">${t("rufus.copy")}</button>
+            <span class="tid" style="word-break:break-all">${usb.iso ? "ISO: " + esc(usb.iso) : t("rufus.noIso")}</span></div>
+          <div class="td" style="color:var(--muted)">${t("rufus.note")}</div>
+        </div>
+      </div>
+
       <div class="panel" style="margin-top:16px"><div class="panel-h">${t("ame.title")}</div>
         <div class="panel-b" style="display:grid;gap:12px">
           <div class="td" style="color:var(--muted)">${t("ame.desc")}</div>
@@ -329,6 +350,14 @@
       </div>`;
 
     $("#isoPick").onclick = async () => { const p = await call("usb.pickIso"); if (p) { usb.iso = p; V.image(); } };
+    $("#rufusSite").onclick = () => call("shell.open", { url: "https://rufus.ie/" });
+    $("#rufusOpen").onclick = async () => {
+      const b = busy(t("rufus.opening"));
+      try { const r = await call("usb.rufus", { iso: usb.iso || "" }); toast(r.downloaded ? t("rufus.downloaded") : t("rufus.opened"), "ok"); } catch { /* toast */ } finally { b.done(); }
+    };
+    $("#rufusCopy").onclick = async () => {
+      try { const d = await call("usb.copyTweaker"); toast(d.length ? `${t("rufus.copied")}: ${d.join(", ")}` : t("rufus.noStick"), d.length ? "ok" : "warn", 6000); } catch { /* toast */ }
+    };
     $("#ameGet").onclick = () => call("shell.open", { url: "https://ameliorated.io/" });
     $("#ameSave").onclick = async () => {
       const b = busy(t("ame.save"));

@@ -1,6 +1,7 @@
 /* Tools — network quality, memory, display mode (stretched resolutions), startup apps, cleanup. */
 (function () {
-  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "shader-directx", "crash-dumps"]), freed: null, displays: null, dev: null, res: null, hz: null };
+  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "shader-directx", "crash-dumps"]), freed: null, displays: null, dev: null, res: null, hz: null, dns: null, dnsBench: null, dnsPick: null };
+  const DNS = [["auto", ""], ["cloudflare", "1.1.1.1"], ["google", "8.8.8.8"], ["quad9", "9.9.9.9"]];
   const gcd = (a, b) => (b ? gcd(b, a % b) : a);
   function aspect(w, h) {
     const r = w / h;
@@ -20,6 +21,11 @@
   async function render() {
     const v = $("#v-tools");
     if (!st.startup) call("startup.list", {}, { silent: true }).then((x) => { st.startup = x; if (S.view === "tools") render(); }).catch(() => {});
+    if (!st.dns) call("net.dns", {}, { silent: true }).then((x) => { st.dns = x; if (S.view === "tools") render(); }).catch(() => {});
+    const dnsCur = st.dns ? st.dns.current : null;
+    const dnsPick = st.dnsPick || dnsCur || "auto";
+    const bench = st.dnsBench || {};
+    const fastest = Object.entries(bench).filter(([, ms]) => ms >= 0).sort((a, b) => a[1] - b[1])[0];
     if (!st.displays) call("display.modes", {}, { silent: true }).then((x) => { st.displays = x; if (S.view === "tools") render(); }).catch(() => {});
     const disp = st.displays && (st.displays.find((d) => d.device === st.dev) || st.displays[0]);
     const resList = disp ? [...new Map(disp.modes.map((m) => [`${m.width}x${m.height}`, m])).values()] : [];
@@ -42,6 +48,13 @@
           <div class="panel-b" style="display:grid;gap:10px"><div class="td" style="color:var(--muted)">${t("mem.desc")}</div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="memPurge">${t("mem.purge")}</button>${st.freed != null ? `<span class="chip ok">${t("mem.freed")}: ${mb(st.freed)}</span>` : ""}
               <button class="btn ghost" id="dnsFlush">${t("q.dns")}</button><button class="btn ghost" id="expRestart">${t("q.explorer")}</button></div></div>
+        </div>
+
+        <div class="panel"><div class="panel-h">DNS<span class="right">${dnsCur ? `<span class="chip">${t("dns.now")}: ${t("dns." + dnsCur)}</span>` : ""}</span></div>
+          <div class="panel-b" style="display:grid;gap:10px"><div class="td" style="color:var(--muted)">${t("dns.desc")}</div>
+            <div class="dns-list">${DNS.map(([k, ip]) => { const ms = k === "auto" ? bench.current : bench[k]; return `<label class="dns-opt ${dnsPick === k ? "on" : ""}"><input type="radio" name="dns" value="${k}" ${dnsPick === k ? "checked" : ""}><span><b>${t("dns." + k)}</b>${ip ? ` <span class="tid">${ip}</span>` : ""}<br><span class="td">${t("dns." + k + "D")}</span></span><span class="dns-ms">${ms != null ? (ms < 0 ? "—" : `${ms} ms`) : ""}${fastest && ((k === "auto" && fastest[0] === "current") || fastest[0] === k) ? `<span class="chip ok">${t("dns.fastest")}</span>` : ""}</span></label>`; }).join("")}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="dnsApply" ${dnsPick === dnsCur ? "disabled" : ""}>${t("dns.apply")}</button><button class="btn ghost" id="dnsBench">${t("dns.bench")}</button></div>
+          </div>
         </div>
 
         <div class="panel"><div class="panel-h">${t("disp.title")}<span class="right">${disp ? `${disp.current.width}×${disp.current.height} · ${disp.current.hz} Hz` : ""}</span></div>
@@ -87,6 +100,17 @@
       await App.restartPrompt("reboot", `<div class="callout ok">${icon("check")}${t("net.resetDone")}</div>`);
     };
     $("#memPurge").onclick = async () => { const r = await call("memory.purge"); st.freed = r.freedBytes; render(); };
+    v.querySelectorAll("input[name=dns]").forEach((r) => (r.onchange = () => { st.dnsPick = r.value; render(); }));
+    $("#dnsBench").onclick = async () => {
+      const b = busy(t("dns.bench"));
+      try { st.dnsBench = await call("net.dnsBench"); } catch { /* toast */ } finally { b.done(); }
+      render();
+    };
+    $("#dnsApply").onclick = async () => {
+      const preset = st.dnsPick;
+      try { await call("net.dnsSet", { preset }); toast(`DNS: ${t("dns." + preset)}`, "ok"); } catch { /* toast */ }
+      st.dns = null; st.dnsPick = null; render();
+    };
     $("#dnsFlush").onclick = async () => { await call("net.flushdns"); toast(t("toast.dns"), "ok"); };
     $("#expRestart").onclick = async () => { await call("explorer.restart"); toast(t("toast.explorer"), "ok"); };
     v.querySelectorAll("[data-sid]").forEach((sw) => (sw.onclick = async () => {
