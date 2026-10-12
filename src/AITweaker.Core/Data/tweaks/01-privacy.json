@@ -1,0 +1,214 @@
+[
+  {
+    "id": "privacy.telemetry.policy",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Минимальная телеметрия Windows", "en": "Minimal Windows telemetry" },
+    "description": {
+      "ru": "Политиками сводит сбор диагностических данных к минимуму, отключает уведомления с запросом отзывов и загрузку диагностических логов.",
+      "en": "Uses policies to reduce diagnostic data to the minimum, disables feedback prompts and diagnostic log uploads."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "AllowTelemetry", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "name": "AllowTelemetry", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "DoNotShowFeedbackNotifications", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "LimitDiagnosticLogCollection", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "name": "DisableOneSettingsDownloads", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "privacy.telemetry.services",
+    "category": "privacy",
+    "level": 2,
+    "name": { "ru": "Отключить службы телеметрии", "en": "Disable telemetry services" },
+    "description": {
+      "ru": "Останавливает «Функциональные возможности для подключённых пользователей и телеметрия» (DiagTrack) и службу маршрутизации push-сообщений WAP. Они постоянно пишут на диск и ходят в сеть.",
+      "en": "Stops Connected User Experiences and Telemetry (DiagTrack) and the WAP push message routing service, which constantly write to disk and phone home."
+    },
+    "actions": [
+      { "type": "service", "name": "DiagTrack", "startup": "disabled" },
+      { "type": "service", "name": "dmwappushservice", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "privacy.telemetry.tasks",
+    "category": "privacy",
+    "level": 2,
+    "name": { "ru": "Отключить задачи телеметрии в планировщике", "en": "Disable telemetry scheduled tasks" },
+    "description": {
+      "ru": "Выключает задачи «Программы улучшения качества», оценщика совместимости и сбора диагностики диска — они просыпаются в фоне и грузят CPU и диск, иногда прямо во время игры.",
+      "en": "Turns off Customer Experience Improvement, Compatibility Appraiser and disk diagnostic tasks that wake up in the background and load the CPU and disk, sometimes mid-game."
+    },
+    "actions": [
+      { "type": "task", "path": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Application Experience\\MareBackup" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting" },
+      { "type": "task", "path": "\\Microsoft\\Windows\\Autochk\\Proxy" }
+    ]
+  },
+  {
+    "id": "privacy.advertising",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Отключить рекламный идентификатор", "en": "Disable advertising ID" },
+    "description": {
+      "ru": "Приложения больше не получают ваш рекламный ID для персонализированной рекламы.",
+      "en": "Apps no longer get your advertising ID for personalized ads."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AdvertisingInfo", "name": "DisabledByGroupPolicy", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "privacy.activity",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Отключить журнал действий", "en": "Disable activity history" },
+    "description": {
+      "ru": "Windows перестаёт записывать и отправлять историю открытых файлов и приложений.",
+      "en": "Windows stops recording and uploading the history of opened files and apps."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "EnableActivityFeed", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "PublishUserActivities", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "UploadUserActivities", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "privacy.tailored",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Без персональных «рекомендаций» и опросов", "en": "No tailored experiences or feedback surveys" },
+    "description": {
+      "ru": "Отключает персонализированные советы на основе диагностических данных и периодические запросы отзывов.",
+      "en": "Disables tips tailored from diagnostic data and periodic feedback requests."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "TailoredExperiencesWithDiagnosticDataEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Siuf\\Rules", "name": "NumberOfSIUFInPeriod", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableTailoredExperiencesWithDiagnosticData", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "privacy.error-reporting",
+    "category": "privacy",
+    "level": 2,
+    "name": { "ru": "Отключить отправку отчётов об ошибках", "en": "Disable Windows Error Reporting uploads" },
+    "description": {
+      "ru": "После вылетов Windows не собирает дампы и не отправляет их в Microsoft (лишние фризы и запись на диск после крашей игр).",
+      "en": "After crashes Windows no longer collects dumps and uploads them (extra stutter and disk writes after game crashes)."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting", "name": "Disabled", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting", "name": "Disabled", "kind": "dword", "value": 1 },
+      { "type": "service", "name": "WerSvc", "startup": "manual", "stop": false }
+    ]
+  },
+  {
+    "id": "privacy.copilot",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Отключить Copilot", "en": "Turn off Copilot" },
+    "description": {
+      "ru": "Выключает Windows Copilot и убирает его кнопку. Само приложение Copilot можно удалить во вкладке DEBLOAT.",
+      "en": "Turns off Windows Copilot and hides its button. The Copilot app itself can be removed in the DEBLOAT tab."
+    },
+    "restartExplorer": true,
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot", "name": "TurnOffWindowsCopilot", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot", "name": "TurnOffWindowsCopilot", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowCopilotButton", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "privacy.recall",
+    "category": "privacy",
+    "level": 1,
+    "when": "os.build >= 26100",
+    "name": { "ru": "Отключить Recall и Click to Do", "en": "Disable Recall and Click to Do" },
+    "description": {
+      "ru": "Запрещает Windows делать снимки экрана для «Recall» и анализировать содержимое экрана ИИ — это и приватность, и фоновая нагрузка на NPU/CPU.",
+      "en": "Stops Windows from taking Recall snapshots and AI-analyzing your screen — both a privacy issue and background NPU/CPU load."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "DisableAIDataAnalysis", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "AllowRecallEnablement", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "DisableAIDataAnalysis", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsAI", "name": "DisableClickToDo", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "privacy.bing-search",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Убрать Bing и «подсветку» из поиска", "en": "Remove Bing and highlights from search" },
+    "description": {
+      "ru": "Поиск в меню «Пуск» ищет только на компьютере: без веб-результатов Bing, рекламы и анимированных «подсветок дня». Поиск становится заметно быстрее.",
+      "en": "Start menu search only searches your PC: no Bing web results, ads or animated search highlights. Search becomes noticeably faster."
+    },
+    "restartExplorer": true,
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "DisableSearchBoxSuggestions", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "BingSearchEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings", "name": "IsDynamicSearchBoxEnabled", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "privacy.inking",
+    "category": "privacy",
+    "level": 2,
+    "name": { "ru": "Не собирать рукописный ввод и набор текста", "en": "Stop inking & typing data collection" },
+    "description": {
+      "ru": "Windows не изучает, что и как вы печатаете, и не отправляет это для «улучшения распознавания».",
+      "en": "Windows stops learning what and how you type and no longer uploads it to 'improve recognition'."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitInkCollection", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitTextCollection", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\InputPersonalization\\TrainedDataStore", "name": "HarvestContacts", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Personalization\\Settings", "name": "AcceptedPrivacyPolicy", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Input\\TIPC", "name": "Enabled", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "privacy.location",
+    "category": "privacy",
+    "level": 0,
+    "confirm": true,
+    "confirmText": {
+      "ru": "Перестанут работать определение местоположения, «Найти устройство», автоматический часовой пояс, погода и карты по геопозиции.",
+      "en": "Location, Find My Device, automatic time zone, local weather and map positioning will stop working."
+    },
+    "name": { "ru": "Запретить доступ к местоположению", "en": "Deny location access" },
+    "description": {
+      "ru": "Полностью запрещает приложениям и Windows доступ к геопозиции.",
+      "en": "Completely denies apps and Windows access to your location."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "name": "Value", "kind": "string", "value": "Deny" }
+    ]
+  },
+  {
+    "id": "privacy.nvidia-telemetry",
+    "category": "privacy",
+    "level": 1,
+    "when": "gpu.nvidia",
+    "name": { "ru": "Отказ от телеметрии NVIDIA", "en": "Opt out of NVIDIA telemetry" },
+    "description": {
+      "ru": "Отключает согласие на сбор данных в драйвере NVIDIA (если оно есть в этой версии драйвера).",
+      "en": "Turns off the data collection opt-in of the NVIDIA driver (when present in this driver version)."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\NVIDIA Corporation\\NvControlPanel2\\Client", "name": "OptInOrOutPreference", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
+    ]
+  }
+]

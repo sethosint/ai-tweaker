@@ -1,0 +1,130 @@
+[
+  {
+    "id": "network.delivery-optimization",
+    "category": "network",
+    "level": 1,
+    "name": { "ru": "Не раздавать обновления другим ПК", "en": "Don't share updates with other PCs" },
+    "description": {
+      "ru": "Оптимизация доставки перестаёт отдавать обновления Windows и Store другим компьютерам через ваш интернет — канал не забивается во время игры.",
+      "en": "Delivery Optimization stops uploading Windows and Store updates to other computers over your connection — no bandwidth spikes mid-game."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "name": "DODownloadMode", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "network.nagle.off",
+    "category": "network",
+    "level": 2,
+    "name": { "ru": "Отключить алгоритм Нейгла", "en": "Disable Nagle's algorithm" },
+    "description": {
+      "ru": "TCP-пакеты отправляются сразу, а не копятся для «экономии». Помогает играм и программам, работающим по TCP (MMO, некоторые шутеры, голосовые чаты).",
+      "en": "TCP packets go out immediately instead of being batched. Helps games and apps that use TCP (MMOs, some shooters, voice chat)."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TcpAckFrequency", "kind": "dword", "value": 1, "onlyIfKeyExists": true },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TCPNoDelay", "kind": "dword", "value": 1, "onlyIfKeyExists": true },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TcpDelAckTicks", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
+    ]
+  },
+  {
+    "id": "network.nic-power-saving.off",
+    "category": "network",
+    "level": 2,
+    "when": "!system.vm",
+    "name": { "ru": "Без энергосбережения сетевой карты", "en": "No NIC power saving" },
+    "description": {
+      "ru": "Отключает Energy Efficient Ethernet, Green Ethernet и режимы сна адаптера, из-за которых бывают скачки пинга и обрывы. Применяется только к параметрам, которые есть у вашего драйвера.",
+      "en": "Disables Energy Efficient Ethernet, Green Ethernet and adapter sleep modes that cause ping spikes and drops. Only touches properties your driver actually exposes."
+    },
+    "actions": [
+      {
+        "type": "nic",
+        "target": "ethernet",
+        "keywords": {
+          "*EEE": "0",
+          "EEE": "0",
+          "AdvancedEEE": "0",
+          "EEELinkAdvertisement": "0",
+          "EnableGreenEthernet": "0",
+          "GreenEthernet": "0",
+          "PowerSavingMode": "0",
+          "*SelectiveSuspend": "0",
+          "ULPMode": "0",
+          "AutoDisableGigabit": "0",
+          "*DeviceSleepOnDisconnect": "0"
+        }
+      }
+    ]
+  },
+  {
+    "id": "network.nic-interrupt-moderation.off",
+    "category": "network",
+    "level": 3,
+    "when": "net.ethernet && !system.vm",
+    "name": { "ru": "Отключить модерацию прерываний сетевой карты", "en": "Disable NIC interrupt moderation" },
+    "description": {
+      "ru": "Карта сообщает о каждом пакете сразу, а не пачками — минус ~0.1–0.5 мс к сетевой задержке ценой чуть большей нагрузки на CPU.",
+      "en": "The adapter signals every packet right away instead of in batches — about 0.1–0.5 ms less network latency at the cost of slightly more CPU load."
+    },
+    "actions": [
+      { "type": "nic", "target": "ethernet", "keywords": { "*InterruptModeration": "0", "ITR": "0" } }
+    ]
+  },
+  {
+    "id": "network.nic-flow-control.off",
+    "category": "network",
+    "level": 3,
+    "when": "net.ethernet && !system.vm",
+    "name": { "ru": "Отключить управление потоком (Flow Control)", "en": "Disable Flow Control" },
+    "description": {
+      "ru": "Роутер не может «ставить на паузу» вашу сетевую карту — меньше микрозадержек при загрузке канала.",
+      "en": "The router can no longer pause your adapter — fewer micro-stalls when the link is busy."
+    },
+    "actions": [
+      { "type": "nic", "target": "ethernet", "keywords": { "*FlowControl": "0" } }
+    ]
+  },
+  {
+    "id": "network.rsc.off",
+    "category": "network",
+    "level": 3,
+    "name": { "ru": "Отключить объединение принимаемых сегментов (RSC)", "en": "Disable Receive Segment Coalescing (RSC)" },
+    "description": {
+      "ru": "RSC склеивает входящие пакеты для экономии CPU, но добавляет задержку. Для игр лучше получать пакеты сразу.",
+      "en": "RSC merges incoming packets to save CPU but adds latency. Games are better off receiving packets immediately."
+    },
+    "actions": [
+      { "type": "command", "file": "netsh.exe", "args": "int tcp set global rsc=disabled", "undoFile": "netsh.exe", "undoArgs": "int tcp set global rsc=enabled" }
+    ]
+  },
+  {
+    "id": "network.lso.off",
+    "category": "network",
+    "level": 4,
+    "when": "net.ethernet && !system.vm",
+    "name": { "ru": "Отключить Large Send Offload", "en": "Disable Large Send Offload" },
+    "description": {
+      "ru": "Карта больше не нарезает крупные пакеты сама. Может снизить джиттер на некоторых драйверах Realtek/Intel, но слегка увеличивает нагрузку на CPU.",
+      "en": "The adapter no longer segments large sends itself. May reduce jitter on some Realtek/Intel drivers at a small CPU cost."
+    },
+    "actions": [
+      { "type": "nic", "target": "ethernet", "keywords": { "*LsoV2IPv4": "0", "*LsoV2IPv6": "0" } }
+    ]
+  },
+  {
+    "id": "network.wifi-performance",
+    "category": "network",
+    "level": 2,
+    "when": "net.wifi",
+    "name": { "ru": "Wi-Fi в режиме максимальной производительности", "en": "Wi-Fi at maximum performance" },
+    "description": {
+      "ru": "Адаптер Wi-Fi не экономит энергию от сети и не объединяет пакеты — пинг ровнее, меньше задержек при пробуждении радио.",
+      "en": "The Wi-Fi adapter stops saving power on AC and stops coalescing packets — steadier ping, no radio wake-up delays."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Wireless adapter power saving", "subgroup": "19cbb8fa-5279-450e-9fac-8a3d5fedd0c1", "setting": "12bbebe6-58d6-4636-95bb-3217ef867c1a", "ac": 0 },
+      { "type": "nic", "target": "wifi", "keywords": { "*PacketCoalescing": "0" } }
+    ]
+  }
+]

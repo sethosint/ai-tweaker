@@ -1,0 +1,93 @@
+[
+  { "package": "Microsoft.BingNews", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFHVFW", "name": { "ru": "Новости (Microsoft Start)", "en": "News (Microsoft Start)" } },
+  { "package": "Microsoft.BingWeather", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFJ3Q2", "name": { "ru": "Погода", "en": "Weather" } },
+  { "package": "Microsoft.BingSearch", "group": "bloat", "recommended": true, "name": { "ru": "Поиск Bing", "en": "Bing Search" } },
+  { "package": "Microsoft.GetHelp", "group": "bloat", "recommended": true, "name": { "ru": "Техническая поддержка", "en": "Get Help" } },
+  { "package": "Microsoft.Getstarted", "group": "bloat", "recommended": true, "name": { "ru": "Советы", "en": "Tips" } },
+  { "package": "Microsoft.MicrosoftOfficeHub", "group": "bloat", "recommended": true, "name": { "ru": "Microsoft 365 (Office Hub)", "en": "Microsoft 365 (Office Hub)" } },
+  { "package": "Microsoft.MicrosoftSolitaireCollection", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFHWD2", "name": { "ru": "Solitaire Collection", "en": "Solitaire Collection" } },
+  { "package": "Microsoft.People", "group": "bloat", "recommended": true, "name": { "ru": "Люди", "en": "People" } },
+  { "package": "Microsoft.PowerAutomateDesktop", "group": "bloat", "recommended": true, "name": { "ru": "Power Automate", "en": "Power Automate" } },
+  { "package": "Microsoft.Todos", "group": "bloat", "recommended": true, "storeId": "9NBLGGH5R558", "name": { "ru": "Microsoft To Do", "en": "Microsoft To Do" } },
+  { "package": "Microsoft.WindowsFeedbackHub", "group": "bloat", "recommended": true, "name": { "ru": "Центр отзывов", "en": "Feedback Hub" } },
+  { "package": "Microsoft.WindowsMaps", "group": "bloat", "recommended": true, "name": { "ru": "Карты", "en": "Maps" } },
+  { "package": "Microsoft.ZuneVideo", "group": "bloat", "recommended": true, "name": { "ru": "Кино и ТВ", "en": "Movies & TV" } },
+  { "package": "Clipchamp.Clipchamp", "group": "bloat", "recommended": true, "storeId": "9P1J8S7CCWWT", "name": { "ru": "Clipchamp (видеоредактор)", "en": "Clipchamp (video editor)" } },
+  { "package": "MicrosoftCorporationII.MicrosoftFamily", "group": "bloat", "recommended": true, "name": { "ru": "Семья Microsoft", "en": "Microsoft Family" } },
+  { "package": "Microsoft.549981C3F5F10", "group": "bloat", "recommended": true, "name": { "ru": "Cortana", "en": "Cortana" } },
+  { "package": "Microsoft.Windows.DevHome", "group": "bloat", "recommended": true, "name": { "ru": "Dev Home", "en": "Dev Home" } },
+  { "package": "Microsoft.MixedReality.Portal", "group": "bloat", "recommended": true, "name": { "ru": "Портал смешанной реальности", "en": "Mixed Reality Portal" } },
+  { "package": "Microsoft.SkypeApp", "group": "bloat", "recommended": true, "name": { "ru": "Skype", "en": "Skype" } },
+  { "package": "Microsoft.Edge.GameAssist", "group": "bloat", "recommended": true, "name": { "ru": "Edge Game Assist", "en": "Edge Game Assist" } },
+  { "package": "MSTeams", "group": "bloat", "recommended": true, "storeId": "XP8BT8DW290MPQ", "name": { "ru": "Microsoft Teams", "en": "Microsoft Teams" } },
+  { "package": "MicrosoftTeams", "group": "bloat", "recommended": true, "name": { "ru": "Teams (личный)", "en": "Teams (personal)" } },
+
+  { "package": "Microsoft.Copilot", "group": "ai", "recommended": true, "storeId": "9NHT9RB2F4HD", "name": { "ru": "Copilot", "en": "Copilot" } },
+  { "package": "Microsoft.Windows.Ai.Copilot.Provider", "group": "ai", "recommended": true, "name": { "ru": "Copilot Provider", "en": "Copilot Provider" } },
+  { "package": "MicrosoftWindows.Client.WebExperience", "group": "ai", "recommended": true, "name": { "ru": "Виджеты (Web Experience)", "en": "Widgets (Web Experience)" } },
+  { "package": "Microsoft.WidgetsPlatformRuntime", "group": "ai", "recommended": true, "name": { "ru": "Платформа виджетов", "en": "Widgets Platform Runtime" } },
+
+  {
+    "package": "Microsoft.OutlookForWindows", "group": "communication", "recommended": false, "important": true, "storeId": "9NRX63209R7B",
+    "name": { "ru": "Outlook (новый)", "en": "Outlook (new)" },
+    "warning": { "ru": "Это почтовый клиент Windows по умолчанию. Удаляйте, если пользуетесь почтой в браузере или другим клиентом.", "en": "This is the default Windows mail client. Remove it if you use webmail or another client." }
+  },
+  {
+    "package": "Microsoft.YourPhone", "group": "communication", "recommended": false, "important": true, "storeId": "9NMPJ99VJBWV",
+    "name": { "ru": "Связь с телефоном", "en": "Phone Link" },
+    "warning": { "ru": "Перестанут работать звонки, SMS и уведомления с телефона на ПК.", "en": "Calls, SMS and phone notifications on the PC will stop working." }
+  },
+  {
+    "package": "MicrosoftWindows.CrossDevice", "group": "communication", "recommended": false, "important": true,
+    "name": { "ru": "Кросс-девайс (телефон в «Пуске»)", "en": "Cross Device (phone in Start)" },
+    "warning": { "ru": "Нужен для показа телефона в меню «Пуск» и в Проводнике.", "en": "Needed to show your phone in Start and Explorer." }
+  },
+  {
+    "package": "MicrosoftCorporationII.QuickAssist", "group": "communication", "recommended": false, "important": true,
+    "name": { "ru": "Быстрая помощь", "en": "Quick Assist" },
+    "warning": { "ru": "Через неё друзья или поддержка подключаются к вашему ПК для помощи.", "en": "Friends or support use it to connect to your PC and help." }
+  },
+
+  {
+    "package": "Microsoft.GamingApp", "group": "xbox", "recommended": false, "important": true, "storeId": "9MV0B5HZVK9Z",
+    "name": { "ru": "Приложение Xbox", "en": "Xbox app" },
+    "warning": { "ru": "Без него не работают Game Pass для ПК и установка игр Xbox.", "en": "Game Pass for PC and Xbox game installs don't work without it." }
+  },
+  {
+    "package": "Microsoft.XboxGamingOverlay", "group": "xbox", "recommended": false, "important": true, "storeId": "9NZKPSTSNW4P",
+    "keepWhen": "cpu.x3dMultiCcd",
+    "keepReason": { "ru": "Драйвер AMD 3D V-Cache использует Game Bar, чтобы определять игры на двухчиплетных X3D.", "en": "The AMD 3D V-Cache driver uses Game Bar to detect games on dual-CCD X3D CPUs." },
+    "name": { "ru": "Xbox Game Bar", "en": "Xbox Game Bar" },
+    "warning": { "ru": "Пропадут оверлей Win+G, запись экрана Windows и счётчик FPS Game Bar.", "en": "The Win+G overlay, Windows screen recording and the Game Bar FPS counter will be gone." }
+  },
+  { "package": "Microsoft.XboxGameOverlay", "group": "xbox", "recommended": true, "name": { "ru": "Xbox Game Overlay (устаревший)", "en": "Xbox Game Overlay (legacy)" } },
+  { "package": "Microsoft.XboxSpeechToTextOverlay", "group": "xbox", "recommended": true, "name": { "ru": "Xbox Speech To Text", "en": "Xbox Speech To Text" } },
+  {
+    "package": "Microsoft.XboxIdentityProvider", "group": "xbox", "recommended": false, "important": true,
+    "name": { "ru": "Xbox Identity Provider", "en": "Xbox Identity Provider" },
+    "warning": { "ru": "Нужен для входа в Xbox в играх (Minecraft, Forza, Halo, Sea of Thieves...).", "en": "Required for Xbox sign-in inside games (Minecraft, Forza, Halo, Sea of Thieves...)." }
+  },
+  {
+    "package": "Microsoft.Xbox.TCUI", "group": "xbox", "recommended": false, "important": true,
+    "name": { "ru": "Xbox TCUI", "en": "Xbox TCUI" },
+    "warning": { "ru": "Некоторые игры используют его для окон друзей и приглашений Xbox.", "en": "Some games use it for Xbox friends and invite dialogs." }
+  },
+
+  {
+    "package": "Microsoft.WindowsStore", "group": "store", "recommended": false, "important": true,
+    "name": { "ru": "Microsoft Store", "en": "Microsoft Store" },
+    "warning": { "ru": "Без Store нельзя будет устанавливать и обновлять приложения из магазина (в том числе Xbox, кодеки HEVC, драйверные панели Intel/AMD). Вернуть Store сложно.", "en": "Without the Store you can't install or update store apps (including Xbox, HEVC codecs, Intel/AMD driver panels). Restoring the Store is hard." }
+  },
+  {
+    "package": "Microsoft.StorePurchaseApp", "group": "store", "recommended": false, "important": true,
+    "name": { "ru": "Покупки в Store", "en": "Store Purchase App" },
+    "warning": { "ru": "Нужен для покупок в Microsoft Store.", "en": "Needed for purchases in Microsoft Store." }
+  },
+
+  { "package": "Microsoft.ZuneMusic", "group": "media", "recommended": false, "important": true, "storeId": "9WZDNCRFJ3PT", "name": { "ru": "Медиаплеер", "en": "Media Player" }, "warning": { "ru": "Это стандартный плеер для музыки и видео.", "en": "This is the default music and video player." } },
+  { "package": "Microsoft.WindowsSoundRecorder", "group": "media", "recommended": false, "name": { "ru": "Звукозапись", "en": "Sound Recorder" } },
+  { "package": "Microsoft.WindowsAlarms", "group": "media", "recommended": false, "name": { "ru": "Часы и будильник", "en": "Clock & Alarms" } },
+  { "package": "Microsoft.WindowsCamera", "group": "media", "recommended": false, "name": { "ru": "Камера", "en": "Camera" } },
+  { "package": "Microsoft.MicrosoftStickyNotes", "group": "media", "recommended": false, "name": { "ru": "Записки", "en": "Sticky Notes" } },
+  { "package": "Microsoft.Windows.Photos", "group": "media", "recommended": false, "important": true, "name": { "ru": "Фотографии", "en": "Photos" }, "warning": { "ru": "Стандартный просмотрщик изображений.", "en": "The default image viewer." } }
+]

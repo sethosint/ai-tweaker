@@ -1,0 +1,181 @@
+[
+  {
+    "id": "gaming.gamedvr.off",
+    "category": "gaming",
+    "level": 1,
+    "name": { "ru": "Отключить фоновую запись игр (Game DVR)", "en": "Disable background game recording (Game DVR)" },
+    "description": {
+      "ru": "Xbox Game Bar перестаёт постоянно буферизовать видео игры в фоне — это до нескольких процентов GPU и лишняя задержка кадра. Сам Game Bar остаётся.",
+      "en": "Xbox Game Bar stops constantly buffering gameplay video in the background — that costs a few percent of GPU and adds frame latency. Game Bar itself stays."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\System\\GameConfigStore", "name": "GameDVR_Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR", "name": "AppCaptureEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR", "name": "AllowGameDVR", "kind": "dword", "value": 0, "when": "!cpu.x3dMultiCcd" }
+    ]
+  },
+  {
+    "id": "gaming.gamemode.on",
+    "category": "gaming",
+    "level": 1,
+    "name": { "ru": "Включить «Игровой режим»", "en": "Enable Game Mode" },
+    "description": {
+      "ru": "Windows отдаёт игре приоритет по CPU/GPU и не ставит обновления драйверов во время игры. На двухчиплетных Ryzen X3D обязателен для правильного выбора кэш-ядер.",
+      "en": "Windows prioritizes the game for CPU/GPU and holds driver updates while you play. Required on dual-CCD Ryzen X3D for correct cache-core selection."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "AutoGameModeEnabled", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "AllowAutoGameMode", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "gaming.hags",
+    "category": "gaming",
+    "level": 2,
+    "when": "gpu.discrete && (gpu.nvidia || gpu.amd)",
+    "reboot": true,
+    "name": { "ru": "Аппаратное планирование GPU (HAGS)", "en": "Hardware-accelerated GPU scheduling (HAGS)" },
+    "description": {
+      "ru": "Видеокарта сама управляет очередью кадров, разгружая CPU. Обязательно для генерации кадров DLSS 3/4 и FSR 3.",
+      "en": "The GPU manages its own frame queue, offloading the CPU. Required for DLSS 3/4 and FSR 3 frame generation."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "name": "HwSchMode", "kind": "dword", "value": 2 }
+    ]
+  },
+  {
+    "id": "gaming.windowed-optimizations",
+    "category": "gaming",
+    "level": 2,
+    "when": "os.win11",
+    "name": { "ru": "Оптимизация оконных игр", "en": "Optimizations for windowed games" },
+    "description": {
+      "ru": "Переводит DirectX 10/11 игры в окне и без рамки на современную flip-модель: задержка как в полноэкранном режиме, работают VRR и Auto HDR.",
+      "en": "Moves windowed and borderless DirectX 10/11 games to the modern flip model: fullscreen-level latency with VRR and Auto HDR."
+    },
+    "actions": [
+      { "type": "directx", "key": "SwapEffectUpgradeEnable", "value": "1" }
+    ]
+  },
+  {
+    "id": "gaming.mmcss",
+    "category": "gaming",
+    "level": 2,
+    "name": { "ru": "Приоритет игр в планировщике мультимедиа", "en": "Game priority in the multimedia scheduler" },
+    "description": {
+      "ru": "MMCSS резервирует меньше CPU для фоновых задач (10% вместо 20%), снимает ограничение сетевых пакетов и даёт играм высокий приоритет GPU и ввода-вывода.",
+      "en": "MMCSS reserves less CPU for background tasks (10% instead of 20%), lifts network packet throttling and gives games high GPU and I/O priority."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "SystemResponsiveness", "kind": "dword", "value": 10 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "NetworkThrottlingIndex", "kind": "dword", "value": 4294967295 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "GPU Priority", "kind": "dword", "value": 8 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Priority", "kind": "dword", "value": 6 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Scheduling Category", "kind": "string", "value": "High" },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "SFIO Priority", "kind": "string", "value": "High" }
+    ]
+  },
+  {
+    "id": "gaming.priority-separation",
+    "category": "gaming",
+    "level": 3,
+    "name": { "ru": "Короткие кванты CPU для активного окна", "en": "Short CPU quanta for the foreground app" },
+    "description": {
+      "ru": "Win32PrioritySeparation = 0x26: короткие переменные кванты с 3-кратным бустом активного окна. Игра чаще получает процессор, ввод обрабатывается быстрее.",
+      "en": "Win32PrioritySeparation = 0x26: short variable quanta with a 3× foreground boost. The game gets the CPU more often and input is processed sooner."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl", "name": "Win32PrioritySeparation", "kind": "dword", "value": 38 }
+    ]
+  },
+  {
+    "id": "gaming.timer-resolution",
+    "category": "gaming",
+    "level": 2,
+    "when": "os.win11",
+    "reboot": true,
+    "name": { "ru": "Глобальное разрешение таймера", "en": "Global timer resolution" },
+    "description": {
+      "ru": "Начиная с Windows 11 игры в фоне теряют точный таймер. Параметр возвращает глобальное поведение — стабильнее время кадра в играх и лимитерах FPS.",
+      "en": "Since Windows 11 background games lose the precise timer. This restores global behavior — steadier frame times in games and FPS limiters."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel", "name": "GlobalTimerResolutionRequests", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "gaming.power-throttling.off",
+    "category": "gaming",
+    "level": 3,
+    "when": "system.desktop && !cpu.hybrid",
+    "reboot": true,
+    "name": { "ru": "Отключить Power Throttling", "en": "Disable Power Throttling" },
+    "description": {
+      "ru": "Windows не будет урезать частоту приложениям, которые считает «фоновыми» (например, игре во втором мониторе или лаунчеру). На гибридных Intel не применяется — там это нужно для E-ядер.",
+      "en": "Windows stops throttling apps it considers 'background' (e.g. a game on a second monitor or a launcher). Skipped on hybrid Intel CPUs where E-core scheduling needs it."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling", "name": "PowerThrottlingOff", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "gaming.platform-clock",
+    "category": "gaming",
+    "level": 2,
+    "when": "!system.vm",
+    "reboot": true,
+    "name": { "ru": "Не форсировать HPET как источник времени", "en": "Don't force HPET as the clock source" },
+    "description": {
+      "ru": "Удаляет параметр useplatformclock, если его включили «оптимизаторы»: принудительный HPET увеличивает задержку и снижает FPS.",
+      "en": "Removes useplatformclock if an 'optimizer' set it: forcing HPET increases latency and lowers FPS."
+    },
+    "actions": [
+      { "type": "bcd", "element": "useplatformclock" }
+    ]
+  },
+  {
+    "id": "gaming.dynamic-tick.off",
+    "category": "gaming",
+    "level": 3,
+    "when": "system.desktop && !system.vm",
+    "reboot": true,
+    "name": { "ru": "Отключить динамический тик ядра", "en": "Disable dynamic kernel tick" },
+    "description": {
+      "ru": "Ядро не пропускает тики таймера ради экономии энергии — меньше джиттер прерываний. Только для ПК (на ноутбуке сократит время работы от батареи).",
+      "en": "The kernel stops skipping timer ticks to save power — less interrupt jitter. Desktops only (it would cost battery life on laptops)."
+    },
+    "actions": [
+      { "type": "bcd", "element": "disabledynamictick", "value": "yes" }
+    ]
+  },
+  {
+    "id": "gaming.fso.off",
+    "category": "gaming",
+    "level": 0,
+    "name": { "ru": "Отключить оптимизацию во весь экран (FSO)", "en": "Disable fullscreen optimizations (FSO)" },
+    "description": {
+      "ru": "Возвращает «настоящий» эксклюзивный полноэкранный режим для старых DX9/DX11 игр. На Windows 11 чаще всего не нужно — включайте, только если игра даёт рывки или неверную частоту.",
+      "en": "Restores true exclusive fullscreen for older DX9/DX11 games. Usually unnecessary on Windows 11 — only use it if a game stutters or runs at the wrong refresh rate."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\System\\GameConfigStore", "name": "GameDVR_FSEBehaviorMode", "kind": "dword", "value": 2 },
+      { "type": "registry", "path": "HKCU\\System\\GameConfigStore", "name": "GameDVR_FSEBehavior", "kind": "dword", "value": 2 },
+      { "type": "registry", "path": "HKCU\\System\\GameConfigStore", "name": "GameDVR_HonorUserFSEBehaviorMode", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKCU\\System\\GameConfigStore", "name": "GameDVR_DXGIHonorFSEWindowsCompatible", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "gaming.mpo.off",
+    "category": "gaming",
+    "level": 0,
+    "name": { "ru": "Отключить MPO (мерцание/чёрные экраны)", "en": "Disable MPO (flicker / black screens)" },
+    "description": {
+      "ru": "Отключает Multiplane Overlay. Помогает при мерцании, чёрных вспышках и подтормаживании браузера поверх игры на некоторых драйверах. Включайте только при таких проблемах.",
+      "en": "Disables Multiplane Overlay. Fixes flicker, black flashes and browser stutter over games on some drivers. Only enable it if you have these issues."
+    },
+    "reboot": true,
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "kind": "dword", "value": 5 }
+    ]
+  }
+]

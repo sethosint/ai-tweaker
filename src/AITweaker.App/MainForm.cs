@@ -1,0 +1,135 @@
+using System.Reflection;
+using AITweaker.App.Bridge;
+using AITweaker.App.Platform;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+
+namespace AITweaker.App;
+
+public sealed class MainForm : Form
+{
+    private const string Host = "https://app.aitweaker";
+    private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(0xEC, 0xE8, 0xDE) };
+    private readonly Dictionary<string, string> _resources;
+    private BridgeHost? _bridge;
+    private Telemetry? _telemetry;
+
+    public MainForm()
+    {
+        Text = "AI Tweaker";
+        MinimumSize = new Size(1100, 720);
+        Size = new Size(1480, 920);
+        StartPosition = FormStartPosition.CenterScreen;
+        BackColor = Color.FromArgb(0xEC, 0xE8, 0xDE);
+        try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!); } catch { /* default icon */ }
+        Controls.Add(_web);
+
+        // Map "web/guides/discord-overlay.webp" style logical names regardless of the build OS path separator.
+        _resources = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+            .Where(n => n.StartsWith("web/", StringComparison.Ordinal))
+            .ToDictionary(n => n.Replace('\\', '/')[4..], n => n, StringComparer.OrdinalIgnoreCase);
+
+        Load += async (_, _) => await InitAsync();
+        FormClosed += (_, _) => _telemetry?.Dispose();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ApplyTheme(SettingsStore.Current.Theme);
+    }
+
+    public void ApplyTheme(string theme)
+    {
+        bool night = theme == "night";
+        Native.StyleTitleBar(Handle, night, night ? 0x0E0F0C : 0xECE8DE, night ? 0xF2A93B : 0x1D1D1B);
+        BackColor = night ? Color.FromArgb(0x0E, 0x0F, 0x0C) : Color.FromArgb(0xEC, 0xE8, 0xDE);
+    }
+
+    private async Task InitAsync()
+    {
+        try
+        {
+            var env = await CoreWebView2Environment.CreateAsync(null, AppPaths.WebView);
+            await _web.EnsureCoreWebView2Async(env);
+        }
+        catch (WebView2RuntimeNotFoundException)
+        {
+            MessageBox.Show(this,
+                "Для работы AI Tweaker нужен Microsoft Edge WebView2 Runtime (он встроен в Windows 11).\n\nСейчас откроется страница загрузки.\n\nAI Tweaker needs the Microsoft Edge WebView2 Runtime.",
+                "AI Tweaker", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ProcessRunner.OpenUrl("https://go.microsoft.com/fwlink/p/?LinkId=2124703");
+            Close();
+            return;
+        }
+
+        var core = _web.CoreWebView2;
+        var s = core.Settings;
+#if !DEBUG
+        s.AreDevToolsEnabled = false;
+        s.AreDefaultContextMenusEnabled = false;
+#endif
+        s.IsStatusBarEnabled = false;
+        s.IsZoomControlEnabled = false;
+        s.AreBrowserAcceleratorKeysEnabled = false;
+        s.IsPasswordAutosaveEnabled = false;
+        s.IsGeneralAutofillEnabled = false;
+
+        core.AddWebResourceRequestedFilter(Host + "/*", CoreWebView2WebResourceContext.All);
+        core.WebResourceRequested += (_, e) => e.Response = Serve(core.Environment, e.Request.Uri);
+
+        // The UI never navigates away: external links open in the default browser.
+        core.NavigationStarting += (_, e) =>
+        {
+            if (e.Uri.StartsWith(Host, StringComparison.OrdinalIgnoreCase)) return;
+            e.Cancel = true;
+            TryOpenExternal(e.Uri);
+        };
+        core.NewWindowRequested += (_, e) =>
+        {
+            e.Handled = true;
+            TryOpenExternal(e.Uri);
+        };
+
+        _bridge = new BridgeHost(this, core);
+        _bridge.Api.ThemeChanged = theme => BeginInvoke(() => ApplyTheme(theme));
+
+        _telemetry = new Telemetry();
+        _telemetry.Sample += sample => _bridge.Emit("telemetry", sample);
+        _telemetry.Start();
+
+        core.Navigate(Host + "/index.html");
+    }
+
+    private static void TryOpenExternal(string uri)
+    {
+        try { ProcessRunner.OpenUrl(uri); }
+        catch (Exception ex) { AppLog.Warn("ui", $"blocked navigation to {uri}: {ex.Message}"); }
+    }
+
+    private CoreWebView2WebResourceResponse Serve(CoreWebView2Environment env, string uri)
+    {
+        var path = Uri.UnescapeDataString(new Uri(uri).AbsolutePath.TrimStart('/'));
+        if (path.Length == 0) path = "index.html";
+        if (!_resources.TryGetValue(path, out var resource))
+            return env.CreateWebResourceResponse(null, 404, "Not Found", "");
+
+        var ms = new MemoryStream();
+        using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)!) s.CopyTo(ms);
+        ms.Position = 0;
+        var type = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".html" => "text/html; charset=utf-8",
+            ".css" => "text/css; charset=utf-8",
+            ".js" => "text/javascript; charset=utf-8",
+            ".json" => "application/json",
+            ".svg" => "image/svg+xml",
+            ".webp" => "image/webp",
+            ".png" => "image/png",
+            ".ico" => "image/x-icon",
+            ".woff2" => "font/woff2",
+            _ => "application/octet-stream",
+        };
+        return env.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type: {type}\nCache-Control: no-cache");
+    }
+}

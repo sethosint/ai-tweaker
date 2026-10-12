@@ -1,0 +1,12 @@
+[
+  { "id": "privacy",   "icon": "eye-off",   "name": { "ru": "Приватность и телеметрия", "en": "Privacy & telemetry" } },
+  { "id": "gaming",    "icon": "gamepad",   "name": { "ru": "Игры и задержка кадра",    "en": "Gaming & frame latency" } },
+  { "id": "input",     "icon": "mouse",     "name": { "ru": "Мышь и клавиатура",        "en": "Mouse & keyboard" } },
+  { "id": "network",   "icon": "wifi",      "name": { "ru": "Сеть и пинг",              "en": "Network & ping" } },
+  { "id": "power",     "icon": "bolt",      "name": { "ru": "Электропитание",           "en": "Power" } },
+  { "id": "devices",   "icon": "cpu",       "name": { "ru": "Устройства и прерывания",  "en": "Devices & interrupts" } },
+  { "id": "system",    "icon": "gear",      "name": { "ru": "Система и службы",         "en": "System & services" } },
+  { "id": "interface", "icon": "layout",    "name": { "ru": "Интерфейс и кастомизация", "en": "Interface & customization" } },
+  { "id": "apps",      "icon": "apps",      "name": { "ru": "Программы",                "en": "Applications" } },
+  { "id": "security",  "icon": "shield",    "name": { "ru": "Безопасность ↔ FPS",       "en": "Security ↔ FPS" } }
+]

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "input.mouse-acceleration.off",
+    "category": "input",
+    "level": 1,
+    "logoff": true,
+    "name": { "ru": "Отключить ускорение мыши", "en": "Disable mouse acceleration" },
+    "description": {
+      "ru": "Выключает «Повышенную точность установки указателя»: курсор и прицел смещаются ровно на столько, на сколько вы сдвинули мышь — мышечная память работает стабильно.",
+      "en": "Turns off 'Enhance pointer precision': the cursor and crosshair move exactly as far as the mouse does, so muscle memory stays consistent."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Mouse", "name": "MouseSpeed", "kind": "string", "value": "0" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Mouse", "name": "MouseThreshold1", "kind": "string", "value": "0" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Mouse", "name": "MouseThreshold2", "kind": "string", "value": "0" }
+    ]
+  },
+  {
+    "id": "input.mouse-sensitivity.default",
+    "category": "input",
+    "level": 0,
+    "logoff": true,
+    "name": { "ru": "Чувствительность указателя 6/11 (1:1)", "en": "Pointer speed 6/11 (1:1)" },
+    "description": {
+      "ru": "Ставит стандартную скорость указателя Windows (6 из 11), при которой одно движение сенсора = один пиксель. Скорость настраивайте DPI в ПО мыши.",
+      "en": "Sets the default Windows pointer speed (6 of 11) where one sensor count equals one pixel. Adjust speed with DPI in your mouse software instead."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Mouse", "name": "MouseSensitivity", "kind": "string", "value": "10" }
+    ]
+  },
+  {
+    "id": "input.keyboard-repeat",
+    "category": "input",
+    "level": 2,
+    "logoff": true,
+    "name": { "ru": "Минимальная задержка повтора клавиш", "en": "Fastest key repeat" },
+    "description": {
+      "ru": "Минимальная задержка перед автоповтором и максимальная скорость повтора — клавиатура отзывается мгновенно.",
+      "en": "Shortest delay before auto-repeat and fastest repeat rate — the keyboard responds instantly."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "KeyboardDelay", "kind": "string", "value": "0" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "KeyboardSpeed", "kind": "string", "value": "31" }
+    ]
+  },
+  {
+    "id": "input.sticky-keys.off",
+    "category": "input",
+    "level": 1,
+    "name": { "ru": "Убрать «Залипание клавиш» по Shift×5", "en": "No Sticky Keys popup on Shift×5" },
+    "description": {
+      "ru": "Отключает горячие клавиши специальных возможностей (залипание, фильтрация, озвучивание переключения), которые выкидывают из игры окном посреди боя.",
+      "en": "Disables accessibility hotkeys (Sticky, Filter and Toggle Keys) that pop a window and kick you out of the game mid-fight."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Accessibility\\StickyKeys", "name": "Flags", "kind": "string", "value": "506" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Accessibility\\ToggleKeys", "name": "Flags", "kind": "string", "value": "58" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Accessibility\\Keyboard Response", "name": "Flags", "kind": "string", "value": "122" }
+    ]
+  },
+  {
+    "id": "input.usb-power-saving.off",
+    "category": "input",
+    "level": 2,
+    "when": "!system.vm",
+    "reboot": true,
+    "name": { "ru": "Без энергосбережения USB-устройств", "en": "No power saving on USB devices" },
+    "description": {
+      "ru": "Мышь, клавиатура и гарнитура не засыпают и не «просыпаются» с задержкой: отключает энергосбережение для каждого подключённого USB-устройства.",
+      "en": "Mouse, keyboard and headset never sleep and wake up late: disables power management for every connected USB device."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB\\*\\*\\Device Parameters", "name": "EnhancedPowerManagementEnabled", "kind": "dword", "value": 0, "onlyIfKeyExists": true },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB\\*\\*\\Device Parameters", "name": "AllowIdleIrpInD3", "kind": "dword", "value": 0, "onlyIfKeyExists": true },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB\\*\\*\\Device Parameters", "name": "SelectiveSuspendEnabled", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
+    ]
+  }
+]

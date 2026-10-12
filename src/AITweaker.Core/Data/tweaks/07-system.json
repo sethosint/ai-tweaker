@@ -1,0 +1,264 @@
+[
+  {
+    "id": "system.services.unused",
+    "category": "system",
+    "level": 2,
+    "name": { "ru": "Отключить ненужные службы", "en": "Disable unneeded services" },
+    "description": {
+      "ru": "Факс, демо-режим магазина, офлайн-карты, родительский контроль, отслеживание изменившихся ссылок и сборщик данных Visual Studio. Помощник по совместимости и отчёты об ошибках переводятся в ручной запуск.",
+      "en": "Fax, retail demo, offline maps, parental controls, distributed link tracking and the Visual Studio diagnostics collector. Program Compatibility Assistant and error reporting switch to manual start."
+    },
+    "actions": [
+      { "type": "service", "name": "Fax", "startup": "disabled" },
+      { "type": "service", "name": "RetailDemo", "startup": "disabled" },
+      { "type": "service", "name": "MapsBroker", "startup": "disabled" },
+      { "type": "service", "name": "WpcMonSvc", "startup": "disabled" },
+      { "type": "service", "name": "TrkWks", "startup": "disabled" },
+      { "type": "service", "name": "diagnosticshub.standardcollector.service", "startup": "disabled" },
+      { "type": "service", "name": "PcaSvc", "startup": "manual", "stop": false },
+      { "type": "service", "name": "RemoteRegistry", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.services.diagnostics",
+    "category": "system",
+    "level": 3,
+    "name": { "ru": "Отключить службы диагностики", "en": "Disable diagnostic services" },
+    "description": {
+      "ru": "Служба политики диагностики и узлы диагностики постоянно отслеживают систему для «средств устранения неполадок». Без них перестанут работать автоматические мастера устранения неполадок.",
+      "en": "The Diagnostic Policy Service and diagnostic hosts constantly monitor the system for troubleshooters. Without them automatic troubleshooters stop working."
+    },
+    "actions": [
+      { "type": "service", "name": "DPS", "startup": "disabled" },
+      { "type": "service", "name": "WdiServiceHost", "startup": "disabled" },
+      { "type": "service", "name": "WdiSystemHost", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.sysmain.off",
+    "category": "system",
+    "level": 3,
+    "when": "disk.systemSsd && ram.gb >= 16",
+    "name": { "ru": "Отключить SysMain (Superfetch)", "en": "Disable SysMain (Superfetch)" },
+    "description": {
+      "ru": "На SSD и 16+ ГБ памяти предзагрузка почти ничего не даёт, но периодически грузит диск и CPU. На HDD или с малым объёмом ОЗУ не применяется.",
+      "en": "With an SSD and 16+ GB RAM prefetching barely helps but periodically loads the disk and CPU. Skipped on HDDs or low-RAM systems."
+    },
+    "actions": [
+      { "type": "service", "name": "SysMain", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.search-indexer.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": {
+      "ru": "Поиск файлов в «Пуске» и Проводнике станет медленнее, поиск по почте в Outlook может перестать работать.",
+      "en": "File search in Start and Explorer gets slower, Outlook mail search may stop working."
+    },
+    "name": { "ru": "Отключить индексирование поиска", "en": "Disable search indexing" },
+    "description": {
+      "ru": "Служба Windows Search перестаёт постоянно сканировать диски. Убирает фоновую нагрузку на диск и CPU.",
+      "en": "Windows Search stops constantly scanning your drives. Removes background disk and CPU load."
+    },
+    "actions": [
+      { "type": "service", "name": "WSearch", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.print-spooler.off",
+    "category": "system",
+    "level": 3,
+    "when": "!printer",
+    "confirm": true,
+    "confirmText": {
+      "ru": "Перестанет работать любая печать, включая «Печать в PDF». Принтер не найден, но если вы подключаете его иногда — откажитесь.",
+      "en": "All printing stops working, including Print to PDF. No printer was found, but decline if you connect one occasionally."
+    },
+    "name": { "ru": "Отключить диспетчер печати", "en": "Disable the print spooler" },
+    "description": {
+      "ru": "Принтеров не обнаружено — служба печати только занимает память и исторически была источником уязвимостей.",
+      "en": "No printers detected — the spooler only takes memory and has a history of vulnerabilities."
+    },
+    "actions": [
+      { "type": "service", "name": "Spooler", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.bluetooth.off",
+    "category": "system",
+    "level": 2,
+    "when": "!bluetooth",
+    "name": { "ru": "Отключить службы Bluetooth", "en": "Disable Bluetooth services" },
+    "description": {
+      "ru": "Bluetooth-адаптер не найден — службы поддержки Bluetooth и гарнитур не нужны.",
+      "en": "No Bluetooth adapter found — the Bluetooth support and audio gateway services aren't needed."
+    },
+    "actions": [
+      { "type": "service", "name": "bthserv", "startup": "disabled" },
+      { "type": "service", "name": "BTAGService", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.xbox-services.off",
+    "category": "system",
+    "level": 3,
+    "when": "!app.xbox",
+    "confirm": true,
+    "confirmText": {
+      "ru": "Перестанут работать вход в Xbox в играх (Minecraft, Forza, игры Game Pass), облачные сохранения Xbox и настройка геймпадов Xbox Elite.",
+      "en": "Xbox sign-in inside games (Minecraft, Forza, Game Pass titles), Xbox cloud saves and Xbox Elite controller configuration will stop working."
+    },
+    "name": { "ru": "Отключить службы Xbox", "en": "Disable Xbox services" },
+    "description": {
+      "ru": "Приложение Xbox не установлено — службы авторизации, сохранений и сети Xbox Live можно отключить.",
+      "en": "The Xbox app is not installed — Xbox Live auth, save and networking services can be disabled."
+    },
+    "actions": [
+      { "type": "service", "name": "XblAuthManager", "startup": "disabled" },
+      { "type": "service", "name": "XblGameSave", "startup": "disabled" },
+      { "type": "service", "name": "XboxNetApiSvc", "startup": "disabled" },
+      { "type": "service", "name": "XboxGipSvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.ntfs",
+    "category": "system",
+    "level": 2,
+    "name": { "ru": "NTFS без лишних записей", "en": "NTFS without extra writes" },
+    "description": {
+      "ru": "Файловая система перестаёт обновлять время последнего доступа к каждому файлу и создавать короткие имена 8.3 — меньше записей на диск при загрузке игр.",
+      "en": "The file system stops updating last-access time on every file and creating 8.3 short names — fewer disk writes while games load."
+    },
+    "actions": [
+      { "type": "command", "file": "fsutil.exe", "args": "behavior set disablelastaccess 1", "undoFile": "fsutil.exe", "undoArgs": "behavior set disablelastaccess 2" },
+      { "type": "command", "file": "fsutil.exe", "args": "behavior set disable8dot3 1", "undoFile": "fsutil.exe", "undoArgs": "behavior set disable8dot3 2" }
+    ]
+  },
+  {
+    "id": "system.svchost-split",
+    "category": "system",
+    "level": 3,
+    "when": "ram.gb >= 16",
+    "reboot": true,
+    "name": { "ru": "Меньше процессов svchost", "en": "Fewer svchost processes" },
+    "description": {
+      "ru": "Порог разделения служб поднимается до объёма ОЗУ: службы группируются в меньшее число процессов svchost — меньше переключений контекста и расход памяти.",
+      "en": "Raises the service split threshold to your RAM size: services are grouped into fewer svchost processes — less context switching and memory overhead."
+    },
+    "actions": [
+      {
+        "type": "powershell",
+        "script": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value ([int]([Math]::Min($kb, 2147483647)))",
+        "undo": "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value 3670016",
+        "check": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); $v = (Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control').SvcHostSplitThresholdInKB; if ($v -ge [Math]::Min($kb, 2147483647)) { '1' } else { '0' }"
+      }
+    ]
+  },
+  {
+    "id": "system.memory-compression.off",
+    "category": "system",
+    "level": 4,
+    "when": "ram.gb >= 32",
+    "reboot": true,
+    "name": { "ru": "Отключить сжатие памяти", "en": "Disable memory compression" },
+    "description": {
+      "ru": "С 32+ ГБ памяти сжимать страницы не нужно — процессор не тратит время на упаковку/распаковку памяти.",
+      "en": "With 32+ GB there's no need to compress pages — the CPU stops spending time packing and unpacking memory."
+    },
+    "actions": [
+      {
+        "type": "powershell",
+        "script": "Disable-MMAgent -MemoryCompression",
+        "undo": "Enable-MMAgent -MemoryCompression",
+        "check": "if ((Get-MMAgent).MemoryCompression) { '0' } else { '1' }"
+      }
+    ]
+  },
+  {
+    "id": "system.update.no-drivers",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": {
+      "ru": "Windows Update перестанет ставить драйверы. Обновлять их нужно будет вручную (вкладка DRIVERS подскажет, где скачать).",
+      "en": "Windows Update will stop installing drivers. You'll update them manually (the DRIVERS tab shows where to get them)."
+    },
+    "name": { "ru": "Не ставить драйверы через Windows Update", "en": "No drivers from Windows Update" },
+    "description": {
+      "ru": "Windows Update часто подменяет свежий драйвер видеокарты или чипсета старым «универсальным». Запрещает это.",
+      "en": "Windows Update often replaces a fresh GPU or chipset driver with an older generic one. This prevents it."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "ExcludeWUDriversInQualityUpdate", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "system.update.no-auto-reboot",
+    "category": "system",
+    "level": 1,
+    "name": { "ru": "Без автоперезагрузки после обновлений", "en": "No automatic reboot after updates" },
+    "description": {
+      "ru": "Windows не перезагрузит компьютер сама, пока вы в системе (например, ночью посреди загрузки игры или стрима).",
+      "en": "Windows won't reboot on its own while you're signed in (e.g. overnight in the middle of a download or stream)."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoRebootWithLoggedOnUsers", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "system.background-apps.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": {
+      "ru": "Приложения из Store (Телефон, Почта, WhatsApp, Telegram из Store и др.) не будут присылать уведомления, пока закрыты.",
+      "en": "Store apps (Phone Link, Mail, WhatsApp, Store Telegram, etc.) won't deliver notifications while closed."
+    },
+    "name": { "ru": "Запретить фоновую работу приложений Store", "en": "Block Store apps from running in the background" },
+    "description": {
+      "ru": "UWP-приложения не работают в фоне, когда закрыты — меньше процессов и сетевой активности.",
+      "en": "UWP apps stop running in the background when closed — fewer processes and less network activity."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy", "name": "LetAppsRunInBackground", "kind": "dword", "value": 2 }
+    ]
+  },
+  {
+    "id": "system.reserved-storage.off",
+    "category": "system",
+    "level": 3,
+    "name": { "ru": "Освободить зарезервированное хранилище", "en": "Release reserved storage" },
+    "description": {
+      "ru": "Возвращает ~7 ГБ, которые Windows держит «про запас» для обновлений. Обновления по-прежнему ставятся.",
+      "en": "Returns ~7 GB Windows keeps aside for updates. Updates still install."
+    },
+    "actions": [
+      { "type": "command", "file": "dism.exe", "args": "/Online /Set-ReservedStorageState /State:Disabled /NoRestart", "undoFile": "dism.exe", "undoArgs": "/Online /Set-ReservedStorageState /State:Enabled /NoRestart" }
+    ]
+  },
+  {
+    "id": "system.onedrive.remove",
+    "category": "system",
+    "level": 3,
+    "when": "app.onedrive",
+    "confirm": true,
+    "reversible": false,
+    "confirmText": {
+      "ru": "OneDrive будет удалён. Файлы, которые хранятся только в облаке («файлы по запросу»), станут недоступны на этом ПК — сначала убедитесь, что всё нужное скачано.",
+      "en": "OneDrive will be uninstalled. Cloud-only files (Files On-Demand) will no longer be available on this PC — make sure everything you need is downloaded first."
+    },
+    "name": { "ru": "Удалить OneDrive", "en": "Uninstall OneDrive" },
+    "description": {
+      "ru": "OneDrive постоянно синхронизирует файлы в фоне и навязчиво предлагает резервное копирование.",
+      "en": "OneDrive constantly syncs in the background and nags about backups."
+    },
+    "actions": [
+      {
+        "type": "powershell",
+        "script": "Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue; $w = Get-Command winget -ErrorAction SilentlyContinue; if ($w) { winget uninstall --id Microsoft.OneDrive -e --silent --accept-source-agreements | Out-Null }; foreach ($p in @(\"$env:SystemRoot\\System32\\OneDriveSetup.exe\", \"$env:SystemRoot\\SysWOW64\\OneDriveSetup.exe\")) { if (Test-Path $p) { Start-Process $p '/uninstall' -Wait } }"
+      }
+    ]
+  }
+]

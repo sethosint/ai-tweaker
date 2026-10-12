@@ -1,0 +1,686 @@
+[
+  {
+    "id": "discord",
+    "name": "Discord",
+    "icon": "discord",
+    "detect": "app.discord",
+    "source": "master",
+    "summary": {
+      "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, приватность данных.",
+      "en": "Overlay off, no autostart, minimal animations and background activity, data privacy."
+    },
+    "autoTweaks": ["apps.autostart.cleanup"],
+    "sections": [
+      {
+        "title": { "ru": "Игровой оверлей", "en": "Game Overlay" },
+        "path": "User Settings → Game Overlay",
+        "image": "discord-overlay.webp",
+        "settings": [
+          { "name": "Enable Overlay", "value": "OFF" },
+          { "name": "Enable Legacy Overlay", "value": "OFF" },
+          { "name": "Enable overlay clickable regions", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Система", "en": "System" },
+        "path": "User Settings → System → General",
+        "image": "discord-system.webp",
+        "settings": [
+          { "name": "Automatically open Discord when your computer starts up", "value": "OFF" },
+          { "name": "Start Discord minimized", "value": "OFF" },
+          { "name": "Minimize Discord to System Tray", "value": "ON" },
+          { "name": "Enable Hardware Acceleration", "value": "ON", "note": { "ru": "Выключайте, только если видите артефакты или просадки FPS в играх.", "en": "Turn off only if you see glitches or FPS drops in games." } }
+        ]
+      },
+      {
+        "title": { "ru": "Анимации (Accessibility → Reduced Motion)", "en": "Animations (Accessibility → Reduced Motion)" },
+        "path": "User Settings → Accessibility → Reduced Motion",
+        "image": "discord-reduced-motion.webp",
+        "settings": [
+          { "name": "Sync with computer setting", "value": "ON" },
+          { "name": "Play GIFs when Discord is focused", "value": "OFF" },
+          { "name": "Play animated emoji", "value": "OFF" },
+          { "name": "Play sticker animations", "value": "Never animate" }
+        ]
+      },
+      {
+        "title": { "ru": "Поле ввода и поиск", "en": "Chat box & search" },
+        "path": "User Settings → Appearance → Chat Box / Search",
+        "image": "discord-chatbox.webp",
+        "settings": [
+          { "name": "Preview emoji, mentions, and markdown syntax as you type", "value": "ON" },
+          { "name": "Automatically convert emoticons in your messages to emoji", "value": "OFF" },
+          { "name": "Show stickers in autocomplete results", "value": "OFF" },
+          { "name": "Show games in autocomplete results", "value": "OFF" },
+          { "name": "Show send message button", "value": "OFF" },
+          { "name": "By default, searching in DMs…", "value": "Searches only in the selected DM" }
+        ]
+      },
+      {
+        "title": { "ru": "Голос — расширенные", "en": "Voice — advanced" },
+        "path": "User Settings → Voice & Video → Voice (Show Advanced Voice Settings)",
+        "image": "discord-voice-advanced.webp",
+        "settings": [
+          { "name": "Automatic Gain Control", "value": "ON" },
+          { "name": "Advanced Voice Activity", "value": "ON" },
+          { "name": "Bypass System Audio Input Processing", "value": "ON" },
+          { "name": "No Audio Detected Warning", "value": "ON" },
+          { "name": "Switch Voice Channel Warning", "value": "ON" },
+          { "name": "Attenuation Strength", "value": "0%" },
+          { "name": "When I speak", "value": "OFF" },
+          { "name": "When others speak", "value": "OFF" },
+          { "name": "Quality Of Service", "value": "OFF", "note": { "ru": "Многие роутеры и провайдеры работают с этим флагом хуже — пинг в Discord нестабилен.", "en": "Many routers and ISPs misbehave with this flag — unstable Discord ping." } }
+        ]
+      },
+      {
+        "title": { "ru": "Стриминг и звуки", "en": "Streaming & sounds" },
+        "path": "User Settings → Voice & Video → Streaming / Sounds",
+        "image": "discord-streaming.webp",
+        "settings": [
+          { "name": "Show Stream Previews", "value": "OFF" },
+          { "name": "Stream Attenuation", "value": "OFF" },
+          { "name": "Use our advanced technology to capture your screen", "value": "ON" },
+          { "name": "Deafen / Undeafen sounds", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Диагностика (Voice → Advanced)", "en": "Diagnostics (Voice → Advanced)" },
+        "path": "User Settings → Voice & Video → Advanced (Show Diagnostic Settings)",
+        "image": "discord-diagnostics.webp",
+        "settings": [
+          { "name": "Soundboard entrance sound", "value": "None" },
+          { "name": "Stream Info Overlay", "value": "OFF" },
+          { "name": "Diagnostic Audio Recording", "value": "OFF" },
+          { "name": "Debug Logging", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Уведомления", "en": "Notifications" },
+        "path": "User Settings → Notifications → Overview / Sounds / Badges",
+        "image": "discord-notifications.webp",
+        "settings": [
+          { "name": "Enable Desktop Notifications", "value": "ON" },
+          { "name": "Enable Taskbar Flashing", "value": "ON" },
+          { "name": "Notify me when… (streaming, anniversaries, friends online, events, profile updates)", "value": "OFF" },
+          { "name": "Someone reacts to my messages", "value": "Never" },
+          { "name": "New Message / New Message in current channel", "value": "ON" },
+          { "name": "Enable Unread Message Badge", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Почта", "en": "Email" },
+        "path": "User Settings → Notifications → Email",
+        "image": "discord-email.webp",
+        "settings": [
+          { "name": "Communication / Social / Announcements / Tip / Recommendations Emails", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Уведомления — расширенные", "en": "Notifications — advanced" },
+        "path": "User Settings → Notifications → Advanced",
+        "image": "discord-notifications-advanced.webp",
+        "settings": [
+          { "name": "Mobile Notification Delay", "value": "1 minute" },
+          { "name": "Allow playback and usage of /tts command", "value": "OFF" },
+          { "name": "Speak all messages out loud", "value": "Never" }
+        ]
+      },
+      {
+        "title": { "ru": "Данные и приватность", "en": "Data & privacy" },
+        "path": "User Settings → Data & Privacy → How Discord Uses My Data",
+        "image": "discord-privacy.webp",
+        "settings": [
+          { "name": "Use data to improve Discord", "value": "OFF" },
+          { "name": "Use data to personalize my Discord experience", "value": "OFF" },
+          { "name": "Use my Discord activity to personalize Sponsored Content", "value": "OFF" },
+          { "name": "Use third-party data to personalize Sponsored Content", "value": "OFF" },
+          { "name": "Allow my voice to be recorded in Clips", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "steam",
+    "name": "Steam",
+    "icon": "steam",
+    "detect": "app.steam",
+    "source": "master",
+    "summary": {
+      "ru": "Без оверлея, трансляций и Remote Play; лёгкая библиотека; загрузки не мешают играм.",
+      "en": "No overlay, broadcasting or Remote Play; lightweight library; downloads never interfere with games."
+    },
+    "autoTweaks": ["apps.autostart.cleanup"],
+    "sections": [
+      {
+        "title": { "ru": "Интерфейс", "en": "Interface" },
+        "path": "Steam → Settings → Interface",
+        "image": "steam-interface.webp",
+        "settings": [
+          { "name": "Start Up Location", "value": "Library" },
+          { "name": "Scale text and icons to match monitor settings", "value": "ON" },
+          { "name": "Run Steam when my computer starts", "value": "OFF" },
+          { "name": "Ask which account to use each time Steam starts", "value": "OFF" },
+          { "name": "Start Steam in Big Picture Mode", "value": "OFF" },
+          { "name": "Notify me about additions or changes to my games…", "value": "OFF" },
+          { "name": "Enable smooth scrolling in web views", "value": "OFF" },
+          { "name": "Enable GPU accelerated rendering in web views", "value": "OFF", "note": { "ru": "Steam не занимает видеокарту, пока вы играете.", "en": "Steam stops using the GPU while you play." } },
+          { "name": "Enable hardware video decoding", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Библиотека", "en": "Library" },
+        "path": "Steam → Settings → Library",
+        "image": "steam-library.webp",
+        "settings": [
+          { "name": "Display size for Library user interface elements", "value": "Automatic" },
+          { "name": "Low Bandwidth Mode", "value": "ON" },
+          { "name": "Low Performance Mode", "value": "ON" },
+          { "name": "Disable Community Content", "value": "ON" },
+          { "name": "Show game icons in the left column", "value": "ON" },
+          { "name": "Ready to Play should include streamable games", "value": "OFF" },
+          { "name": "Show Steam Deck compatibility information in library", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Загрузки", "en": "Downloads" },
+        "path": "Steam → Settings → Downloads",
+        "image": "steam-downloads.webp",
+        "settings": [
+          { "name": "Limit download speed", "value": "OFF" },
+          { "name": "Display download rates in bits per second", "value": "ON" },
+          { "name": "Game update timing", "value": "Let Steam decide when to update" },
+          { "name": "Schedule auto-updates", "value": "OFF" },
+          { "name": "Allow downloads during gameplay", "value": "OFF" },
+          { "name": "Throttle downloads while streaming", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "В игре (оверлей)", "en": "In Game (overlay)" },
+        "path": "Steam → Settings → In Game",
+        "image": "steam-in-game.webp",
+        "settings": [
+          { "name": "Enable the Steam Overlay while in-game", "value": "OFF" },
+          { "name": "Show toolbar as list view", "value": "OFF" },
+          { "name": "Restore my previous browser tabs when starting a game", "value": "OFF" },
+          { "name": "Use the Big Picture Overlay when using a controller", "value": "OFF" },
+          { "name": "Scale Steam Overlay text and icons to match monitor settings", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Облако", "en": "Cloud" },
+        "path": "Steam → Settings → Cloud",
+        "image": "steam-cloud.webp",
+        "settings": [
+          { "name": "Enable Steam Cloud", "value": "ON" },
+          { "name": "Screenshot Management (open after closing a game)", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Remote Play и трансляции", "en": "Remote Play & Broadcast" },
+        "path": "Steam → Settings → Remote Play / Broadcast",
+        "image": "steam-remote-play.webp",
+        "settings": [
+          { "name": "Enable Remote Play", "value": "OFF" },
+          { "name": "Broadcast → Privacy setting", "value": "Broadcasting disabled" }
+        ]
+      },
+      {
+        "title": { "ru": "Друзья и чат", "en": "Friends & Chat" },
+        "path": "Steam → Settings → Friends & Chat",
+        "image": "steam-friends.webp",
+        "settings": [
+          { "name": "Enable Animated Avatars & Animated Avatar Frames", "value": "OFF" },
+          { "name": "Compact friends list & chat view / Compact favorite friends area", "value": "OFF" },
+          { "name": "Dock chats to the friends list", "value": "OFF" },
+          { "name": "Open a new window for new chats", "value": "OFF" },
+          { "name": "Don't embed images and other media in-line", "value": "OFF" },
+          { "name": "Remember my open chats", "value": "OFF" },
+          { "name": "Disable spellcheck in chat message entry", "value": "ON" },
+          { "name": "Disable animated room effects", "value": "ON" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nvidia-app",
+    "name": "NVIDIA App",
+    "icon": "nvidia",
+    "detect": "app.nvidiaApp",
+    "when": "gpu.nvidia",
+    "source": "master",
+    "summary": {
+      "ru": "Без оверлея статистики и хайлайтов, без уведомлений и телеметрии.",
+      "en": "No statistics overlay or highlights, no notifications and telemetry."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Статистика", "en": "Statistics" },
+        "path": "NVIDIA App → Settings → Features → Statistics",
+        "image": "nvidia-statistics.webp",
+        "settings": [
+          { "name": "Show statistics in heads up display (Alt+R)", "value": "OFF" },
+          { "name": "Statistics view", "value": "Basic" }
+        ]
+      },
+      {
+        "title": { "ru": "Настройка HUD", "en": "HUD configuration" },
+        "path": "Statistics → Configure heads up display",
+        "image": "nvidia-hud.webp",
+        "settings": [
+          { "name": "Statistics overlay", "value": "Upper right" },
+          { "name": "Horizontal / Vertical position", "value": "100 / 0" },
+          { "name": "Layout", "value": "Linear" },
+          { "name": "Background opacity", "value": "0" },
+          { "name": "Font Size / Font color", "value": "Standard / White" },
+          { "name": "Status indicators (Record, Instant Replay, Highlights, Microphone, Statistics logging)", "value": "None" }
+        ]
+      },
+      {
+        "title": { "ru": "Хайлайты", "en": "Highlights" },
+        "path": "NVIDIA App → Settings → Features → Highlights",
+        "image": "nvidia-highlights.webp",
+        "settings": [
+          { "name": "Capture highlights", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Запись видео", "en": "Video capture" },
+        "path": "Highlights → Configure video capture",
+        "image": "nvidia-video-capture.webp",
+        "settings": [
+          { "name": "Desktop capture", "value": "ON" },
+          { "name": "Instant Replay length", "value": "00:20" },
+          { "name": "Quality", "value": "High" },
+          { "name": "Resolution", "value": "1080p HD" },
+          { "name": "Frame rate", "value": "60 FPS" },
+          { "name": "Codec", "value": "H.264/HEVC" },
+          { "name": "Bit rate (Mbps)", "value": "16" }
+        ]
+      },
+      {
+        "title": { "ru": "Уведомления и приватность", "en": "Notifications & privacy" },
+        "path": "NVIDIA App → Settings → Notifications / About",
+        "image": "nvidia-privacy.webp",
+        "settings": [
+          { "name": "Driver updates (notification)", "value": "OFF" },
+          { "name": "Available rewards", "value": "OFF" },
+          { "name": "Opt in to access Beta or experimental features", "value": "OFF" },
+          { "name": "Configuration, performance, and usage data", "value": "OFF" },
+          { "name": "Error and crash data", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "amd-software",
+    "name": "AMD Software: Adrenalin",
+    "icon": "amd",
+    "detect": "app.amdSoftware",
+    "when": "gpu.amd",
+    "source": "master",
+    "summary": {
+      "ru": "Anti-Lag и Boost включены, все «улучшайзеры» и оверлеи выключены, фильтрация текстур — производительность.",
+      "en": "Anti-Lag and Boost on, every 'enhancer' and overlay off, texture filtering set to performance."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Графика (глобально)", "en": "Graphics (global)" },
+        "path": "Gaming → Graphics",
+        "image": "amd-graphics-1.webp",
+        "settings": [
+          { "name": "Radeon Anti-Lag", "value": "ON" },
+          { "name": "Radeon Boost", "value": "ON" },
+          { "name": "Performance Mode", "value": "Performance" },
+          { "name": "Radeon Chill", "value": "OFF" },
+          { "name": "Radeon Image Sharpening", "value": "OFF" },
+          { "name": "Radeon Enhanced Sync", "value": "OFF" },
+          { "name": "Wait for Vertical Refresh", "value": "Always off" },
+          { "name": "Frame rate target control", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Графика — расширенные", "en": "Graphics — advanced" },
+        "path": "Gaming → Graphics → Advanced",
+        "image": "amd-graphics-2.webp",
+        "settings": [
+          { "name": "Anti-Aliasing", "value": "Use application settings" },
+          { "name": "Anti-Aliasing Method", "value": "Multisampling" },
+          { "name": "Morphological Anti-Aliasing", "value": "OFF" },
+          { "name": "Anisotropic Filtering", "value": "OFF" },
+          { "name": "Texture Filtering Quality", "value": "Performance" },
+          { "name": "Surface Format Optimization", "value": "ON" },
+          { "name": "Tessellation Mode", "value": "AMD optimized" },
+          { "name": "OpenGL Triple Buffering", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Система", "en": "System" },
+        "path": "Settings (⚙) → System",
+        "image": "amd-system.webp",
+        "settings": [
+          { "name": "Issue Detection", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Горячие клавиши", "en": "Hotkeys" },
+        "path": "Settings (⚙) → Hotkeys",
+        "image": "amd-hotkeys.webp",
+        "settings": [
+          { "name": "Use Hotkeys", "value": "OFF" },
+          { "name": "Use Display Hotkeys", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Настройки программы", "en": "Preferences" },
+        "path": "Settings (⚙) → Preferences",
+        "image": "amd-preferences.webp",
+        "settings": [
+          { "name": "In-Game Overlay", "value": "OFF" },
+          { "name": "Web Browser", "value": "OFF" },
+          { "name": "System Tray Menu", "value": "OFF" },
+          { "name": "Advertisements", "value": "OFF" },
+          { "name": "Toast Notifications", "value": "OFF" },
+          { "name": "Tutorials", "value": "OFF" },
+          { "name": "Theme", "value": "Dark" },
+          { "name": "Always On Top", "value": "OFF" },
+          { "name": "Animation & Effects", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Метрики производительности", "en": "Performance metrics" },
+        "path": "Performance → Metrics",
+        "image": "amd-metrics.webp",
+        "settings": [
+          { "name": "Tracking / metrics (FPS, GPU, GPU Memory, CPU, System Memory)", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "obs",
+    "name": "OBS Studio",
+    "icon": "obs",
+    "detect": "app.obs",
+    "source": "master",
+    "summary": {
+      "ru": "Стрим NVENC H.264 6000 Кбит/с, запись NVENC HEVC CQP 18, вывод 1664×936 при 60 FPS.",
+      "en": "Stream NVENC H.264 at 6000 Kbps, record NVENC HEVC CQP 18, 1664×936 output at 60 FPS."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Общие", "en": "General" },
+        "path": "Settings → General",
+        "image": "obs-general.webp",
+        "settings": [
+          { "name": "Open stats dialog on startup", "value": "OFF" },
+          { "name": "Hide OBS windows from screen capture", "value": "OFF" },
+          { "name": "Update Channel", "value": "Stable" },
+          { "name": "Automatically check for updates on startup", "value": "OFF" },
+          { "name": "Show confirmation dialogs (start/stop stream, stop recording)", "value": "OFF" },
+          { "name": "Automatically record when streaming", "value": "OFF" },
+          { "name": "Automatically start replay buffer when streaming", "value": "OFF" },
+          { "name": "Source Alignment Snapping", "value": "ON (sensitivity 10)" }
+        ]
+      },
+      {
+        "title": { "ru": "Вывод — стрим", "en": "Output — streaming" },
+        "path": "Settings → Output (Advanced) → Streaming",
+        "image": "obs-stream.webp",
+        "settings": [
+          { "name": "Video Encoder", "value": "NVIDIA NVENC H.264" },
+          { "name": "Rescale Output", "value": "Disabled" },
+          { "name": "Rate Control", "value": "CBR" },
+          { "name": "Bitrate", "value": "6000 Kbps" },
+          { "name": "Keyframe Interval", "value": "2 s" },
+          { "name": "Preset", "value": "P6: Slower (Better Quality)" },
+          { "name": "Tuning", "value": "High Quality" },
+          { "name": "Multipass Mode", "value": "Two Passes (Quarter Resolution)" },
+          { "name": "Profile", "value": "high" },
+          { "name": "Look-ahead", "value": "OFF" },
+          { "name": "Adaptive Quantization", "value": "ON" },
+          { "name": "B-Frames", "value": "2" }
+        ]
+      },
+      {
+        "title": { "ru": "Вывод — запись", "en": "Output — recording" },
+        "path": "Settings → Output (Advanced) → Recording",
+        "image": "obs-recording.webp",
+        "settings": [
+          { "name": "Type", "value": "Standard" },
+          { "name": "Video Encoder", "value": "NVIDIA NVENC HEVC" },
+          { "name": "Audio Encoder", "value": "FFmpeg AAC" },
+          { "name": "Audio Track", "value": "1" },
+          { "name": "Rate Control", "value": "Constant QP" },
+          { "name": "Constant QP", "value": "18" },
+          { "name": "Keyframe Interval", "value": "2 s" },
+          { "name": "Preset", "value": "P6: Slower (Better Quality)" },
+          { "name": "Tuning / Multipass", "value": "High Quality / Two Passes (Quarter Resolution)" },
+          { "name": "Profile", "value": "main" },
+          { "name": "Look-ahead / Adaptive Quantization", "value": "OFF / ON" },
+          { "name": "B-Frames", "value": "2" }
+        ]
+      },
+      {
+        "title": { "ru": "Видео", "en": "Video" },
+        "path": "Settings → Video",
+        "image": "obs-video.webp",
+        "settings": [
+          { "name": "Base (Canvas) Resolution", "value": "1920x1080" },
+          { "name": "Output (Scaled) Resolution", "value": "1664x936" },
+          { "name": "Downscale Filter", "value": "Lanczos (36 samples)" },
+          { "name": "Common FPS Values", "value": "60" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spotify",
+    "name": "Spotify",
+    "icon": "spotify",
+    "detect": "app.spotify",
+    "source": "master",
+    "summary": {
+      "ru": "Без автозапуска, видео-фонов и оверлеев; высокое качество без автоподстройки.",
+      "en": "No autostart, video canvases or overlays; high quality without auto-adjust."
+    },
+    "autoTweaks": ["apps.autostart.cleanup"],
+    "sections": [
+      {
+        "title": { "ru": "Качество и библиотека", "en": "Quality & library" },
+        "path": "Settings → Audio quality / Your Library",
+        "image": "spotify-playback-quality.webp",
+        "settings": [
+          { "name": "Streaming quality / Download", "value": "High / High" },
+          { "name": "Auto adjust quality", "value": "OFF" },
+          { "name": "Use compact library layout", "value": "OFF" },
+          { "name": "Show Local Files", "value": "ON" },
+          { "name": "Show songs from Downloads / Music Library", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Отображение и видео", "en": "Display & video" },
+        "path": "Settings → Display / Videos and Canvas",
+        "image": "spotify-display.webp",
+        "settings": [
+          { "name": "Show the now-playing panel on click of play", "value": "OFF" },
+          { "name": "Show desktop overlay when using media keys", "value": "OFF" },
+          { "name": "See what your friends are playing", "value": "OFF" },
+          { "name": "Music videos / Canvas / Other videos", "value": "OFF" },
+          { "name": "Zoom level", "value": "100%" }
+        ]
+      },
+      {
+        "title": { "ru": "Воспроизведение", "en": "Playback" },
+        "path": "Settings → Playback",
+        "image": "spotify-equalizer.webp",
+        "settings": [
+          { "name": "Crossfade songs / Gapless", "value": "OFF" },
+          { "name": "Automix", "value": "ON" },
+          { "name": "Normalize volume / Mono audio", "value": "OFF" },
+          { "name": "Equalizer", "value": "OFF (Flat)" }
+        ]
+      },
+      {
+        "title": { "ru": "Запуск и совместимость", "en": "Startup & compatibility" },
+        "path": "Settings → Startup and window behaviour / Compatibility",
+        "image": "spotify-startup.webp",
+        "settings": [
+          { "name": "Open Spotify automatically after you log into the computer", "value": "No" },
+          { "name": "Close button should minimize the Spotify window", "value": "ON" },
+          { "name": "Proxy type", "value": "Autodetect settings" },
+          { "name": "Enable hardware acceleration", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Приватность", "en": "Privacy" },
+        "path": "Settings → Listening activity / Profile",
+        "image": "spotify-privacy.webp",
+        "settings": [
+          { "name": "Private session", "value": "OFF" },
+          { "name": "Listening activity", "value": "OFF" },
+          { "name": "Recently played artists / Followers / Playlists on profile", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "epic",
+    "name": "Epic Games Launcher",
+    "icon": "epic",
+    "detect": "app.epic",
+    "source": "master",
+    "summary": {
+      "ru": "Без автозапуска, трея и уведомлений; облачные сохранения включены.",
+      "en": "No autostart, tray or notifications; cloud saves on."
+    },
+    "autoTweaks": ["apps.autostart.cleanup"],
+    "sections": [
+      {
+        "title": { "ru": "Настройки лаунчера", "en": "Launcher settings" },
+        "path": "Epic Games Launcher → Settings",
+        "image": "epic-settings.webp",
+        "settings": [
+          { "name": "Minimize To System Tray", "value": "OFF" },
+          { "name": "Run When My Computer Starts", "value": "OFF" },
+          { "name": "Enable Debug Logging", "value": "OFF" },
+          { "name": "Hide Game Library", "value": "OFF" },
+          { "name": "Enable Cloud Saves", "value": "ON" },
+          { "name": "Use Proxy", "value": "OFF" },
+          { "name": "Show Free Game / News / Chat Notifications", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "exitlag",
+    "name": "ExitLag",
+    "icon": "exitlag",
+    "detect": "app.exitlag",
+    "source": "master",
+    "summary": {
+      "ru": "Умная оптимизация и двойные маршруты, служба ExitLag отключена. Не применяйте «FPS Boost» из ExitLag.",
+      "en": "Smart optimization and dual routes, ExitLag service disabled. Don't apply ExitLag's 'FPS Boost'."
+    },
+    "autoTweaks": ["apps.exitlag.service", "apps.autostart.cleanup"],
+    "sections": [
+      {
+        "title": { "ru": "Основные настройки", "en": "Main settings" },
+        "path": "ExitLag → Settings",
+        "image": "exitlag-settings.webp",
+        "settings": [
+          { "name": "Launch on Windows startup", "value": "OFF" },
+          { "name": "Minimize to tray on close", "value": "ON" },
+          { "name": "Real-time optimization (Beta)", "value": "OFF" },
+          { "name": "Smart optimization", "value": "ON" },
+          { "name": "Use dual routes", "value": "ON" },
+          { "name": "Optimization accuracy level", "value": "High" },
+          { "name": "Route analysis protocol", "value": "ICMP", "note": { "ru": "Альтернатива от мастера: вместо ICMP — UDP/TCP, 2 UDP и 2 TCP соединения на игру.", "en": "Master's alternative: UDP/TCP instead of ICMP, with 2 UDP and 2 TCP connections per game." } },
+          { "name": "IP version for route analysis", "value": "IPv4" },
+          { "name": "Receive an alert when a connection starts / server unavailable alerts", "value": "OFF" },
+          { "name": "Hardware data monitoring", "value": "OFF" },
+          { "name": "Shortcut to restart all connections", "value": "OFF" },
+          { "name": "Redirection method", "value": "Automatic" }
+        ]
+      },
+      {
+        "title": { "ru": "Маршруты игры (пример: Fortnite)", "en": "Game routes (example: Fortnite)" },
+        "path": "ExitLag → Game → Advanced settings",
+        "image": "exitlag-routes.webp",
+        "settings": [
+          { "name": "Server", "value": "All regions — Automatic" },
+          { "name": "Redirect login", "value": "ON" },
+          { "name": "Use local routes first", "value": "OFF" },
+          { "name": "Multipath routes: TCP / UDP", "value": "0 / 4" }
+        ],
+        "note": { "ru": "⚠ Не применяйте настройки «FPS Boost» в ExitLag: прироста почти нет, а часть твиков настраивает систему неправильно.", "en": "⚠ Don't apply ExitLag's 'FPS Boost': it gives almost no gain and some of its tweaks configure the system incorrectly." }
+      }
+    ]
+  },
+  {
+    "id": "nvidia-control-panel",
+    "name": "NVIDIA Control Panel",
+    "icon": "nvidia",
+    "when": "gpu.nvidia",
+    "source": "ai",
+    "summary": {
+      "ru": "Рекомендация AI Tweaker: глобальные параметры 3D для минимальной задержки.",
+      "en": "AI Tweaker recommendation: global 3D settings for the lowest latency."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Управление параметрами 3D → Глобальные", "en": "Manage 3D settings → Global" },
+        "path": "NVIDIA Control Panel → 3D Settings → Manage 3D settings",
+        "settings": [
+          { "name": "Low Latency Mode", "value": "On", "note": { "ru": "В играх с NVIDIA Reflex включайте Reflex в самой игре — он важнее этого параметра.", "en": "In games with NVIDIA Reflex enable Reflex in-game — it matters more than this setting." } },
+          { "name": "Power management mode", "value": "Prefer maximum performance" },
+          { "name": "Texture filtering - Quality", "value": "High performance" },
+          { "name": "Shader Cache Size", "value": "Unlimited" },
+          { "name": "Threaded optimization", "value": "Auto" },
+          { "name": "Vertical sync", "value": "Off (On if you use G-SYNC + FPS cap)" },
+          { "name": "Max Frame Rate", "value": "Off (or refresh rate − 3 with G-SYNC)" },
+          { "name": "Monitor Technology", "value": "G-SYNC Compatible (if supported)" }
+        ]
+      },
+      {
+        "title": { "ru": "Дисплей", "en": "Display" },
+        "path": "NVIDIA Control Panel → Display",
+        "settings": [
+          { "name": "Change resolution → Refresh rate", "value": "Maximum" },
+          { "name": "Output dynamic range", "value": "Full" },
+          { "name": "Adjust desktop size and position → Perform scaling on", "value": "Display" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "windows-graphics",
+    "name": "Windows: Display & Graphics",
+    "icon": "windows",
+    "source": "ai",
+    "summary": {
+      "ru": "Рекомендация AI Tweaker: системные настройки дисплея и графики.",
+      "en": "AI Tweaker recommendation: system display and graphics settings."
+    },
+    "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations"],
+    "sections": [
+      {
+        "title": { "ru": "Дисплей", "en": "Display" },
+        "path": "Settings → System → Display → Advanced display",
+        "settings": [
+          { "name": "Choose a refresh rate", "value": "Maximum", "note": { "ru": "AI Tweaker сам выставит максимальную частоту (твик display.maxhz).", "en": "AI Tweaker sets the maximum refresh rate itself (display.maxhz tweak)." } },
+          { "name": "Dynamic refresh rate (DRR)", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Графика", "en": "Graphics" },
+        "path": "Settings → System → Display → Graphics → Advanced graphics settings",
+        "settings": [
+          { "name": "Hardware-accelerated GPU scheduling", "value": "ON" },
+          { "name": "Optimizations for windowed games", "value": "ON" },
+          { "name": "Variable refresh rate", "value": "ON" },
+          { "name": "Per-app GPU preference for games (laptops)", "value": "High performance" }
+        ]
+      }
+    ]
+  }
+]

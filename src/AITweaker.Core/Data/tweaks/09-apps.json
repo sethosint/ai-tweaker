@@ -1,0 +1,82 @@
+[
+  {
+    "id": "apps.autostart.cleanup",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Убрать лаунчеры из автозагрузки", "en": "Remove launchers from startup" },
+    "description": {
+      "ru": "Steam, Discord, Spotify, Epic Games и ExitLag больше не запускаются вместе с Windows — как в настройках мастера. Сами программы работают как обычно, если их открыть.",
+      "en": "Steam, Discord, Spotify, Epic Games and ExitLag no longer start with Windows — as in the master's settings. The apps work normally when you open them."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Steam", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Discord", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Spotify", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "EpicGamesLauncher", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "ExitLag", "delete": true }
+    ]
+  },
+  {
+    "id": "apps.exitlag.service",
+    "category": "apps",
+    "level": 2,
+    "when": "app.exitlag",
+    "name": { "ru": "Отключить службу ExitLag", "en": "Disable the ExitLag service" },
+    "description": {
+      "ru": "Служба ExitLagPmService не нужна для работы ExitLag (рекомендация мастера: sc config ExitLagPmService start= disabled).",
+      "en": "ExitLagPmService isn't required for ExitLag to work (master's recommendation: sc config ExitLagPmService start= disabled)."
+    },
+    "actions": [
+      { "type": "service", "name": "ExitLagPmService", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "apps.edge.background",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Edge не работает в фоне", "en": "Edge doesn't run in the background" },
+    "description": {
+      "ru": "Отключает «ускорение запуска» и фоновую работу Edge после закрытия, боковую панель, помощника покупок и отправку данных. В Edge появится надпись «Управляется организацией» — это нормально для политик.",
+      "en": "Disables Edge startup boost and running after close, the sidebar, shopping assistant and data reporting. Edge will show 'Managed by your organization' — normal for policies."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "StartupBoostEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "BackgroundModeEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "HubsSidebarEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "EdgeShoppingAssistantEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "PersonalizationReportingEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "ShowRecommendationsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "DiagnosticData", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "apps.chrome.background",
+    "category": "apps",
+    "level": 2,
+    "when": "app.chrome",
+    "name": { "ru": "Chrome не работает в фоне", "en": "Chrome doesn't run in the background" },
+    "description": {
+      "ru": "Chrome полностью закрывается вместе с окном и не отправляет статистику использования.",
+      "en": "Chrome fully exits when you close the window and doesn't send usage statistics."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "BackgroundModeEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "MetricsReportingEnabled", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "apps.brave.background",
+    "category": "apps",
+    "level": 2,
+    "when": "app.brave",
+    "name": { "ru": "Brave не работает в фоне", "en": "Brave doesn't run in the background" },
+    "description": {
+      "ru": "Brave полностью закрывается вместе с окном и не отправляет статистику.",
+      "en": "Brave fully exits when you close the window and doesn't send statistics."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BackgroundModeEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "MetricsReportingEnabled", "kind": "dword", "value": 0 }
+    ]
+  }
+]

@@ -1,0 +1,177 @@
+[
+  {
+    "id": "bios-update",
+    "priority": "high",
+    "value": "Latest version",
+    "title": { "ru": "Обновите BIOS до последней версии", "en": "Update the BIOS to the latest version" },
+    "detail": {
+      "ru": "Новые BIOS исправляют стабильность памяти, микрокод процессора и совместимость. Скачивайте только с сайта производителя платы и не выключайте ПК во время прошивки.",
+      "en": "New BIOS releases fix memory stability, CPU microcode and compatibility. Download only from the board vendor's site and never power off during flashing."
+    },
+    "paths": {
+      "asus": "Tool → ASUS EZ Flash 3 Utility",
+      "msi": "M-FLASH (кнопка на главном экране / main screen button)",
+      "gigabyte": "Q-Flash (F8)",
+      "asrock": "Tool → Instant Flash",
+      "other": "Tools → BIOS Flash / Update"
+    }
+  },
+  {
+    "id": "microcode",
+    "priority": "high",
+    "when": "cpu.intelGen == 13 || cpu.intelGen == 14",
+    "value": "Microcode 0x12B+ / Intel Default Settings",
+    "title": { "ru": "Intel 13/14 gen: микрокод 0x12B и Intel Default Settings", "en": "Intel 13th/14th gen: microcode 0x12B and Intel Default Settings" },
+    "detail": {
+      "ru": "Обязательно для i5-13600K и выше: старые прошивки дают завышенное напряжение, из-за которого процессор деградирует (Vmin Shift). После обновления выберите профиль Intel Default / Intel Baseline.",
+      "en": "Mandatory for i5-13600K and up: old firmware requests excessive voltage that degrades the CPU (Vmin Shift). After updating select the Intel Default / Intel Baseline profile."
+    },
+    "paths": {
+      "asus": "Ai Tweaker → Intel Default Settings / Performance Preferences",
+      "msi": "OC → Intel Default Settings / CPU Lite Load",
+      "gigabyte": "Tweaker → Intel Default Settings",
+      "asrock": "OC Tweaker → Intel Base Profile",
+      "other": "Overclocking → Intel Default Settings"
+    }
+  },
+  {
+    "id": "xmp",
+    "priority": "high",
+    "value": "XMP I / EXPO I",
+    "title": { "ru": "Включите профиль памяти XMP / EXPO", "en": "Enable the XMP / EXPO memory profile" },
+    "detail": {
+      "ru": "Без профиля память работает на заводской «безопасной» частоте (DDR4-2133/2666, DDR5-4800). Профиль даёт заявленную частоту и тайминги: +5–15% FPS в процессорозависимых играх и меньше фризов.",
+      "en": "Without a profile memory runs at its safe default speed (DDR4-2133/2666, DDR5-4800). The profile enables the rated speed and timings: +5–15% FPS in CPU-bound games and less stutter."
+    },
+    "paths": {
+      "asus": "Ai Tweaker → Ai Overclock Tuner → XMP I / EXPO I (D.O.C.P.)",
+      "msi": "OC → Extreme Memory Profile (X.M.P.) / A-XMP / EXPO",
+      "gigabyte": "Tweaker → Extreme Memory Profile (X.M.P.) / EXPO",
+      "asrock": "OC Tweaker → DRAM Configuration → Load XMP / EXPO Setting",
+      "other": "Overclocking → Memory Profile (XMP / DOCP / EXPO)"
+    }
+  },
+  {
+    "id": "rebar",
+    "priority": "high",
+    "when": "gpu.discrete",
+    "value": "Enabled",
+    "title": { "ru": "Resizable BAR + Above 4G Decoding", "en": "Resizable BAR + Above 4G Decoding" },
+    "detail": {
+      "ru": "Процессор получает доступ ко всей видеопамяти сразу, а не окнами по 256 МБ. Прирост до 10% в современных играх. Требует UEFI без CSM.",
+      "en": "The CPU can access the whole VRAM at once instead of 256 MB windows. Up to 10% more FPS in modern games. Requires UEFI without CSM."
+    },
+    "paths": {
+      "asus": "Advanced → PCI Subsystem Settings → Above 4G Decoding + Re-Size BAR Support",
+      "msi": "Settings → Advanced → PCI Subsystem Settings → Above 4G memory + Re-Size BAR Support",
+      "gigabyte": "Settings → IO Ports → Above 4G Decoding + Re-Size BAR Support",
+      "asrock": "Advanced → Chipset Configuration → Above 4G Decoding + Re-Size BAR Support",
+      "other": "Advanced → PCIe → Above 4G Decoding + Resizable BAR"
+    }
+  },
+  {
+    "id": "secureboot",
+    "priority": "medium",
+    "value": "Enabled (CSM Disabled)",
+    "title": { "ru": "Secure Boot (и выключить CSM)", "en": "Secure Boot (and disable CSM)" },
+    "detail": {
+      "ru": "Нужен для античитов Valorant (Vanguard), FACEIT, Battlefield 6 и для Windows 11. CSM (режим совместимости со старыми ОС) выключите — он мешает Resizable BAR.",
+      "en": "Required by the Valorant (Vanguard), FACEIT and Battlefield 6 anti-cheats and by Windows 11. Disable CSM (legacy OS compatibility) — it blocks Resizable BAR."
+    },
+    "paths": {
+      "asus": "Boot → Secure Boot → OS Type: Windows UEFI mode; Boot → CSM → Disabled",
+      "msi": "Settings → Security → Secure Boot → Enabled; Settings → Advanced → Windows OS Configuration → BIOS UEFI/CSM Mode: UEFI",
+      "gigabyte": "Boot → Secure Boot → Enabled; Boot → CSM Support → Disabled",
+      "asrock": "Security → Secure Boot → Enabled; Boot → CSM → Disabled",
+      "other": "Boot / Security → Secure Boot → Enabled"
+    }
+  },
+  {
+    "id": "tpm",
+    "priority": "medium",
+    "value": "Enabled",
+    "title": { "ru": "Включите TPM 2.0 (fTPM / PTT)", "en": "Enable TPM 2.0 (fTPM / PTT)" },
+    "detail": {
+      "ru": "Встроенный TPM процессора нужен Windows 11 и современным античитам.",
+      "en": "The CPU's firmware TPM is required by Windows 11 and modern anti-cheats."
+    },
+    "paths": {
+      "asus": "Advanced → AMD fTPM Configuration / PCH-FW Configuration → PTT",
+      "msi": "Settings → Security → Trusted Computing → Security Device Support → Enable",
+      "gigabyte": "Settings → Miscellaneous → AMD CPU fTPM / Intel Platform Trust Technology (PTT)",
+      "asrock": "Advanced → CPU Configuration → AMD fTPM Switch / Security → Intel PTT",
+      "other": "Security → TPM / fTPM / PTT → Enabled"
+    }
+  },
+  {
+    "id": "amd-psic",
+    "priority": "medium",
+    "when": "cpu.vendor == \"AMD\"",
+    "value": "Typical Current Idle",
+    "title": { "ru": "Power Supply Idle Control → Typical Current Idle", "en": "Power Supply Idle Control → Typical Current Idle" },
+    "detail": {
+      "ru": "Убирает редкие зависания Ryzen в простое из-за слишком глубокого энергосбережения. Не влияет на производительность в играх.",
+      "en": "Fixes rare Ryzen idle freezes caused by overly deep power saving. No impact on gaming performance."
+    },
+    "paths": {
+      "asus": "Advanced → AMD CBS → CPU Common Options → Power Supply Idle Control",
+      "msi": "Settings → Advanced → AMD CBS → CPU Common Options → Power Supply Idle Control",
+      "gigabyte": "Settings → AMD CBS → CPU Common Options → Power Supply Idle Control",
+      "asrock": "Advanced → AMD CBS → CPU Common Options → Power Supply Idle Control",
+      "other": "AMD CBS → CPU Common Options → Power Supply Idle Control"
+    }
+  },
+  {
+    "id": "amd-mcr",
+    "priority": "low",
+    "when": "cpu.vendor == \"AMD\" && ram.type == \"DDR5\"",
+    "value": "Enabled",
+    "title": { "ru": "Memory Context Restore (AM5)", "en": "Memory Context Restore (AM5)" },
+    "detail": {
+      "ru": "Плата не тренирует DDR5 заново при каждом включении — загрузка за секунды вместо минуты. Если появится нестабильность, верните Auto.",
+      "en": "The board stops retraining DDR5 on every boot — seconds instead of a minute to POST. If instability appears, set it back to Auto."
+    },
+    "paths": {
+      "asus": "Ai Tweaker → DRAM Timing Control → Memory Context Restore",
+      "msi": "OC → Advanced DRAM Configuration → Memory Context Restore",
+      "gigabyte": "Tweaker → Advanced Memory Settings → Memory Context Restore",
+      "asrock": "OC Tweaker → DRAM Configuration → Memory Context Restore",
+      "other": "Memory settings → Memory Context Restore"
+    }
+  },
+  {
+    "id": "amd-pbo",
+    "priority": "low",
+    "when": "cpu.vendor == \"AMD\" && system.desktop",
+    "value": "Enabled + Curve Optimizer (Negative)",
+    "title": { "ru": "PBO и Curve Optimizer (для опытных)", "en": "PBO and Curve Optimizer (advanced)" },
+    "detail": {
+      "ru": "Отрицательный Curve Optimizer снижает напряжение и позволяет Ryzen дольше держать высокие частоты. Начните с −10 на все ядра и проверьте стабильность (OCCT/CoreCycler).",
+      "en": "A negative Curve Optimizer lowers voltage so Ryzen holds higher clocks longer. Start at −10 all-core and test stability (OCCT/CoreCycler)."
+    },
+    "paths": {
+      "asus": "Ai Tweaker → Precision Boost Overdrive → Curve Optimizer",
+      "msi": "OC → Advanced CPU Configuration → AMD Overclocking → Precision Boost Overdrive",
+      "gigabyte": "Tweaker → Advanced CPU Settings → Precision Boost Overdrive",
+      "asrock": "OC Tweaker → AMD Overclocking → Precision Boost Overdrive",
+      "other": "AMD Overclocking → Precision Boost Overdrive → Curve Optimizer"
+    }
+  },
+  {
+    "id": "virtualization",
+    "priority": "low",
+    "value": "Disabled (if not used)",
+    "title": { "ru": "Виртуализация SVM / VT-x — если не используете", "en": "SVM / VT-x virtualization — if unused" },
+    "detail": {
+      "ru": "Если вы не пользуетесь эмуляторами Android, WSL, Docker и виртуальными машинами, отключение виртуализации гарантированно выключает VBS. Если пользуетесь — не трогайте.",
+      "en": "If you don't use Android emulators, WSL, Docker or VMs, disabling virtualization guarantees VBS is off. If you do — leave it on."
+    },
+    "paths": {
+      "asus": "Advanced → CPU Configuration → SVM Mode / Intel Virtualization Technology",
+      "msi": "OC → Advanced CPU Configuration → SVM Mode / Intel Virtualization Tech",
+      "gigabyte": "Tweaker → Advanced CPU Settings → SVM Mode / Intel Virtualization Technology",
+      "asrock": "Advanced → CPU Configuration → SVM Mode / Intel Virtualization Technology",
+      "other": "CPU Configuration → SVM / VT-x"
+    }
+  }
+]

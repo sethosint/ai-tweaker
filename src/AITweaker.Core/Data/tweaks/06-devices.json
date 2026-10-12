@@ -1,0 +1,86 @@
+[
+  {
+    "id": "display.maxhz",
+    "category": "devices",
+    "level": 1,
+    "when": "display.maxHzUnused",
+    "name": { "ru": "Максимальная частота обновления монитора", "en": "Maximum monitor refresh rate" },
+    "description": {
+      "ru": "Переключает каждый монитор на максимальную частоту, которую он поддерживает при текущем разрешении. Частая ситуация: монитор на 144–240 Гц годами работает на 60 Гц.",
+      "en": "Switches every monitor to the highest refresh rate it supports at the current resolution. A common case: a 144–240 Hz monitor running at 60 Hz for years."
+    },
+    "why": {
+      "ru": "Найден монитор, работающий ниже своей максимальной частоты.",
+      "en": "A monitor is running below its maximum refresh rate."
+    },
+    "actions": [
+      { "type": "display" }
+    ]
+  },
+  {
+    "id": "devices.interrupt-affinity",
+    "category": "devices",
+    "level": 3,
+    "when": "cpu.cores >= 4 && !system.vm",
+    "reboot": true,
+    "risk": "medium",
+    "name": { "ru": "Прерывания GPU, сети и USB на производительные ядра", "en": "GPU, network and USB interrupts on performance cores" },
+    "description": {
+      "ru": "Закрепляет прерывания видеокарты, сетевой карты и USB-контроллеров (мышь/клавиатура) за отдельными быстрыми ядрами, не пересекающимися с ядром 0. На гибридных Intel выбираются только P-ядра.",
+      "en": "Pins interrupts of the GPU, network adapter and USB controllers (mouse/keyboard) to separate fast cores away from core 0. On hybrid Intel only P-cores are used."
+    },
+    "why": {
+      "ru": "Разносит прерывания по свободным быстрым ядрам — меньше DPC-задержек и джиттера ввода.",
+      "en": "Spreads interrupts over idle fast cores — lower DPC latency and input jitter."
+    },
+    "actions": [
+      { "type": "affinity", "targets": ["gpu", "nic", "usb"] }
+    ]
+  },
+  {
+    "id": "devices.msi.gpu",
+    "category": "devices",
+    "level": 3,
+    "when": "gpu.discrete && !system.vm",
+    "reboot": true,
+    "risk": "medium",
+    "name": { "ru": "MSI-режим прерываний для видеокарты", "en": "MSI interrupt mode for the GPU" },
+    "description": {
+      "ru": "Видеокарта сообщает о прерываниях сообщениями (Message Signaled Interrupts) вместо общей линии IRQ — меньше задержка обработки и нет конфликтов линий.",
+      "en": "The GPU signals interrupts with messages (MSI) instead of a shared IRQ line — lower handling latency and no line sharing."
+    },
+    "actions": [
+      { "type": "msi", "target": "gpu" }
+    ]
+  },
+  {
+    "id": "devices.msi.nic",
+    "category": "devices",
+    "level": 4,
+    "when": "net.ethernet && !system.vm",
+    "reboot": true,
+    "risk": "medium",
+    "name": { "ru": "MSI-режим прерываний для сетевой карты", "en": "MSI interrupt mode for the network adapter" },
+    "description": {
+      "ru": "То же для проводной сетевой карты. Большинство современных драйверов уже используют MSI — твик включает его, если драйвер этого не сделал.",
+      "en": "The same for the wired adapter. Most modern drivers already use MSI — this enables it if the driver didn't."
+    },
+    "actions": [
+      { "type": "msi", "target": "nic" }
+    ]
+  },
+  {
+    "id": "devices.unused.off",
+    "category": "devices",
+    "level": 3,
+    "when": "!system.vm",
+    "name": { "ru": "Отключить неиспользуемые системные устройства", "en": "Disable unused system devices" },
+    "description": {
+      "ru": "Отключает сетевой адаптер отладки ядра, шину перенаправления устройств удалённого рабочего стола и системный динамик (писк). Они не нужны дома, но генерируют прерывания и загружают драйверы.",
+      "en": "Disables the kernel debug network adapter, the Remote Desktop device redirector bus and the PC speaker (beep). Not needed at home, yet they load drivers and raise interrupts."
+    },
+    "actions": [
+      { "type": "device", "match": ["ROOT\\KDNIC\\", "ROOT\\RDPBUS\\", "ACPI\\PNP0800\\"] }
+    ]
+  }
+]

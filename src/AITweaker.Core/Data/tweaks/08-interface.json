@@ -1,0 +1,233 @@
+[
+  {
+    "id": "interface.no-ads",
+    "category": "interface",
+    "level": 1,
+    "restartExplorer": true,
+    "name": { "ru": "Убрать рекламу и «советы» Windows", "en": "Remove Windows ads and 'suggestions'" },
+    "description": {
+      "ru": "Отключает тихую установку «рекомендованных» приложений, рекламу в «Пуске», параметрах, на экране блокировки и в Проводнике, а также экран «Давайте завершим настройку».",
+      "en": "Stops silent installs of 'suggested' apps, ads in Start, Settings, lock screen and Explorer, and the 'Let's finish setting up' screen."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SilentInstalledAppsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SystemPaneSuggestionsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SoftLandingEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "PreInstalledAppsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "OemPreInstalledAppsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenOverlayEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338387Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338388Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338389Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-338393Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353694Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-353696Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "SubscribedContent-310093Enabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement", "name": "ScoobeSystemSettingEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_IrisRecommendations", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSyncProviderNotifications", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableWindowsConsumerFeatures", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "interface.widgets.off",
+    "category": "interface",
+    "level": 1,
+    "restartExplorer": true,
+    "name": { "ru": "Отключить виджеты и ленту новостей", "en": "Disable Widgets and the news feed" },
+    "description": {
+      "ru": "Убирает панель виджетов с новостями и погодой — это фоновый процесс на WebView, который постоянно грузит интернет и память.",
+      "en": "Removes the Widgets board with news and weather — a background WebView process that constantly uses the network and memory."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh", "name": "AllowNewsAndInterests", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.end-task",
+    "category": "interface",
+    "level": 1,
+    "name": { "ru": "«Завершить задачу» в панели задач", "en": "'End task' in the taskbar" },
+    "description": {
+      "ru": "Добавляет пункт «Завершить задачу» в меню по правому клику на значке приложения — зависшую игру можно убить без диспетчера задач.",
+      "en": "Adds 'End task' to the taskbar right-click menu — kill a frozen game without opening Task Manager."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings", "name": "TaskbarEndTask", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "interface.classic-context-menu",
+    "category": "interface",
+    "level": 2,
+    "when": "os.win11",
+    "restartExplorer": true,
+    "name": { "ru": "Классическое контекстное меню", "en": "Classic context menu" },
+    "description": {
+      "ru": "Возвращает полное контекстное меню Windows 10 по правому клику — без лишнего «Показать дополнительные параметры» и задержки отрисовки.",
+      "en": "Brings back the full Windows 10 right-click menu — no extra 'Show more options' step and no render delay."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "name": "", "kind": "string", "value": "" }
+    ]
+  },
+  {
+    "id": "interface.explorer",
+    "category": "interface",
+    "level": 1,
+    "restartExplorer": true,
+    "name": { "ru": "Удобный Проводник", "en": "Practical File Explorer" },
+    "description": {
+      "ru": "Показывает расширения файлов (защита от вирусов вида «фото.jpg.exe») и открывает Проводник на «Этот компьютер».",
+      "en": "Shows file extensions (protects against 'photo.jpg.exe' malware) and opens Explorer on 'This PC'."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "HideFileExt", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "LaunchTo", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "interface.startup-delay.off",
+    "category": "interface",
+    "level": 1,
+    "name": { "ru": "Без задержки автозагрузки", "en": "No startup delay" },
+    "description": {
+      "ru": "Windows не ждёт ~10 секунд перед запуском программ автозагрузки — рабочий стол готов быстрее.",
+      "en": "Windows no longer waits ~10 seconds before launching startup apps — the desktop is ready sooner."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "name": "StartupDelayInMSec", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize", "name": "WaitForIdleState", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.menu-delay",
+    "category": "interface",
+    "level": 2,
+    "logoff": true,
+    "name": { "ru": "Мгновенные меню", "en": "Instant menus" },
+    "description": {
+      "ru": "Вложенные меню открываются сразу, без задержки 400 мс.",
+      "en": "Submenus open immediately instead of after 400 ms."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Desktop", "name": "MenuShowDelay", "kind": "string", "value": "0" }
+    ]
+  },
+  {
+    "id": "interface.animations.off",
+    "category": "interface",
+    "level": 3,
+    "logoff": true,
+    "name": { "ru": "Отключить анимации окон", "en": "Disable window animations" },
+    "description": {
+      "ru": "Окна сворачиваются и разворачиваются мгновенно, без анимации панели задач и Aero Peek. Сглаживание шрифтов и миниатюры остаются.",
+      "en": "Windows minimize and restore instantly, without taskbar animations or Aero Peek. Font smoothing and thumbnails stay."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "kind": "string", "value": "0" },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAnimations", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "EnableAeroPeek", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects", "name": "VisualFXSetting", "kind": "dword", "value": 3 }
+    ]
+  },
+  {
+    "id": "interface.transparency.off",
+    "category": "interface",
+    "level": 3,
+    "name": { "ru": "Отключить прозрачность", "en": "Disable transparency" },
+    "description": {
+      "ru": "Без эффекта «акрил» в меню и панели задач — меньше работы для DWM и видеокарты.",
+      "en": "No acrylic blur in menus and the taskbar — less work for DWM and the GPU."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "EnableTransparency", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.dark-theme",
+    "category": "interface",
+    "level": 0,
+    "name": { "ru": "Тёмная тема Windows", "en": "Windows dark theme" },
+    "description": {
+      "ru": "Включает тёмную тему для системы и приложений.",
+      "en": "Turns on dark mode for the system and apps."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "AppsUseLightTheme", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "SystemUsesLightTheme", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.taskbar-clean",
+    "category": "interface",
+    "level": 0,
+    "restartExplorer": true,
+    "name": { "ru": "Чистая панель задач", "en": "Clean taskbar" },
+    "description": {
+      "ru": "Убирает кнопку «Представление задач» и сворачивает строку поиска в значок.",
+      "en": "Hides the Task View button and collapses the search box to an icon."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "interface.taskbar-left",
+    "category": "interface",
+    "level": 0,
+    "restartExplorer": true,
+    "name": { "ru": "Панель задач слева", "en": "Left-aligned taskbar" },
+    "description": {
+      "ru": "Значки и кнопка «Пуск» выравниваются по левому краю, как в Windows 10.",
+      "en": "Icons and the Start button align left, like Windows 10."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAl", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.explorer-nav-clean",
+    "category": "interface",
+    "level": 0,
+    "restartExplorer": true,
+    "name": { "ru": "Убрать «Галерею» и «Главную» из Проводника", "en": "Remove Gallery and Home from Explorer" },
+    "description": {
+      "ru": "Скрывает пункты «Галерея» и «Главная» из панели навигации Проводника.",
+      "en": "Hides Gallery and Home from the Explorer navigation pane."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}", "name": "System.IsPinnedToNameSpaceTree", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}", "name": "System.IsPinnedToNameSpaceTree", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "interface.clock-seconds",
+    "category": "interface",
+    "level": 0,
+    "restartExplorer": true,
+    "name": { "ru": "Секунды в часах панели задач", "en": "Seconds in the taskbar clock" },
+    "description": {
+      "ru": "Показывает секунды в часах на панели задач.",
+      "en": "Shows seconds in the taskbar clock."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowSecondsInSystemClock", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "interface.numlock",
+    "category": "interface",
+    "level": 0,
+    "name": { "ru": "NumLock включён при загрузке", "en": "NumLock on at boot" },
+    "description": {
+      "ru": "Цифровой блок клавиатуры работает сразу на экране входа.",
+      "en": "The numeric keypad works right away on the sign-in screen."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKU\\.DEFAULT\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" },
+      { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" }
+    ]
+  }
+]

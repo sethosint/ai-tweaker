@@ -1,0 +1,161 @@
+[
+  {
+    "id": "power.plan.ultimate",
+    "category": "power",
+    "level": 2,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Схема «Максимальная производительность»", "en": "Ultimate Performance power plan" },
+    "description": {
+      "ru": "Создаёт и включает скрытую схему Ultimate Performance: ядра не паркуются, частоты не сбрасываются между кадрами, нет микрозадержек выхода из сна.",
+      "en": "Creates and activates the hidden Ultimate Performance plan: no core parking, no clock drops between frames, no wake-up micro-latency."
+    },
+    "why": {
+      "ru": "Настольный ПК: экономия энергии здесь только добавляет задержку.",
+      "en": "Desktop PC: power saving only adds latency here."
+    },
+    "actions": [
+      { "type": "powerScheme", "scheme": "ultimate" }
+    ]
+  },
+  {
+    "id": "power.plan.x3d",
+    "category": "power",
+    "level": 2,
+    "when": "system.desktop && cpu.x3dMultiCcd",
+    "name": { "ru": "Сбалансированная схема + режим «Лучшая производительность» (X3D)", "en": "Balanced plan + Best performance mode (X3D)" },
+    "description": {
+      "ru": "Для двухчиплетных Ryzen X3D драйвер AMD паркует ядра без 3D V-Cache во время игры — это работает только в сбалансированной схеме. Режим питания выставляется на максимальную производительность.",
+      "en": "On dual-CCD Ryzen X3D the AMD driver parks the non-V-Cache cores while gaming — this only works on the Balanced plan. The power mode is set to best performance."
+    },
+    "why": {
+      "ru": "Ryzen X3D с двумя чиплетами: High/Ultimate сломали бы выбор кэш-ядер для игр.",
+      "en": "Dual-CCD Ryzen X3D: High/Ultimate plans would break cache-core selection for games."
+    },
+    "actions": [
+      { "type": "powerScheme", "scheme": "balanced", "overlay": "best-performance" }
+    ]
+  },
+  {
+    "id": "power.plan.laptop",
+    "category": "power",
+    "level": 2,
+    "when": "system.laptop",
+    "name": { "ru": "Ноутбук: режим «Лучшая производительность»", "en": "Laptop: Best performance mode" },
+    "description": {
+      "ru": "Оставляет сбалансированную схему (её требуют современные ноутбуки с Modern Standby), но переключает режим питания на максимальную производительность.",
+      "en": "Keeps the Balanced plan (required by modern laptops with Modern Standby) but switches the power mode to best performance."
+    },
+    "actions": [
+      { "type": "powerScheme", "scheme": "balanced", "overlay": "best-performance" }
+    ]
+  },
+  {
+    "id": "power.usb-selective-suspend.off",
+    "category": "power",
+    "level": 2,
+    "name": { "ru": "Отключить временное отключение USB-портов", "en": "Disable USB selective suspend" },
+    "description": {
+      "ru": "Windows не усыпляет USB-порты. Убирает пропадание и «просыпание» мыши, клавиатуры и звуковой карты.",
+      "en": "Windows stops suspending USB ports. Fixes mice, keyboards and USB audio dropping out and waking up late."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "USB selective suspend", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "48e6b7a6-50f5-4782-a5d4-53bb8f07e226", "ac": 0 },
+      { "type": "powercfg", "alias": "USB selective suspend (battery)", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "48e6b7a6-50f5-4782-a5d4-53bb8f07e226", "dc": 0, "when": "system.desktop" }
+    ]
+  },
+  {
+    "id": "power.pcie-aspm.off",
+    "category": "power",
+    "level": 2,
+    "name": { "ru": "Отключить энергосбережение PCI Express", "en": "Disable PCI Express link power management" },
+    "description": {
+      "ru": "Шина видеокарты и NVMe не переходит в энергосберегающее состояние — нет задержки на «разгон» линии при каждом всплеске нагрузки.",
+      "en": "The GPU and NVMe links never drop into a low-power state — no link wake-up delay on every load spike."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "PCIe Link State Power Management", "subgroup": "501a4d13-42af-4429-9fd1-a8218c268e20", "setting": "ee12f906-d277-404b-b6da-e5fa1a576df5", "ac": 0 }
+    ]
+  },
+  {
+    "id": "power.disk-idle.off",
+    "category": "power",
+    "level": 2,
+    "name": { "ru": "Не отключать диски при простое", "en": "Never turn off disks when idle" },
+    "description": {
+      "ru": "Диски не засыпают — нет фризов на несколько секунд, когда игра или Windows обращаются к «уснувшему» диску.",
+      "en": "Drives never spin down — no multi-second freezes when a game or Windows touches a sleeping drive."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Turn off hard disk after", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "6738e2c4-e8a5-4a42-b16a-e040e769756e", "ac": 0 }
+    ]
+  },
+  {
+    "id": "power.boost.aggressive",
+    "category": "power",
+    "level": 3,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Агрессивный турбобуст процессора", "en": "Aggressive CPU boost" },
+    "description": {
+      "ru": "Процессор уходит в турбочастоты сразу при нагрузке, без плавного разгона.",
+      "en": "The CPU jumps to boost clocks immediately under load instead of ramping up."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Processor performance boost mode", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "be337238-0d82-4146-a960-4f3749d470c7", "ac": 2 }
+    ]
+  },
+  {
+    "id": "power.core-parking.off",
+    "category": "power",
+    "level": 3,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Отключить парковку ядер", "en": "Disable core parking" },
+    "description": {
+      "ru": "Все ядра всегда готовы к работе — потоки игры не ждут «распарковки» ядра. Не применяется к двухчиплетным X3D, где парковка нужна драйверу AMD.",
+      "en": "All cores stay ready — game threads never wait for a core to unpark. Skipped on dual-CCD X3D where the AMD driver needs parking."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Processor performance core parking min cores", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "0cc5b647-c1df-4637-891a-dec35c318583", "ac": 100 }
+    ]
+  },
+  {
+    "id": "power.min-processor-state",
+    "category": "power",
+    "level": 4,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Минимальное состояние процессора 100%", "en": "Minimum processor state 100%" },
+    "description": {
+      "ru": "Процессор не снижает частоту даже в простое. Максимально ровное время кадра, но выше температура и энергопотребление.",
+      "en": "The CPU never lowers its clock, even at idle. The flattest frame times, but higher temperatures and power draw."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Minimum processor state", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "893dee8e-2bef-41e0-89c6-b55d0929964c", "ac": 100 }
+    ]
+  },
+  {
+    "id": "power.fast-startup.off",
+    "category": "power",
+    "level": 1,
+    "name": { "ru": "Отключить «Быстрый запуск»", "en": "Disable Fast Startup" },
+    "description": {
+      "ru": "Выключение компьютера становится настоящим: драйверы и ядро загружаются начисто при каждом включении. Устраняет «накопление» глюков и проблемы с драйверами после выключения.",
+      "en": "Shutdown becomes a real shutdown: drivers and the kernel load fresh every boot. Fixes accumulated glitches and driver issues after power-off."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power", "name": "HiberbootEnabled", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "power.hibernation.off",
+    "category": "power",
+    "level": 2,
+    "when": "system.desktop",
+    "name": { "ru": "Отключить гибернацию", "en": "Disable hibernation" },
+    "description": {
+      "ru": "Удаляет файл hiberfil.sys (освобождает гигабайты на SSD, равные объёму ОЗУ × 0.4). На ПК гибернация почти не нужна.",
+      "en": "Deletes hiberfil.sys (frees gigabytes on the SSD, about 40% of your RAM). Desktops rarely need hibernation."
+    },
+    "actions": [
+      { "type": "command", "file": "powercfg.exe", "args": "/hibernate off", "undoFile": "powercfg.exe", "undoArgs": "/hibernate on" }
+    ]
+  }
+]
