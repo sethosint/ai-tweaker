@@ -104,6 +104,7 @@ data = {
     "bios": load("bios.json"),
     "programs": load("programs.json"),
     "extensions": load("extensions.json"),
+    "features": load("features.json"),
 }
 
 with open(OUT, "w", encoding="utf-8") as f:

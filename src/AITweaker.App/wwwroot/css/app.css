@@ -478,6 +478,15 @@ label.field { display: grid; gap: 6px; font: 500 12.5px/1.3 var(--font); color: 
 .trow.is-installed .tt { color: var(--ink-2); }
 .ext-dot { width: 8px; height: 8px; margin: 7px 0 0 6px; border-radius: 50%; background: var(--accent); }
 
+.unused-callout { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.unused-callout b { color: var(--ink); font-weight: 600; }
+.fw-list { display: grid; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; max-height: 58vh; overflow-y: auto; }
+.fw-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+.fw-row:last-child { border-bottom: 0; }
+.fw-row.is-done { opacity: .6; }
+.fw-name { font-weight: 600; color: var(--ink); font-size: 13.5px; }
+.fw-lose { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.fw-use { display: flex; gap: 10px; align-items: center; border: 0; background: none; cursor: pointer; font: 500 12.5px/1 var(--font); color: var(--muted); padding: 4px; }
 .confirm-title { font: 600 16px/1.35 var(--font-display); color: var(--ink); letter-spacing: -0.01em; }
 
 /* ------------------------------------------------------------------ motion */

@@ -33,7 +33,7 @@
 
   // ------------------------------------------------------------------ simulator
 
-  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [] };
+  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [], features: [] };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
@@ -180,6 +180,9 @@
       return { results, rebootRequired: false };
     },
     "programs.repairWinget": async () => { await sleep(600); return true; },
+    "features.list": async () => D.features
+      .map((f) => ({ id: f.id, name: f.name, used: !!f.keepByDefault || (f.usedWhen ? evalWhen(f.usedWhen) : false), tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
+      .filter((f) => f.tweaks.length),
     "image.preview": async ({ options }) => {
       const o = options || {};
       const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look" && t.level >= 1) || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));

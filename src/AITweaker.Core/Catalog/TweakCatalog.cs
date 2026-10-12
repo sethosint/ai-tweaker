@@ -16,12 +16,14 @@ public sealed class TweakCatalog
     public IReadOnlyList<BiosRecommendation> Bios { get; }
     public IReadOnlyList<InstallProgram> Programs { get; }
     public IReadOnlyList<BrowserExtension> Extensions { get; }
+    public IReadOnlyList<FeatureQuestion> Features { get; }
 
     private readonly Dictionary<string, TweakDefinition> _byId;
 
     private TweakCatalog(
         List<TweakCategory> categories, List<TweakDefinition> tweaks, List<AppPackage> apps,
-        List<AppGuide> guides, List<BiosRecommendation> bios, List<InstallProgram> programs, List<BrowserExtension> extensions)
+        List<AppGuide> guides, List<BiosRecommendation> bios, List<InstallProgram> programs, List<BrowserExtension> extensions,
+        List<FeatureQuestion> features)
     {
         Categories = categories;
         Tweaks = tweaks;
@@ -30,6 +32,7 @@ public sealed class TweakCatalog
         Bios = bios;
         Programs = programs;
         Extensions = extensions;
+        Features = features;
         _byId = new Dictionary<string, TweakDefinition>(StringComparer.Ordinal);
         foreach (var t in tweaks)
         {
@@ -60,7 +63,8 @@ public sealed class TweakCatalog
             Read<List<AppGuide>>(asm, Prefix + "guides.json"),
             Read<List<BiosRecommendation>>(asm, Prefix + "bios.json"),
             Read<List<InstallProgram>>(asm, Prefix + "programs.json"),
-            Read<List<BrowserExtension>>(asm, Prefix + "extensions.json"));
+            Read<List<BrowserExtension>>(asm, Prefix + "extensions.json"),
+            Read<List<FeatureQuestion>>(asm, Prefix + "features.json"));
     }
 
     private static T Read<T>(Assembly asm, string resource)

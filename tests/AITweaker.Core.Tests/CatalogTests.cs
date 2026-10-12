@@ -214,4 +214,26 @@ public class CatalogTests
             Assert.Equal("https://clients2.google.com/service/update2/crx", o.Value.GetProperty("update_url").GetString());
         }
     }
+
+    [Fact]
+    public void FeatureQuestionsPointAtRealTweaks()
+    {
+        Assert.Equal(Catalog.Features.Count, Catalog.Features.Select(f => f.Id).Distinct().Count());
+        foreach (var f in Catalog.Features)
+        {
+            Assert.NotEmpty(f.Tweaks);
+            foreach (var id in f.Tweaks)
+            {
+                var tw = Catalog.Find(id);
+                Assert.True(tw is not null, $"{f.Id}: unknown tweak {id}");
+            }
+            if (f.UsedWhen is not null)
+                foreach (var fact in ConditionEvaluator.Identifiers(f.UsedWhen))
+                    Assert.True(SystemProfile.KnownFacts.Contains(fact) || fact.StartsWith("app.", StringComparison.Ordinal), $"{f.Id}: unknown fact {fact}");
+        }
+        // anything that disables a feature people use asks first
+        foreach (var id in new[] { "system.hyperv.off", "system.smartcard.off", "system.remote.off", "system.biometrics.off" })
+            Assert.True(Catalog.Find(id)!.Confirm, id);
+        Assert.True(Catalog.Features.Single(f => f.Id == "vbs").KeepByDefault);
+    }
 }

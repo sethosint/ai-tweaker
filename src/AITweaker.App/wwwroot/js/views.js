@@ -20,6 +20,7 @@
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div>
         <div class="actions"><button class="btn ghost sm" id="selRec">${t("tune.selectRec")}</button><button class="btn ghost sm" id="selNone">${t("tune.selectNone")}</button></div></div>
+      <div class="callout unused-callout"><div><b>${t("tune.unusedTitle")}</b><div>${t("tune.unusedDesc")}</div></div><button class="btn sm" id="disableUnused">${t("tune.unusedBtn")}</button></div>
       <div class="profiles">${PROFILES.map((p, i) => `<div class="prof ${S.profileName === p ? "on" : ""}" data-p="${p}"><div class="pc">L${i + 1}</div><div class="pn">${t("prof." + p)}</div><div class="pd">${t("prof." + p + ".d")}</div><div class="pk">${t("tune.tweaksN")}: ${counts[p]}</div></div>`).join("")}</div>
       ${groups.map(({ c, list }) => html`<div class="cat-group">
         <div class="cat-h">${esc(L(c.name))}<span class="n">${list.filter((i) => S.selected.has(i.id)).length}/${list.length}</span></div>
@@ -38,6 +39,7 @@
       </div>`;
 
     v.querySelectorAll(".prof").forEach((el) => (el.onclick = () => App.setProfile(el.dataset.p)));
+    $("#disableUnused").onclick = () => App.disableUnused();
     v.querySelectorAll("input[data-id]").forEach((cb) => (cb.onchange = () => { cb.checked ? S.selected.add(cb.dataset.id) : S.selected.delete(cb.dataset.id); V.tune(); }));
     $("#selRec").onclick = () => { S.selected = new Set(items.filter((i) => i.recommended).map((i) => i.id)); V.tune(); };
     $("#selNone").onclick = () => { S.selected.clear(); V.tune(); };

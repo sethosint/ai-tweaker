@@ -194,7 +194,8 @@
       "en": "Completely denies apps and Windows access to your location."
     },
     "actions": [
-      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "name": "Value", "kind": "string", "value": "Deny" }
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "name": "Value", "kind": "string", "value": "Deny" },
+      { "type": "service", "name": "lfsvc", "startup": "disabled" }
     ]
   },
   {

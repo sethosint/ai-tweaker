@@ -53,6 +53,7 @@ public sealed class ApiService
         "drivers.rescan" => await DriverCenter.RescanAsync(),
         "guides.list" => await GuidesAsync(),
         "programs.list" => await Task.Run(Programs),
+        "features.list" => await FeaturesAsync(),
         "programs.install" => await Exclusive(async () =>
         {
             var summary = await ProgramInstaller.InstallAsync(_catalog, Ids(p) ?? [], (i, n, name) => _emit("install.progress", new { i, n, name }), NewLongTask());
@@ -297,6 +298,21 @@ public sealed class ApiService
                 installed = g.Detect is null || ConditionEvaluator.Evaluate(g.Detect, facts),
             })
             .OrderByDescending(g => g.installed);
+    }
+
+    /// <summary>"Do you use this?" questions with a guess from the hardware scan and the tweaks that apply on this PC.</summary>
+    private async Task<object> FeaturesAsync()
+    {
+        var facts = (await ProfileAsync()).ToFacts();
+        return _catalog.Features
+            .Select(f => new
+            {
+                f.Id,
+                f.Name,
+                used = f.KeepByDefault || (f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts)),
+                tweaks = f.Tweaks.Where(id => _catalog.Find(id) is { } t && ConditionEvaluator.Evaluate(t.When, facts)).ToList(),
+            })
+            .Where(f => f.tweaks.Count > 0);
     }
 
     private object Programs()

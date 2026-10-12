@@ -1,0 +1,17 @@
+[
+  { "id": "printing", "name": { "ru": "Принтер", "en": "Printer" }, "usedWhen": "printer", "tweaks": ["system.print-spooler.off"] },
+  { "id": "scanner", "name": { "ru": "Сканер", "en": "Scanner" }, "tweaks": ["system.scanner.off"] },
+  { "id": "bluetooth", "name": { "ru": "Bluetooth: наушники, геймпады, телефон", "en": "Bluetooth: headphones, gamepads, phone" }, "usedWhen": "bluetooth", "tweaks": ["system.bluetooth.off"] },
+  { "id": "xbox", "name": { "ru": "Xbox и Game Pass", "en": "Xbox and Game Pass" }, "usedWhen": "app.xbox", "tweaks": ["system.xbox-services.off"] },
+  { "id": "onedrive", "name": { "ru": "OneDrive", "en": "OneDrive" }, "usedWhen": "app.onedrive", "tweaks": ["system.onedrive.remove"] },
+  { "id": "search", "name": { "ru": "Поиск по содержимому файлов в «Пуске»", "en": "Searching file contents from Start" }, "tweaks": ["system.search-indexer.off"] },
+  { "id": "virtualization", "name": { "ru": "Виртуализация: WSL, Docker, эмуляторы Android, «Песочница»", "en": "Virtualization: WSL, Docker, Android emulators, Sandbox" }, "tweaks": ["system.hyperv.off"] },
+  { "id": "remote", "name": { "ru": "Удалённый рабочий стол Windows", "en": "Windows Remote Desktop" }, "tweaks": ["system.remote.off"] },
+  { "id": "hello", "name": { "ru": "Вход по лицу или отпечатку (Windows Hello)", "en": "Face or fingerprint sign-in (Windows Hello)" }, "usedWhen": "system.laptop", "tweaks": ["system.biometrics.off"] },
+  { "id": "smartcard", "name": { "ru": "Электронная подпись, смарт-карты, токены", "en": "Digital signatures, smart cards, tokens" }, "tweaks": ["system.smartcard.off"] },
+  { "id": "location", "name": { "ru": "Местоположение: карты, погода, «Найти устройство»", "en": "Location: maps, weather, Find My Device" }, "usedWhen": "system.laptop", "tweaks": ["privacy.location"] },
+  { "id": "phone", "name": { "ru": "Звонки с компьютера через «Связь с телефоном»", "en": "Calls from the PC through Phone Link" }, "tweaks": ["system.phone.off"] },
+  { "id": "hotspot", "name": { "ru": "Раздача Wi-Fi с компьютера", "en": "Sharing Wi-Fi from the PC" }, "tweaks": ["system.hotspot.off"] },
+  { "id": "background", "name": { "ru": "Приложения из Microsoft Store в фоне", "en": "Microsoft Store apps in the background" }, "tweaks": ["system.background-apps.off"] },
+  { "id": "vbs", "name": { "ru": "Изоляция ядра (защита памяти)", "en": "Core isolation (memory integrity)" }, "keepByDefault": true, "tweaks": ["security.vbs.off"] }
+]

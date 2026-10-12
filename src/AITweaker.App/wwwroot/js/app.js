@@ -1,6 +1,6 @@
 /* Bootstrap and cross-view actions (scan, apply, revert). */
 (function () {
-  const App = (window.App = {});
+  const App = (window.App ||= {});
 
   App.refreshStatus = async () => {
     S.status = await call("tweaks.status", {}, { silent: true }).catch(() => S.status);
@@ -36,7 +36,9 @@
   /** Applies tweaks after asking about every important one; shows a summary, or the restart window when needed. */
   App.apply = async (ids, opts = {}) => {
     if (S.busy || !ids.length) return;
-    const accepted = await confirmImportant(ids);
+    // Features the user already said "no" to in the questionnaire are not asked about a second time.
+    const pre = opts.preconfirmed || new Set();
+    const accepted = [...ids.filter((id) => pre.has(id)), ...(await confirmImportant(ids.filter((id) => !pre.has(id))))];
     if (!accepted.length) return;
     const b = busy(t("busy.apply"));
     const off = API.on("apply.progress", (p) => b.progress(p.i / p.n, `${p.i}/${p.n} · ${p.id}`));
@@ -176,10 +178,12 @@
     if (go1 !== "go") return;
     call("firstrun.done", {}, { silent: true }).catch(() => {});
     await App.setProfile(prof.v);
+    // Ask which Windows features are actually used, so everything else can be switched off too.
+    const unused = (await App.featureWizard()) || [];
     // Everything recommended for this machine that isn't applied yet (the image already carries the offline part), plus the look.
     const ids = S.plan.items.filter((i) => { const tw = S.byId[i.id]; return (i.recommended || (tw.category === "look" && tw.level >= 1)) && S.status[i.id] !== "applied"; }).map((i) => i.id);
     go("tune");
-    await App.apply(ids, { restorePoint: true });
+    await App.apply([...new Set([...ids, ...unused])], { restorePoint: true, preconfirmed: new Set(unused) });
   };
 
   document.addEventListener("DOMContentLoaded", boot);

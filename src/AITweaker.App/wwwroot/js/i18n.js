@@ -1,6 +1,14 @@
 /* UI strings. Catalog texts come from the C# side as {ru, en}. */
 window.I18N = {
   ru: {
+    "tune.unusedBtn": "Выбрать функции",
+    "tune.unusedDesc": "Принтер, Bluetooth, виртуализация, удалённый доступ, смарт-карты… Отметьте нужное — остальное выключим.",
+    "tune.unusedTitle": "Отключите то, чем не пользуетесь",
+    "fw.go": "Отключить ненужное",
+    "fw.off": "Уже отключено",
+    "fw.use": "Пользуюсь",
+    "fw.desc": "Выключите то, что вам не нужно, — программа отключит эти функции Windows. Под каждой строкой написано, что перестанет работать. Всё обратимо.",
+    "fw.title": "Чем вы пользуетесь?",
     "tune.tweaksN": "Твиков",
     "reverted": "Откачено",
     "toast.explorer": "Проводник перезапущен",
@@ -162,6 +170,14 @@ window.I18N = {
     "toast.saved": "Сохранено", "toast.report": "Отчёт сохранён на рабочий стол",
   },
   en: {
+    "tune.unusedBtn": "Choose features",
+    "tune.unusedDesc": "Printer, Bluetooth, virtualization, remote access, smart cards… Keep what you need — the rest goes off.",
+    "tune.unusedTitle": "Turn off what you don't use",
+    "fw.go": "Turn off the rest",
+    "fw.off": "Already off",
+    "fw.use": "I use it",
+    "fw.desc": "Switch off what you don't need — the app will turn those Windows features off. Each row says what stops working. Everything is reversible.",
+    "fw.title": "What do you use?",
     "tune.tweaksN": "Tweaks",
     "reverted": "Rolled back",
     "toast.explorer": "Explorer restarted",

@@ -97,6 +97,18 @@ public sealed class BrowserExtension
     public string StoreUrl => "https://chromewebstore.google.com/detail/" + ExtensionId;
 }
 
+/// <summary>A "do you use this?" question: when the answer is no, its tweaks switch the feature off.</summary>
+public sealed class FeatureQuestion
+{
+    public required string Id { get; init; }
+    public required LocalizedText Name { get; init; }
+    /// <summary>Fact that means the feature is in use (pre-ticks "I use it").</summary>
+    public string? UsedWhen { get; init; }
+    /// <summary>Security features: ticked "I use it" unless the user unticks it.</summary>
+    public bool KeepByDefault { get; init; }
+    public List<string> Tweaks { get; init; } = [];
+}
+
 public sealed class BiosRecommendation
 {
     public required string Id { get; init; }
