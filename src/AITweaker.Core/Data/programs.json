@@ -1,0 +1,33 @@
+[
+  { "id": "chrome", "name": "Google Chrome", "group": "browsers", "winget": "Google.Chrome", "detect": "Google Chrome", "recommended": true, "note": { "ru": "Расширения и настройки ставятся автоматически — см. ниже.", "en": "Extensions and settings are applied automatically — see below." } },
+  { "id": "brave", "name": "Brave", "group": "browsers", "winget": "Brave.Brave", "detect": "Brave" },
+  { "id": "firefox", "name": "Mozilla Firefox", "group": "browsers", "winget": "Mozilla.Firefox", "detect": "Mozilla Firefox" },
+
+  { "id": "discord", "name": "Discord", "group": "communication", "winget": "Discord.Discord", "detect": "Discord", "recommended": true },
+  { "id": "ayugram", "name": "AyuGram", "group": "communication", "winget": "RadolynLabs.AyuGramDesktop", "detect": "AyuGram", "recommended": true, "note": { "ru": "Клиент Telegram.", "en": "Telegram client." } },
+  { "id": "telegram", "name": "Telegram", "group": "communication", "winget": "Telegram.TelegramDesktop", "detect": "Telegram Desktop" },
+  { "id": "claude", "name": "Claude", "group": "communication", "winget": "Anthropic.Claude", "detect": "Claude", "recommended": true },
+
+  { "id": "steam", "name": "Steam", "group": "gaming", "winget": "Valve.Steam", "detect": "Steam", "recommended": true },
+  { "id": "epic", "name": "Epic Games Launcher", "group": "gaming", "winget": "EpicGames.EpicGamesLauncher", "detect": "Epic Games Launcher", "recommended": true },
+  { "id": "ea", "name": "EA app", "group": "gaming", "winget": "ElectronicArts.EADesktop", "detect": "EA app", "recommended": true, "note": { "ru": "Нужен для EA SPORTS FC и других игр EA.", "en": "Required for EA SPORTS FC and other EA games." } },
+
+  { "id": "spotify", "name": "Spotify", "group": "media", "winget": "Spotify.Spotify", "detect": "Spotify", "user": true, "recommended": true, "note": { "ru": "Ставится от имени пользователя — установщик Spotify не работает с правами администратора.", "en": "Installed as the regular user — Spotify's installer refuses to run as administrator." } },
+  { "id": "obs", "name": "OBS Studio", "group": "media", "winget": "OBSProject.OBSStudio", "detect": "OBS Studio", "recommended": true },
+  { "id": "mpv", "name": "mpv", "group": "media", "winget": "shinchiro.mpv", "detect": "mpv", "recommended": true, "note": { "ru": "Лёгкий видеоплеер без лишнего.", "en": "A lightweight, no-frills video player." } },
+  { "id": "vlc", "name": "VLC", "group": "media", "winget": "VideoLAN.VLC", "detect": "VLC media player" },
+  { "id": "capcut", "name": "CapCut", "group": "media", "winget": "ByteDance.CapCut", "detect": "CapCut" },
+
+  { "id": "7zip", "name": "7-Zip", "group": "tools", "winget": "7zip.7zip", "detect": "7-Zip", "recommended": true },
+  { "id": "everything", "name": "Everything", "group": "tools", "winget": "voidtools.Everything", "detect": "Everything", "note": { "ru": "Мгновенный поиск файлов по имени.", "en": "Instant file search by name." } },
+  { "id": "notepadpp", "name": "Notepad++", "group": "tools", "winget": "Notepad++.Notepad++", "detect": "Notepad++" },
+  { "id": "powertoys", "name": "PowerToys", "group": "tools", "winget": "Microsoft.PowerToys", "detect": "PowerToys" },
+
+  { "id": "vcredist", "name": "Visual C++ 2015–2022 (x64)", "group": "runtimes", "winget": "Microsoft.VCRedist.2015+.x64", "detect": "Visual C++ 2015-2022 Redistributable (x64)|Visual C++ v14 Redistributable (x64)", "recommended": true, "note": { "ru": "Без него не запускаются многие игры и программы.", "en": "Many games and apps won't start without it." } },
+  { "id": "directx", "name": "DirectX End-User Runtime", "group": "runtimes", "winget": "Microsoft.DirectX", "recommended": true, "note": { "ru": "Старые библиотеки DirectX 9–11 для игр. Безопасно ставить повторно.", "en": "Legacy DirectX 9–11 libraries for games. Safe to reinstall." } },
+  { "id": "dotnet8", "name": ".NET 8 Desktop Runtime", "group": "runtimes", "winget": "Microsoft.DotNet.DesktopRuntime.8", "detect": "Desktop Runtime - 8.", "recommended": true },
+
+  { "id": "openshell", "name": "Open-Shell", "group": "look", "winget": "Open-Shell.Open-Shell-Menu", "detect": "Open-Shell", "recommended": true, "note": { "ru": "Бесплатный классический «Пуск» как на вашем скриншоте. После установки AI Tweaker настроит его сам.", "en": "A free classic Start like your screenshot. AI Tweaker configures it after install." } },
+  { "id": "startallback", "name": "StartAllBack", "group": "look", "winget": "StartIsBack.StartAllBack", "detect": "StartAllBack", "paid": true, "note": { "ru": "Платная альтернатива Open-Shell, меняет ещё и панель задач. Ставится официальный установщик с пробным периодом; лицензия покупается у автора.", "en": "A paid alternative to Open-Shell that also restyles the taskbar. Installs the official build with its trial; licenses are bought from the author." } },
+  { "id": "cru", "name": "CRU — Custom Resolution Utility", "group": "look", "download": "https://www.monitortests.com/download/cru/cru-1.5.3.zip", "url": "https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU", "note": { "ru": "Своё (в т.ч. растянутое) разрешение. Распаковывается в папку AI Tweaker, ярлык — в меню «Пуск». Гайд — во вкладке «Программы».", "en": "Custom (incl. stretched) resolutions. Unpacked to the AI Tweaker folder with a Start menu shortcut. Guide in the Programs tab." } }
+]

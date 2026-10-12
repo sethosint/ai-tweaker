@@ -4,7 +4,7 @@ using AITweaker.Core.Model;
 
 namespace AITweaker.Core.Catalog;
 
-/// <summary>Loads the embedded data files (tweaks, debloat apps, app guides, BIOS advice).</summary>
+/// <summary>Loads the embedded data files (tweaks, debloat apps, app guides, BIOS advice, programs, browser extensions).</summary>
 public sealed class TweakCatalog
 {
     private const string Prefix = "AITweaker.Data.";
@@ -14,18 +14,22 @@ public sealed class TweakCatalog
     public IReadOnlyList<AppPackage> Apps { get; }
     public IReadOnlyList<AppGuide> Guides { get; }
     public IReadOnlyList<BiosRecommendation> Bios { get; }
+    public IReadOnlyList<InstallProgram> Programs { get; }
+    public IReadOnlyList<BrowserExtension> Extensions { get; }
 
     private readonly Dictionary<string, TweakDefinition> _byId;
 
     private TweakCatalog(
         List<TweakCategory> categories, List<TweakDefinition> tweaks, List<AppPackage> apps,
-        List<AppGuide> guides, List<BiosRecommendation> bios)
+        List<AppGuide> guides, List<BiosRecommendation> bios, List<InstallProgram> programs, List<BrowserExtension> extensions)
     {
         Categories = categories;
         Tweaks = tweaks;
         Apps = apps;
         Guides = guides;
         Bios = bios;
+        Programs = programs;
+        Extensions = extensions;
         _byId = new Dictionary<string, TweakDefinition>(StringComparer.Ordinal);
         foreach (var t in tweaks)
         {
@@ -54,7 +58,9 @@ public sealed class TweakCatalog
             tweaks,
             Read<List<AppPackage>>(asm, Prefix + "apps.json"),
             Read<List<AppGuide>>(asm, Prefix + "guides.json"),
-            Read<List<BiosRecommendation>>(asm, Prefix + "bios.json"));
+            Read<List<BiosRecommendation>>(asm, Prefix + "bios.json"),
+            Read<List<InstallProgram>>(asm, Prefix + "programs.json"),
+            Read<List<BrowserExtension>>(asm, Prefix + "extensions.json"));
     }
 
     private static T Read<T>(Assembly asm, string resource)

@@ -122,8 +122,8 @@
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["tools", "05"],
-    ["drivers", "06"], ["apps", "07"], ["bios", "08"], ["image", "09"], ["ai", "10"], ["backup", "11"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"],
+    ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
 
@@ -155,7 +155,7 @@
         </div>
       </header>
       <nav class="nav">
-        ${NAV.map(([v, n], i) => `${i === 1 || i === 5 || i === 9 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        ${NAV.map(([v, n], i) => `${i === 1 || i === 6 || i === 10 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
         <div class="nav-foot">${t("nav.foot")}<br><br>v${esc((S.init && S.init.version) || "1.0.0")} · ${esc((S.init && S.init.machine) || "")}</div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>

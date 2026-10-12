@@ -78,5 +78,31 @@
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BackgroundModeEnabled", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "MetricsReportingEnabled", "kind": "dword", "value": 0 }
     ]
+  },
+  {
+    "id": "apps.chrome.extensions",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Chrome: нужные расширения автоматически", "en": "Chrome: essential extensions automatically" },
+    "description": { "ru": "Через официальную политику Chrome ставит uBlock Origin Lite, SponsorBlock, DeepL и Volume Master из Chrome Web Store при следующем запуске браузера и дальше обновляет их сам. Отключить расширение можно, удалить — откатив этот твик. Пока политика действует, Chrome пишет «Управляется вашей организацией» — так и должно быть.", "en": "Through Chrome's official policy, installs uBlock Origin Lite, SponsorBlock, DeepL and Volume Master from the Chrome Web Store on the next browser start and keeps them updated. You can disable an extension; to remove it, roll this tweak back. While the policy is active Chrome shows 'Managed by your organization' — that's expected." },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "ExtensionSettings", "kind": "string", "value": "{\"ddkjiahejlhfcafbddmgiahcphecmpfh\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"mnjggcdmjocbbbhaepdhchncahnbgone\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"cofdbpoegempjloogbagkncekinflcnj\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"jghecgabfgfdldnmbfkhmffcabddioke\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"}}" }
+    ]
+  },
+  {
+    "id": "apps.chrome.privacy",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Chrome: без рекламного профилирования", "en": "Chrome: no ad profiling" },
+    "description": { "ru": "Выключает рекламные темы и измерение рекламы Privacy Sandbox, всплывающее окно про них, сбор отзывов и список покупок; оставляет аппаратное ускорение включённым.", "en": "Turns off Privacy Sandbox ad topics and ad measurement, its prompt, feedback collection and the shopping list; keeps hardware acceleration on." },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxPromptEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxAdTopicsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxSiteEnabledAdsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxAdMeasurementEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "UserFeedbackAllowed", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "ShoppingListEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "HardwareAccelerationModeEnabled", "kind": "dword", "value": 1 }
+    ]
   }
 ]

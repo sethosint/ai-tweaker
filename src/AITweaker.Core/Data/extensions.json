@@ -1,0 +1,6 @@
+[
+  { "id": "ublock-lite", "name": "uBlock Origin Lite", "extensionId": "ddkjiahejlhfcafbddmgiahcphecmpfh", "note": { "ru": "Блокировка рекламы и трекеров. Лёгкий, почти не нагружает браузер.", "en": "Blocks ads and trackers. Lightweight, barely loads the browser." } },
+  { "id": "sponsorblock", "name": "SponsorBlock for YouTube", "extensionId": "mnjggcdmjocbbbhaepdhchncahnbgone", "minVersion": "6.1.6", "note": { "ru": "Пропускает рекламные вставки и просьбы подписаться в роликах YouTube.", "en": "Skips sponsor segments and subscribe reminders in YouTube videos." } },
+  { "id": "deepl", "name": "DeepL", "extensionId": "cofdbpoegempjloogbagkncekinflcnj", "minVersion": "1.103.0", "note": { "ru": "Перевод выделенного текста и страниц.", "en": "Translates selected text and pages." } },
+  { "id": "volume-master", "name": "Volume Master", "extensionId": "jghecgabfgfdldnmbfkhmffcabddioke", "minVersion": "2.4.0", "note": { "ru": "Громкость каждой вкладки отдельно, с усилением до 600%.", "en": "Per-tab volume with boost up to 600%." } }
+]

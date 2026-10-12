@@ -841,5 +841,63 @@
         "note": { "ru": "В оконном и безрамочном режимах растяжение не работает — только полноэкранный. Рабочий стол можно оставить на родном разрешении; переключиться на растянутое можно и во вкладке «Инструменты».", "en": "Stretching only works in exclusive fullscreen, not windowed or borderless. Keep the desktop native; you can also switch to the stretched mode from the Tools tab." }
       }
     ]
+  },
+  {
+    "id": "chrome",
+    "name": "Google Chrome",
+    "icon": "chrome",
+    "detect": "app.chrome",
+    "source": "ai",
+    "summary": {
+      "ru": "Расширения ставятся сами (твик «Chrome: нужные расширения автоматически»), фон и реклама выключаются политиками. Ниже — то, что задаётся только в самом Chrome.",
+      "en": "Extensions install themselves (the 'Chrome: essential extensions automatically' tweak); background mode and ads are switched off by policy. Below is what can only be set inside Chrome."
+    },
+    "autoTweaks": ["apps.chrome.extensions", "apps.chrome.privacy", "apps.chrome.background"],
+    "sections": [
+      {
+        "title": { "ru": "Расширения", "en": "Extensions" },
+        "path": "chromewebstore.google.com",
+        "settings": [
+          { "name": "uBlock Origin Lite", "value": "Авто / Auto" },
+          { "name": "SponsorBlock for YouTube", "value": "Авто / Auto" },
+          { "name": "DeepL", "value": "Авто / Auto" },
+          { "name": "Volume Master", "value": "Авто / Auto" }
+        ],
+        "note": { "ru": "Появятся после перезапуска Chrome. Закрепите uBlock Origin Lite и Volume Master на панели: значок пазла → булавка.", "en": "They appear after Chrome restarts. Pin uBlock Origin Lite and Volume Master: puzzle icon → pin." }
+      },
+      {
+        "title": { "ru": "Производительность", "en": "Performance" },
+        "path": "Settings → Performance",
+        "settings": [
+          { "name": "Memory Saver", "value": "ON", "note": { "ru": "Неактивные вкладки выгружаются из памяти — меньше нагрузка во время игры.", "en": "Inactive tabs are unloaded — less load while gaming." } },
+          { "name": "Energy Saver", "value": "OFF", "note": { "ru": "На ноутбуке можно оставить «только от батареи».", "en": "On laptops you can keep it 'only on battery'." } },
+          { "name": "Preload pages", "value": "Standard preloading" }
+        ]
+      },
+      {
+        "title": { "ru": "Система", "en": "System" },
+        "path": "Settings → System",
+        "settings": [
+          { "name": "Continue running background apps when Google Chrome is closed", "value": "OFF" },
+          { "name": "Use graphics acceleration when available", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Вид и запуск", "en": "Appearance & startup" },
+        "path": "Settings → Appearance / On startup",
+        "settings": [
+          { "name": "Mode", "value": "Device (тёмный вместе с Windows)" },
+          { "name": "On startup", "value": "Continue where you left off" }
+        ]
+      },
+      {
+        "title": { "ru": "Приватность", "en": "Privacy" },
+        "path": "Settings → Privacy and security",
+        "settings": [
+          { "name": "Third-party cookies", "value": "Block third-party cookies", "note": { "ru": "Если какой-то сайт перестанет пускать — добавьте его в исключения.", "en": "If a site stops working, add it to the exceptions." } },
+          { "name": "Safe Browsing", "value": "Standard protection" }
+        ]
+      }
+    ]
   }
 ]

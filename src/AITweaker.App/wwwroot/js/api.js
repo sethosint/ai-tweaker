@@ -33,11 +33,11 @@
 
   // ------------------------------------------------------------------ simulator
 
-  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [] };
+  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [] };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null };
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]) };
 
   const profile = {
     os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
@@ -157,6 +157,29 @@
     }),
     "bios.reboot": async () => { log("warn", "system", "demo: reboot into BIOS skipped"); return true; },
     "system.reboot": async () => { log("warn", "system", "demo: reboot skipped"); return true; },
+    "programs.list": async () => {
+      await sleep(250);
+      return {
+        winget: true,
+        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, installed: mock.installed.has(p.id) })),
+        extensions: D.extensions.map((e) => ({ ...e, storeUrl: "https://chromewebstore.google.com/detail/" + e.extensionId })),
+      };
+    },
+    "programs.install": async ({ ids }) => {
+      const results = [];
+      for (let i = 0; i < ids.length; i++) {
+        const p = D.programs.find((x) => x.id === ids[i]);
+        emit("install.progress", { i: i + 1, n: ids.length, name: p.name });
+        log("info", "install", `installing ${p.name}${p.winget ? " (" + p.winget + ")" : ""}…`);
+        await sleep(450);
+        mock.installed.add(p.id);
+        log("ok", "install", `${p.name}: installed`);
+        results.push({ id: p.id, name: p.name, ok: true, method: p.winget ? "winget" : "download", error: null });
+      }
+      if (ids.includes("openshell")) facts["app.openShell"] = true;
+      return { results, rebootRequired: false };
+    },
+    "programs.repairWinget": async () => { await sleep(600); return true; },
     "image.preview": async ({ options }) => {
       const o = options || {};
       const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look" && t.level >= 1) || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));

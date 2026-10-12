@@ -52,6 +52,15 @@ public sealed class ApiService
         "drivers.list" => DriverCenter.Build(await ProfileAsync()),
         "drivers.rescan" => await DriverCenter.RescanAsync(),
         "guides.list" => await GuidesAsync(),
+        "programs.list" => await Task.Run(Programs),
+        "programs.install" => await Exclusive(async () =>
+        {
+            var summary = await ProgramInstaller.InstallAsync(_catalog, Ids(p) ?? [], (i, n, name) => _emit("install.progress", new { i, n, name }), NewLongTask());
+            if (summary.RebootRequired) SettingsStore.MarkRebootPending();
+            _profile = null; // newly installed apps (e.g. Open-Shell) unlock their tweaks on the next scan
+            return summary;
+        }),
+        "programs.repairWinget" => await ProgramInstaller.RepairWingetAsync(),
         "bios.list" => await BiosAsync(),
         "bios.reboot" => await RebootAsync(firmware: true),
         "system.reboot" => await RebootAsync(firmware: false),
@@ -288,6 +297,20 @@ public sealed class ApiService
                 installed = g.Detect is null || ConditionEvaluator.Evaluate(g.Detect, facts),
             })
             .OrderByDescending(g => g.installed);
+    }
+
+    private object Programs()
+    {
+        var installed = ProgramInstaller.Installed(_catalog);
+        var facts = _profile?.ToFacts();
+        return new
+        {
+            winget = ProgramInstaller.FindWinget() is not null,
+            programs = _catalog.Programs
+                .Where(x => facts is null || ConditionEvaluator.Evaluate(x.When, facts))
+                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, installed = installed.GetValueOrDefault(x.Id) }),
+            extensions = _catalog.Extensions.Select(e => new { e.Id, e.Name, e.ExtensionId, e.MinVersion, e.Note, e.StoreUrl }),
+        };
     }
 
     private async Task<object> BiosAsync()

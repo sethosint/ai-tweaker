@@ -177,4 +177,41 @@ public class CatalogTests
     {
         foreach (var b in Catalog.Bios) Assert.True(b.Paths.ContainsKey("other"), b.Id);
     }
+
+    [Fact]
+    public void ProgramsAreInstallable()
+    {
+        var groups = new[] { "browsers", "communication", "gaming", "media", "tools", "runtimes", "look" };
+        Assert.Equal(Catalog.Programs.Count, Catalog.Programs.Select(p => p.Id).Distinct().Count());
+        foreach (var p in Catalog.Programs)
+        {
+            Assert.Contains(p.Group, groups);
+            Assert.True(p.Winget is not null || p.Download is not null || p.Url is not null, $"{p.Id}: no way to install");
+            if (p.Winget is not null) Assert.Matches(@"^[A-Za-z0-9][\w+-]*(\.[\w+-]+)+$", p.Winget);
+            if (p.Download is not null) Assert.StartsWith("https://", p.Download);
+            if (p.Url is not null) Assert.StartsWith("https://", p.Url);
+            if (p.Download is not null) Assert.NotNull(p.Url); // fallback when the direct link moves
+            Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
+        }
+        // the apps from the user's own setup are there
+        foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
+            Assert.Contains(Catalog.Programs, p => p.Id == id);
+    }
+
+    [Fact]
+    public void ChromeExtensionPolicyMatchesTheExtensionList()
+    {
+        Assert.All(Catalog.Extensions, e => Assert.Matches("^[a-p]{32}$", e.ExtensionId));
+        var policy = Catalog.Find("apps.chrome.extensions")!.Actions.OfType<RegistryAction>().Single();
+        Assert.Equal(@"HKLM\SOFTWARE\Policies\Google\Chrome", policy.Path);
+        Assert.Equal("ExtensionSettings", policy.Name);
+        using var doc = System.Text.Json.JsonDocument.Parse(policy.Value!.Value.GetString()!);
+        var ids = doc.RootElement.EnumerateObject().Select(o => o.Name).OrderBy(x => x).ToList();
+        Assert.Equal(Catalog.Extensions.Select(e => e.ExtensionId).OrderBy(x => x), ids);
+        foreach (var o in doc.RootElement.EnumerateObject())
+        {
+            Assert.Equal("normal_installed", o.Value.GetProperty("installation_mode").GetString()); // installs itself, user can still disable
+            Assert.Equal("https://clients2.google.com/service/update2/crx", o.Value.GetProperty("update_url").GetString());
+        }
+    }
 }
