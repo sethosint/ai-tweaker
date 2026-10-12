@@ -72,6 +72,16 @@ public sealed class ApiService
         "shell.open" => Do(() => ProcessRunner.OpenUrl(Str(p, "url") ?? "")),
         "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, _ => AppPaths.Logs })),
         "window.theme" => Do(() => ThemeChanged?.Invoke(Str(p, "theme") ?? "day")),
+        "system.theme" => SystemThemeReader.Read(),
+        "net.test" => await Exclusive(() => NetworkTest.RunAsync(Targets(p), Int(p, "count") ?? 30, (h, i, n) => _emit("net.progress", new { host = h, i, n }), NewLongTask())),
+        "net.flushdns" => await NetworkTest.FlushDnsAsync(),
+        "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); return true; }),
+        "startup.list" => StartupManager.List(),
+        "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
+        "clean.analyze" => await Task.Run(Cleaner.Analyze),
+        "clean.run" => await Exclusive(() => Cleaner.CleanAsync(Ids(p) ?? [])),
+        "memory.purge" => MemoryTools.PurgeStandby(),
+        "explorer.restart" => await RestartExplorer(),
         _ => throw new InvalidOperationException($"Unknown method {method}"),
     };
 
@@ -85,10 +95,12 @@ public sealed class ApiService
             version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
             isAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator),
             machine = Environment.MachineName,
+            system = SystemThemeReader.Read(),
             settings = new
             {
                 language = s.Language,
                 theme = s.Theme,
+                accent = s.Accent,
                 profile = s.Profile,
                 model = s.ClaudeModel,
                 hasKey = SettingsStore.GetClaudeKey() is not null,
@@ -263,6 +275,20 @@ public sealed class ApiService
         };
     }
 
+    private static async Task<object> RestartExplorer()
+    {
+        await TweakExecutor.RestartExplorerAsync();
+        return true;
+    }
+
+    private static List<(string Host, string Label)> Targets(JsonElement p)
+    {
+        var list = NetworkTest.DefaultTargets.ToList();
+        if (Str(p, "custom") is { Length: > 0 } custom && Uri.CheckHostName(custom.Trim()) != UriHostNameType.Unknown)
+            list.Add((custom.Trim(), custom.Trim()));
+        return list;
+    }
+
     private static async Task<object> RebootAsync(bool firmware)
     {
         AppLog.Warn("system", firmware ? "rebooting into BIOS/UEFI setup in 5 seconds" : "rebooting in 5 seconds");
@@ -323,7 +349,8 @@ public sealed class ApiService
     {
         var s = SettingsStore.Current;
         if (Str(p, "language") is { } lang) s.Language = lang == "en" ? "en" : "ru";
-        if (Str(p, "theme") is { } theme) s.Theme = theme == "night" ? "night" : "day";
+        if (Str(p, "theme") is { } theme) s.Theme = theme is "night" or "day" ? theme : "auto";
+        if (Str(p, "accent") is { } accent) s.Accent = accent == "industrial" ? "industrial" : "system";
         if (Str(p, "profile") is { } prof && Enum.TryParse<TuneProfile>(prof, true, out _)) s.Profile = prof;
         if (Str(p, "model") is { } model && ClaudeAdvisor.Models.Contains(model)) s.ClaudeModel = model;
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;

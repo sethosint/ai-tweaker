@@ -37,7 +37,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "day", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true } };
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true } };
 
   const profile = {
     os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
@@ -84,7 +84,7 @@
   const statusOf = (t) => (mock.applied.has(t.id) ? "applied" : evalWhen(t.when) ? "off" : "n/a");
 
   const handlers = {
-    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true }),
+    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true }),
     "system.scan": async () => {
       log("info", "scan", "scanning hardware and Windows configuration…");
       await sleep(1400);
@@ -186,14 +186,38 @@
     "shell.folder": async () => true,
     "restore.open": async () => true,
     "window.theme": async () => true,
+    "system.theme": async () => ({ accent: "#0078D4", dark: false }),
+    "net.test": async ({ custom }) => {
+      const hosts = [["1.1.1.1", "Cloudflare", 9], ["8.8.8.8", "Google DNS", 14], ["9.9.9.9", "Quad9", 21]].concat(custom ? [[custom, custom, 38]] : []);
+      for (let i = 1; i <= 30; i++) { emit("net.progress", { host: hosts[i % hosts.length][0], i, n: 30 }); await sleep(45); }
+      return hosts.map(([host, label, base]) => ({ host, label, sent: 30, received: 30, avgMs: base + 0.4, minMs: base - 2, maxMs: base + 6, jitterMs: +(1 + Math.random() * 3).toFixed(1), lossPercent: 0 }));
+    },
+    "net.flushdns": async () => ({ exitCode: 0 }),
+    "net.reset": async () => true,
+    "startup.list": async () => mock.startup,
+    "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },
+    "clean.analyze": async () => { await sleep(500); return [["temp-user", 912e6, 4210], ["temp-windows", 214e6, 388], ["shader-nvidia", 1.9e9, 1630], ["shader-amd", 0, 0], ["shader-directx", 640e6, 2210], ["windows-update", 3.1e9, 77], ["crash-dumps", 88e6, 12]].map(([id, bytes, files]) => ({ id, path: "", bytes, files })); },
+    "clean.run": async ({ ids }) => { await sleep(900); return ids.length * 3.2e8; },
+    "memory.purge": async () => { await sleep(300); log("ok", "memory", "standby list purged"); return { freedBytes: 2.7e9, availableBytes: 24e9 }; },
+    "explorer.restart": async () => true,
   };
 
+  mock.startup = [
+    { id: "HKCU|Run|Discord", name: "Discord", command: "C:\\Users\\demo\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU Run", enabled: true, scope: "user" },
+    { id: "HKCU|Run|Steam", name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", location: "HKCU Run", enabled: true, scope: "user" },
+    { id: "HKLM|Run|RtkAudUService", name: "RtkAudUService", command: "C:\\Windows\\System32\\RtkAudUService64.exe -background", location: "HKLM Run", enabled: true, scope: "all users" },
+    { id: "HKCU|Run|OneDrive", name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU Run", enabled: false, scope: "user" },
+  ];
+
   function startMockTelemetry() {
-    let cpu = 6, ram = 38, ping = 14;
+    let cpu = 6, ram = 38, ping = 14, gpu = 3, gpuT = 41, cpuT = 46, tick = 0;
     setInterval(() => {
       cpu = Math.max(1, Math.min(100, cpu + (Math.random() - 0.5) * 8 + (Math.random() < 0.06 ? 25 : 0) * (cpu < 40 ? 1 : -1)));
       ram = Math.max(20, Math.min(90, ram + (Math.random() - 0.5) * 1.2));
       ping = Math.max(6, Math.min(60, ping + (Math.random() - 0.5) * 4 + (Math.random() < 0.04 ? 18 : 0)));
+      gpu = Math.max(0, Math.min(100, gpu + (Math.random() - 0.5) * 10 + (Math.random() < 0.05 ? 45 : 0) * (gpu < 30 ? 1 : -1)));
+      gpuT += ((38 + gpu * 0.42) - gpuT) * 0.15; cpuT += ((42 + cpu * 0.45) - cpuT) * 0.2;
+      if (++tick % 2 === 0) emit("sensors", { time: now(), cpuTempC: +cpuT.toFixed(1), cpuTempSource: "LibreHardwareMonitor", gpuTempC: +gpuT.toFixed(1), gpuLoad: +gpu.toFixed(1), gpuFanRpm: gpuT > 50 ? Math.round(900 + (gpuT - 50) * 60) : null, gpuPowerPercent: +(12 + gpu * 0.8).toFixed(1), timerResolutionMs: gpu > 30 ? 0.5 : 15.625, disks: [{ name: "Samsung SSD 990 PRO 2TB", tempC: 44, tempMaxC: 61, wearPercent: 2 }, { name: "WDC WD20EZBX", tempC: 36, tempMaxC: 44, wearPercent: null }] });
       emit("telemetry", { time: now(), cpu: +cpu.toFixed(1), ram: Math.round(ram), ramUsedGb: +(ram * 0.32).toFixed(1), ramTotalGb: 32, pingMs: Math.round(ping), processes: 180 + Math.round(Math.random() * 12) });
     }, 1000);
   }

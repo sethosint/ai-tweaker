@@ -77,6 +77,8 @@
     S.demo = API.demo;
     API.on("log", pushLog);
     API.on("telemetry", pushTelemetry);
+    API.on("sensors", pushSensors);
+    API.on("system.theme", (sys) => { S.system = sys; applyPalette(); if (S.view === "dashboard") Views.dashboard(); });
     try {
       S.init = await API.call("app.init");
     } catch (e) {
@@ -84,7 +86,9 @@
       return;
     }
     S.lang = S.init.settings.language || "ru";
-    S.theme = S.init.settings.theme || "day";
+    S.themeMode = S.init.settings.theme || "auto";
+    S.accentMode = S.init.settings.accent || "system";
+    if (S.init.system) S.system = S.init.system;
     S.profileName = S.init.settings.profile || "Performance";
     (S.init.log || []).reverse().forEach((e) => S.log.push(e));
     S.catalog = await API.call("tweaks.catalog");

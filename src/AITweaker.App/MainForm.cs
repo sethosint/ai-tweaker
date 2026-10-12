@@ -41,7 +41,7 @@ public sealed class MainForm : Form
 
     public void ApplyTheme(string theme)
     {
-        bool night = theme == "night";
+        bool night = theme == "night" || (theme == "auto" && SystemThemeReader.Read().Dark);
         Native.StyleTitleBar(Handle, night, night ? 0x0E0F0C : 0xECE8DE, night ? 0xF2A93B : 0x1D1D1B);
         BackColor = night ? Color.FromArgb(0x0E, 0x0F, 0x0C) : Color.FromArgb(0xEC, 0xE8, 0xDE);
     }
@@ -96,9 +96,20 @@ public sealed class MainForm : Form
 
         _telemetry = new Telemetry();
         _telemetry.Sample += sample => _bridge.Emit("telemetry", sample);
+        _telemetry.SensorsRead += sample => _bridge.Emit("sensors", sample);
         _telemetry.Start();
 
+        // Accent color / light-dark switches in Windows Settings are pushed to the UI live.
+        Microsoft.Win32.SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
+        FormClosed += (_, _) => Microsoft.Win32.SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
+
         core.Navigate(Host + "/index.html");
+    }
+
+    private void OnUserPreferenceChanged(object? sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category is Microsoft.Win32.UserPreferenceCategory.General or Microsoft.Win32.UserPreferenceCategory.Color or Microsoft.Win32.UserPreferenceCategory.VisualStyle)
+            _bridge?.Emit("system.theme", SystemThemeReader.Read());
     }
 
     private static void TryOpenExternal(string uri)

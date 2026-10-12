@@ -7,8 +7,10 @@ namespace AITweaker.App.Platform;
 public sealed class AppSettings
 {
     public string Language { get; set; } = "ru";
-    /// <summary>day | night</summary>
-    public string Theme { get; set; } = "day";
+    /// <summary>auto (follow Windows) | day | night</summary>
+    public string Theme { get; set; } = "auto";
+    /// <summary>system (Windows accent color) | industrial (safety orange / amber)</summary>
+    public string Accent { get; set; } = "system";
     public string Profile { get; set; } = "Performance";
     public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;
     /// <summary>API key encrypted with DPAPI (current user), base64.</summary>

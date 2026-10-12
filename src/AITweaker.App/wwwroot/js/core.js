@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", theme: "day", profileName: "Performance", demo: false,
+    lang: "ru", theme: "day", themeMode: "auto", accentMode: "system", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -122,8 +122,8 @@
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["drivers", "05"],
-    ["apps", "06"], ["bios", "07"], ["image", "08"], ["ai", "09"], ["backup", "10"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["tools", "05"],
+    ["drivers", "06"], ["apps", "07"], ["bios", "08"], ["image", "09"], ["ai", "10"], ["backup", "11"],
   ];
   window.NAV = NAV;
 
@@ -137,7 +137,7 @@
 
   function renderShell() {
     document.documentElement.lang = S.lang;
-    document.documentElement.dataset.theme = S.theme;
+    applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
         <div class="brand"><div class="brand-mark"></div><div><div class="brand-name">AI TWEAKER</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
@@ -147,14 +147,14 @@
           ${S.init && S.init.isAdmin ? `<span class="chip ok">● ${t("admin")}</span>` : `<span class="chip crit">● ${t("notAdmin")}</span>`}
         </div>
         <div class="top-right">
-          <div class="seg" id="shiftSeg"><button data-v="day" class="${S.theme === "day" ? "on" : ""}">☀ ${t("shift.day")}</button><button data-v="night" class="${S.theme === "night" ? "on" : ""}">☾ ${t("shift.night")}</button></div>
+          <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">☀ ${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">☾ ${t("shift.night")}</button></div>
           <div class="seg" id="langSeg"><button data-v="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button><button data-v="en" class="${S.lang === "en" ? "on" : ""}">EN</button></div>
           <button class="icon-btn" id="settingsBtn" title="${t("settings")}">⚙</button>
           <div class="clock" id="clock">${fmtTime()}</div>
         </div>
       </header>
       <nav class="nav">
-        ${NAV.map(([v, n], i) => `${i === 1 || i === 5 || i === 8 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        ${NAV.map(([v, n], i) => `${i === 1 || i === 5 || i === 9 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
         <div class="nav-foot">${t("nav.foot")}<br><br>v${esc((S.init && S.init.version) || "1.0.0")} · ${esc((S.init && S.init.machine) || "")}</div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
@@ -170,12 +170,33 @@
   }
   window.renderShell = renderShell;
 
-  window.setTheme = (theme) => {
-    S.theme = theme;
-    document.documentElement.dataset.theme = theme;
-    $$("#shiftSeg button").forEach((b) => b.classList.toggle("on", b.dataset.v === theme));
-    call("settings.set", { theme }, { silent: true }).catch(() => {});
-    call("window.theme", { theme }, { silent: true }).catch(() => {});
+  // ------------------------------------------------------------------ palette (Windows accent + light/dark)
+
+  const rgb = (h) => { h = h.replace("#", ""); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
+  const hex = (c) => "#" + c.map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, "0")).join("");
+  const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+  const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  /** Shifts the accent toward black/white until it reads well on the panel color (WCAG 3:1 for UI elements). */
+  const fit = (accent, bg) => { let c = rgb(accent); const b = rgb(bg), to = lum(b) > 0.4 ? [0, 0, 0] : [255, 255, 255]; for (let i = 0; i < 24 && contrast(c, b) < 3.2; i++) c = c.map((v, k) => Math.round(v + (to[k] - v) * 0.08)); return c; };
+
+  window.applyPalette = () => {
+    S.theme = S.themeMode === "auto" ? (S.system.dark ? "night" : "day") : S.themeMode;
+    const root = document.documentElement;
+    root.dataset.theme = S.theme;
+    const panel = S.theme === "night" ? "#14160f" : "#f6f3ea";
+    const base = S.accentMode === "industrial" ? (S.theme === "night" ? "#f2a93b" : "#e8590c") : S.system.accent || "#0078D4";
+    const a = fit(base, panel);
+    root.style.setProperty("--accent", hex(a));
+    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#14160f" : "#ffffff");
+    root.style.setProperty("--radar", hex(a));
+    call("window.theme", { theme: S.theme }, { silent: true }).catch(() => {});
+  };
+
+  window.setTheme = (mode) => {
+    S.themeMode = mode;
+    $$("#shiftSeg button").forEach((b) => b.classList.toggle("on", b.dataset.v === mode));
+    call("settings.set", { theme: mode }, { silent: true }).catch(() => {});
+    applyPalette();
     if (S.view === "dashboard") Views.dashboard();
   };
 
@@ -198,13 +219,18 @@
     const s = S.init.settings;
     await modal({
       title: t("settings"),
-      body: html`<label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
+      body: html`<label class="field">${t("settings.accent")}
+          <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="industrial" ${S.accentMode === "industrial" ? "selected" : ""}>${t("settings.accent.industrial")}</option></select></label>
+        <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
+        <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
       onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
-        await call("settings.set", { pingHost, createRestorePoint });
+        S.accentMode = $("#setAccent", ov).value;
+        applyPalette();
+        await call("settings.set", { pingHost, createRestorePoint, accent: S.accentMode });
         Object.assign(s, { pingHost, createRestorePoint });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
@@ -269,11 +295,17 @@
   };
 
   window.pushTelemetry = (s) => {
+    if (S.sensors) { s.gpu = S.sensors.gpuLoad; s.gpuTemp = S.sensors.gpuTempC; s.cpuTemp = S.sensors.cpuTempC; }
     S.telemetry.push(s);
     if (S.telemetry.length > 120) S.telemetry.shift();
     const sb = $("#sbTele");
-    if (sb) sb.textContent = `CPU ${Math.round(s.cpu)}% · RAM ${s.ram}% · PING ${s.pingMs ?? "—"} ms`;
+    if (sb) sb.textContent = `CPU ${Math.round(s.cpu)}%${s.cpuTemp != null ? " " + Math.round(s.cpuTemp) + "°" : ""} · GPU ${s.gpu != null ? Math.round(s.gpu) + "%" : "—"}${s.gpuTemp != null ? " " + Math.round(s.gpuTemp) + "°" : ""} · RAM ${s.ram}% · PING ${s.pingMs ?? "—"} ms`;
     if (S.view === "dashboard" && window.Dash) Dash.tick(s);
+  };
+
+  window.pushSensors = (s) => {
+    S.sensors = s;
+    if (S.view === "dashboard" && window.Dash) Dash.sensors(s);
   };
 
   setInterval(() => { const c = $("#clock"); if (c) c.textContent = fmtTime(); }, 1000);

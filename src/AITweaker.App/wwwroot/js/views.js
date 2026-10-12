@@ -179,7 +179,7 @@
     if (needScan(v)) return;
     if (!S.drivers) { v.innerHTML = `<div class="empty">…</div>`; S.drivers = await call("drivers.list"); }
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-05 // DRIVERS</span><h1>${t("drivers.title")}</h1><p>${t("drivers.desc")}</p></div>
+      <div class="page-h"><div><span class="code">SEC-06 // DRIVERS</span><h1>${t("drivers.title")}</h1><p>${t("drivers.desc")}</p></div>
         <div class="actions"><button class="btn sm" id="drvRescan">⟳ ${t("drivers.rescan")}</button><button class="btn sm" id="drvOptional">${t("drivers.optional")} ↗</button></div></div>
       <div class="cards">${S.drivers.map((d) => html`<div class="card" style="cursor:default">
         <div class="cn"><span class="app-ico">${d.category === "gpu" ? "GPU" : d.category === "chipset" ? "CHP" : d.category === "network" ? "NET" : "!"}</span>${t("drv." + d.category)}</div>
@@ -202,7 +202,7 @@
     const g = opts.guide && S.guides.find((x) => x.id === opts.guide);
     if (!g) {
       v.innerHTML = html`
-        <div class="page-h"><div><span class="code">SEC-06 // APPS</span><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div></div>
+        <div class="page-h"><div><span class="code">SEC-07 // APPS</span><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div></div>
         <div class="cards">${S.guides.map((x) => html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
           <div class="cn"><span class="app-ico">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
@@ -213,7 +213,7 @@
     }
     const auto = (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "applied" && S.status[id] !== "n/a");
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-06 // ${esc(g.id.toUpperCase())}</span><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
+      <div class="page-h"><div><span class="code">SEC-07 // ${esc(g.id.toUpperCase())}</span><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
         <div class="actions"><button class="btn ghost sm" id="gBack">${t("apps.back")}</button>${auto.length ? `<button class="btn primary sm" id="gAuto">⚡ ${t("apps.auto")} (${auto.length})</button>` : ""}</div></div>
       ${g.sections.map((s) => html`<div class="guide-sec">
         <div class="gs-l"><h3>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
@@ -236,7 +236,7 @@
     if (!S.bios) S.bios = await call("bios.list");
     const b = S.bios;
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-07 // FIRMWARE</span><h1>${t("bios.title")}</h1><p>${t("bios.desc")}</p></div>
+      <div class="page-h"><div><span class="code">SEC-08 // FIRMWARE</span><h1>${t("bios.title")}</h1><p>${t("bios.desc")}</p></div>
         <div class="actions"><button class="btn danger" id="toBios">⏻ ${t("bios.reboot")}</button></div></div>
       <div class="grid cols-3" style="margin-bottom:14px">
         <div class="panel"><div class="panel-h"><span class="code">MB</span>${esc(b.board.manufacturer)}</div><div class="panel-b kv"><b>MODEL</b><span>${esc(b.board.product)}</span><b>BIOS</b><span>${esc(b.board.biosVersion)} · ${fmtDate(b.board.biosDate)}</span></div></div>
@@ -262,7 +262,7 @@
     if (usb.disks === null) { usb.disks = []; call("usb.list", {}, { silent: true }).then((d) => { usb.disks = d; if (S.view === "image") V.image(); }).catch(() => {}); }
     const o = usb.opt;
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-08 // IMAGE</span><h1>${t("image.title")}</h1><p>${t("image.desc")}</p></div></div>
+      <div class="page-h"><div><span class="code">SEC-09 // IMAGE</span><h1>${t("image.title")}</h1><p>${t("image.desc")}</p></div></div>
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h"><span class="code">AME</span>${t("ame.title")}</div><div class="panel-b" style="display:grid;gap:12px">
           <div style="color:var(--ink-2)">${t("ame.desc")}</div>
@@ -337,7 +337,7 @@
     const s = S.init.settings;
     const a = S.ai;
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-09 // CLAUDE</span><h1>${t("ai.title")}</h1><p>${t("ai.desc")}</p></div></div>
+      <div class="page-h"><div><span class="code">SEC-10 // CLAUDE</span><h1>${t("ai.title")}</h1><p>${t("ai.desc")}</p></div></div>
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h"><span class="code">KEY</span>${t("ai.key")}<span class="right">${s.hasKey ? `<span class="chip ok">${t("ai.keySaved")}</span>` : ""}</span></div><div class="panel-b" style="display:grid;gap:10px">
           <input class="input" type="password" id="aiKey" placeholder="sk-ant-…" autocomplete="off">
@@ -378,7 +378,7 @@
     S.backups = await call("backup.list");
     const b = S.backups;
     v.innerHTML = html`
-      <div class="page-h"><div><span class="code">SEC-10 // ROLLBACK</span><h1>${t("backup.title")}</h1><p>${t("backup.desc")}</p></div>
+      <div class="page-h"><div><span class="code">SEC-11 // ROLLBACK</span><h1>${t("backup.title")}</h1><p>${t("backup.desc")}</p></div>
         <div class="actions"><button class="btn sm" id="rpNow">◷ ${t("backup.rp")}</button><button class="btn sm" id="rstrui">${t("backup.rstrui")} ↗</button><button class="btn sm ghost" id="bkFolder">${t("backup.folder")}</button><button class="btn sm ghost" id="logFolder">${t("backup.logs")}</button></div></div>
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h"><span class="code">BK</span>${t("backup.applied")}<span class="right">${b.applied.length ? `<button class="btn sm danger" id="revertAll">${t("backup.revertAll")}</button>` : ""}</span></div><div class="panel-b flush">

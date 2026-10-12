@@ -11,10 +11,12 @@ public sealed class Telemetry : IDisposable
     private readonly CancellationTokenSource _cts = new();
     private (long Idle, long Kernel, long User) _last = Native.GetSystemTimes();
     private readonly Ping _ping = new();
+    private readonly Sensors _sensors = new();
     private int _tick;
     private long? _lastPing;
 
     public event Action<TelemetrySample>? Sample;
+    public event Action<SensorSample>? SensorsRead;
 
     public void Start() => _ = Task.Run(LoopAsync);
 
@@ -32,6 +34,7 @@ public sealed class Telemetry : IDisposable
                 if (_tick++ % 2 == 0) _lastPing = await PingAsync();
                 Sample?.Invoke(new TelemetrySample(DateTime.Now, Math.Round(cpu, 1), load,
                     Math.Round((totalBytes - avail) / 1073741824.0, 1), Math.Round(totalBytes / 1073741824.0, 1), _lastPing, Process.GetProcesses().Length));
+                if (_tick % 2 == 1) SensorsRead?.Invoke(_sensors.Read());
             }
             catch (Exception ex)
             {
@@ -58,5 +61,6 @@ public sealed class Telemetry : IDisposable
     {
         _cts.Cancel();
         _ping.Dispose();
+        _sensors.Dispose();
     }
 }
