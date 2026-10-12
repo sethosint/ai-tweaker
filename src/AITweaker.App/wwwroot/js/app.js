@@ -158,7 +158,7 @@
     const go1 = await modal({
       title: t("fr.title"),
       wide: true,
-      body: html`<div class="fr-hero"><img src="img/aitweaker-dark.webp" alt=""><div>
+      body: html`<div class="fr-hero"><img src="img/aitweaker-graphite.webp" alt=""><div>
           <div class="tt" style="font:700 17px/1.3 var(--font-head);letter-spacing:.08em">${t("fr.hello")}</div>
           <div style="color:var(--ink-2);margin-top:6px">${t("fr.desc")}</div>
           ${img ? `<div class="chip ok" style="margin-top:10px">✓ ${t("fr.fromImage")} · Windows 11 ${esc(img.windows || "")} ${esc(img.build || "")}</div>` : ""}</div></div>
@@ -177,7 +177,7 @@
     call("firstrun.done", {}, { silent: true }).catch(() => {});
     await App.setProfile(prof.v);
     // Everything recommended for this machine that isn't applied yet (the image already carries the offline part), plus the look.
-    const ids = S.plan.items.filter((i) => (i.recommended || S.byId[i.id].category === "look") && S.status[i.id] !== "applied").map((i) => i.id);
+    const ids = S.plan.items.filter((i) => { const tw = S.byId[i.id]; return (i.recommended || (tw.category === "look" && tw.level >= 1)) && S.status[i.id] !== "applied"; }).map((i) => i.id);
     go("tune");
     await App.apply(ids, { restorePoint: true });
   };

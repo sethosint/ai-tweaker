@@ -12,3 +12,4 @@ TestResults/
 # wallpaper render intermediates
 tools/wallpapers/svg/
 tools/wallpapers/png/
+__pycache__/

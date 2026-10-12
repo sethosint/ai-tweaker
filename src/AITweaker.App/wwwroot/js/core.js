@@ -186,7 +186,10 @@
     const root = document.documentElement;
     root.dataset.theme = S.theme;
     const panel = S.theme === "night" ? "#14160f" : "#f6f3ea";
-    const base = S.accentMode === "industrial" ? (S.theme === "night" ? "#f2a93b" : "#e8590c") : S.system.accent || "#0078D4";
+    let base = S.accentMode === "industrial" ? (S.theme === "night" ? "#f2a93b" : "#e8590c") : S.system.accent || "#0078D4";
+    // A colourless Windows accent (e.g. the black AI Tweaker look) makes the app monochrome too, instead of a dull grey.
+    const c0 = rgb(base);
+    if (Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ececec" : "#1a1a1a";
     const a = fit(base, panel);
     root.style.setProperty("--accent", hex(a));
     root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#14160f" : "#ffffff");

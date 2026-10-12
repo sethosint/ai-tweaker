@@ -345,6 +345,8 @@ public static class SystemProfiler
             ["store"] = () => Package("Microsoft.WindowsStore"),
             ["onedrive"] = () => File.Exists(Path.Combine(local, "Microsoft", "OneDrive", "OneDrive.exe")) || File.Exists(Path.Combine(pf, "Microsoft OneDrive", "OneDrive.exe")),
             ["teams"] = () => Package("MSTeams"),
+            ["openShell"] = () => File.Exists(Path.Combine(pf, "Open-Shell", "StartMenu.exe")),
+            ["startAllBack"] = () => Directory.Exists(Path.Combine(pf, "StartAllBack")) || RegistryHelper.KeyExists(@"HKCU\Software\StartIsBack"),
         };
 
         var found = new List<string>();

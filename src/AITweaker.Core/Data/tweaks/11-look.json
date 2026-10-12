@@ -4,7 +4,7 @@
     "category": "look",
     "level": 2,
     "name": { "ru": "Тёмная тема Windows и приложений", "en": "Dark mode for Windows and apps" },
-    "description": { "ru": "Основа внешнего вида AI Tweaker: тёмные «Пуск», панель задач, Параметры, Проводник и приложения. Меньше слепит в тёмной комнате во время игры.", "en": "The base of the AI Tweaker look: dark Start, taskbar, Settings, Explorer and apps. Easier on the eyes in a dark room while gaming." },
+    "description": { "ru": "Основа вида AI Tweaker: тёмные «Пуск», панель задач, Параметры, Проводник и приложения. Меньше слепит в тёмной комнате во время игры.", "en": "The base of the AI Tweaker look: dark Start, taskbar, Settings, Explorer and apps. Easier on the eyes in a dark room while gaming." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "AppsUseLightTheme", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "SystemUsesLightTheme", "kind": "dword", "value": 0 }
@@ -15,29 +15,48 @@
     "category": "look",
     "level": 2,
     "restartExplorer": true,
-    "name": { "ru": "Акцентный цвет AI Tweaker «сигнальный янтарь»", "en": "AI Tweaker accent color 'signal amber'" },
-    "description": { "ru": "Фирменный янтарный акцент AI Tweaker для кнопок, переключателей, выделения и индикаторов панели задач (с полной палитрой оттенков, как у системных цветов). Заголовки окон остаются спокойными, без заливки цветом.", "en": "AI Tweaker's signature amber accent for buttons, toggles, selection and taskbar indicators (with a full shade palette, like built-in colors). Window title bars stay calm, without color fill." },
+    "name": { "ru": "Чёрные панель задач и «Пуск»", "en": "Black taskbar and Start" },
+    "description": { "ru": "Монохромный акцент AI Tweaker: панель задач и «Пуск» становятся чёрными, как на референсе, а переключатели, ссылки и выделение — светло-серыми, чтобы их было хорошо видно. Заголовки окон остаются обычными.", "en": "AI Tweaker's monochrome accent: the taskbar and Start turn black, like the reference, while toggles, links and selection stay light grey so they remain visible. Window title bars stay normal." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Control Panel\\Desktop", "name": "AutoColorization", "kind": "dword", "value": 0 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "AccentPalette", "kind": "binary", "value": "+92mAPfEbgDyqTsA4HoSALhfCgCKRQcAXC4FADuP2QA=" },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "AccentColorMenu", "kind": "dword", "value": 4279401184 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "StartColorMenu", "kind": "dword", "value": 4278666634 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "AccentColor", "kind": "dword", "value": 4279401184 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "ColorizationColor", "kind": "dword", "value": 3303045650 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "ColorizationAfterglow", "kind": "dword", "value": 3303045650 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "AccentPalette", "kind": "binary", "value": "4ODgAL29vQCampoAGhoaAAAAAAAAAAAAAAAAAG5ubgA=" },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "AccentColorMenu", "kind": "dword", "value": 4279900698 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "StartColorMenu", "kind": "dword", "value": 4278190080 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "AccentColor", "kind": "dword", "value": 4279900698 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "ColorizationColor", "kind": "dword", "value": 3290044954 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "ColorizationAfterglow", "kind": "dword", "value": 3290044954 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "ColorPrevalence", "kind": "dword", "value": 0 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "ColorPrevalence", "kind": "dword", "value": 0 }
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "ColorPrevalence", "kind": "dword", "value": 1 }
     ]
   },
   {
     "id": "look.wallpaper",
     "category": "look",
     "level": 2,
-    "name": { "ru": "Обои AI Tweaker", "en": "AI Tweaker wallpaper" },
-    "description": { "ru": "Собственные обои AI Tweaker в 4K: график времени кадра — рваный «до» и ровный «после». Тёмные, не отвлекают и не мешают значкам на рабочем столе. Отключает смену обоев «Windows: интересное» на рабочем столе.", "en": "AI Tweaker's own 4K wallpaper: a frame-time graph — jagged 'before' and flat 'after'. Dark, calm and icon-friendly. Turns off Windows Spotlight on the desktop." },
+    "name": { "ru": "Чёрный рабочий стол", "en": "Black desktop" },
+    "description": { "ru": "Сплошной чёрный фон рабочего стола вместо картинки, как на референсе: ничего не отвлекает, значки читаются идеально. Отключает смену обоев «Windows: интересное».", "en": "A solid black desktop instead of a picture, like the reference: nothing distracts, icons read perfectly. Turns off Windows Spotlight on the desktop." },
     "actions": [
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Wallpapers", "name": "BackgroundType", "kind": "dword", "value": 0 },
-      { "type": "wallpaper", "target": "desktop", "variant": "dark" }
+      { "type": "wallpaper", "target": "desktop", "variant": "black" }
+    ]
+  },
+  {
+    "id": "look.wallpaper-graphite",
+    "category": "look",
+    "level": 0,
+    "name": { "ru": "Обои «Графит»", "en": "'Graphite' wallpaper" },
+    "description": { "ru": "Вместо сплошного чёрного — тёмный графит с мягким светом из угла. Без надписей и рисунков. Заменяет «Чёрный рабочий стол».", "en": "Instead of plain black — dark graphite with soft light from a corner. No text or graphics. Replaces 'Black desktop'." },
+    "actions": [
+      { "type": "wallpaper", "target": "desktop", "variant": "graphite" }
+    ]
+  },
+  {
+    "id": "look.wallpaper-obsidian",
+    "category": "look",
+    "level": 0,
+    "name": { "ru": "Обои «Обсидиан»", "en": "'Obsidian' wallpaper" },
+    "description": { "ru": "Почти чёрный фон с едва заметным бликом, как на тёмном стекле. Без надписей и рисунков. Заменяет «Чёрный рабочий стол».", "en": "Near-black with a barely visible sheen, like dark glass. No text or graphics. Replaces 'Black desktop'." },
+    "actions": [
+      { "type": "wallpaper", "target": "desktop", "variant": "obsidian" }
     ]
   },
   {
@@ -45,7 +64,7 @@
     "category": "look",
     "level": 2,
     "name": { "ru": "Экран блокировки AI Tweaker", "en": "AI Tweaker lock screen" },
-    "description": { "ru": "Наш экран блокировки вместо меняющихся картинок «Windows: интересное» с подсказками и рекламой.", "en": "Our lock screen instead of rotating Windows Spotlight images with tips and ads." },
+    "description": { "ru": "Тёмный минималистичный экран блокировки вместо меняющихся картинок «Windows: интересное» с подсказками и рекламой.", "en": "A minimal dark lock screen instead of rotating Windows Spotlight images with tips and ads." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenEnabled", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "name": "RotatingLockScreenOverlayEnabled", "kind": "dword", "value": 0 },
@@ -57,9 +76,11 @@
     "category": "look",
     "level": 2,
     "restartExplorer": true,
-    "name": { "ru": "Чистая панель задач", "en": "Clean taskbar" },
-    "description": { "ru": "Поиск — компактным значком, без кнопок «Представление задач» и Copilot. Больше места для ваших программ.", "en": "Search as a compact icon, no Task View or Copilot buttons. More room for your apps." },
+    "name": { "ru": "Панель задач как на референсе", "en": "Taskbar like the reference" },
+    "description": { "ru": "Значки и «Пуск» слева, мелкие кнопки (Windows 11 24H2+), поиск — значком, без кнопок «Представление задач» и Copilot.", "en": "Icons and Start on the left, small buttons (Windows 11 24H2+), search as an icon, no Task View or Copilot buttons." },
     "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAl", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "IconSizePreference", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "kind": "dword", "value": 1 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowCopilotButton", "kind": "dword", "value": 0 }
@@ -87,6 +108,23 @@
     "description": { "ru": "Возвращает значок «Этот компьютер» — быстрый доступ к дискам и флешкам сразу после установки.", "en": "Brings back the 'This PC' icon — quick access to drives and USB sticks right after setup." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel", "name": "{20D04FE0-3AEA-1069-A2D8-08002B30309D}", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "look.openshell",
+    "category": "look",
+    "level": 2,
+    "when": "app.openShell",
+    "name": { "ru": "Классический «Пуск» как на референсе (Open-Shell)", "en": "Classic Start like the reference (Open-Shell)" },
+    "description": { "ru": "Настраивает бесплатный Open-Shell под ваш скриншот: «Пуск» в стиле Windows 7 — слева программы со списком «Все программы» и поиском «Search programs and files», справа «Загрузки», «Этот компьютер», раскрывающаяся «Панель управления» и «Параметры». Тёмный плоский скин, мелкие значки, кнопка «Пуск» остаётся родной. Open-Shell ставится на вкладке «Установка».", "en": "Configures the free Open-Shell to match your screenshot: a Windows 7-style Start — programs with 'All programs' and 'Search programs and files' on the left; Downloads, This PC, a cascading Control Panel and Settings on the right. Dark flat skin, small icons, the native Start button stays. Install Open-Shell from the Install tab." },
+    "actions": [
+      { "type": "powershell", "script": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }", "undo": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }" },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "MenuStyle", "kind": "string", "value": "Win7" },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "SkinW7", "kind": "string", "value": "Immersive" },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "SkinOptionsW7", "kind": "multi", "value": ["USER_IMAGE=0", "SMALL_ICONS=1", "LARGE_FONT=0", "ICON_FRAMES=0", "OPAQUE=1"] },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "MenuItems7", "kind": "multi", "value": ["Item1.Command=downloads", "Item1.Settings=NOEXPAND", "Item2.Command=computer", "Item2.Settings=NOEXPAND", "Item3.Command=control_panel", "Item3.Settings=TRACK_RECENT", "Item4.Command=pc_settings", "Item4.Settings=TRACK_RECENT"] },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "EnableStartButton", "kind": "dword", "value": 0 },
+      { "type": "powershell", "script": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }", "undo": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }" }
     ]
   }
 ]

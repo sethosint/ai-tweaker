@@ -284,7 +284,7 @@
             <label class="field">${t("ib.level")}<select class="input" id="ibLevel">${[1, 2, 3].map((l) => `<option value="${l}" ${img.level === l ? "selected" : ""}>${t("prof." + ["Safe", "Balanced", "Performance"][l - 1])}</option>`).join("")}</select></label>
             <div style="display:grid;gap:8px;margin-top:10px">
               ${[["look", "ib.look"], ["updates", "ib.updates"], ["removeApps", "ib.apps"], ["removeComponents", "ib.components"], ["cleanup", "ib.cleanup"], ["drivers", "ib.drivers"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-ib="${k}" ${img[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
-            ${img.look ? `<div class="look-thumbs">${["dark", "lock", "light"].map((n) => `<figure><img src="img/aitweaker-${n}.webp" alt="" loading="lazy"><figcaption>${t("look." + n)}</figcaption></figure>`).join("")}</div>` : ""}
+            ${img.look ? `<div class="look-thumbs"><figure><div class="swatch-black"></div><figcaption>${t("look.black")}</figcaption></figure>${["graphite", "lock"].map((n) => `<figure><img src="img/aitweaker-${n}.webp" alt="" loading="lazy"><figcaption>${t("look." + n)}</figcaption></figure>`).join("")}</div>` : ""}
             <div class="cat-h" style="margin-top:12px;font-size:11px">${t("ib.extra")}</div>
             <div style="display:grid;gap:6px;margin-top:8px">${EXTRA.map(([pkg, n]) => `<label class="check"><input type="checkbox" data-extra="${pkg}" ${img.extraApps.includes(pkg) ? "checked" : ""}><span class="box"></span>${n} <span class="chip crit" style="margin-left:4px">⚠</span></label>`).join("")}</div>
             <div class="td" style="margin-top:8px;color:var(--muted)">${t("ib.extraNote")}</div></div>

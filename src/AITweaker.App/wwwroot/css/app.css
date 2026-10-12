@@ -510,7 +510,8 @@ label.field { display: grid; gap: 5px; font: 600 10.5px/1.2 var(--font-head); le
 /* ---- AI Tweaker look previews & first-run welcome ---- */
 .look-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .look-thumbs figure { margin: 0; border: 1px solid var(--line); background: var(--panel-2); }
-.look-thumbs img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.look-thumbs img, .look-thumbs .swatch-black { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.look-thumbs .swatch-black { background: #000; }
 .look-thumbs figcaption { font: 600 9.5px/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 6px 7px; }
 .fr-hero { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: center; }
 .fr-hero img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--line); }

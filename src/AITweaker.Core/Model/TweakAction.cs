@@ -198,14 +198,16 @@ public sealed class DisplayRefreshAction : TweakAction
     public override string Describe() => "display -> max refresh rate";
 }
 
-/// <summary>Sets one of AI Tweaker's own wallpapers (shipped inside the app) as the desktop or lock-screen image.</summary>
+/// <summary>Sets the desktop to solid black or one of AI Tweaker's own wallpapers (shipped inside the app), or the lock-screen image.</summary>
 public sealed class WallpaperAction : TweakAction
 {
     /// <summary>desktop | lock</summary>
     public string Target { get; init; } = "desktop";
-    /// <summary>dark | light (ignored for the lock screen)</summary>
-    public string Variant { get; init; } = "dark";
+    /// <summary>black (solid colour) | graphite | obsidian — ignored for the lock screen</summary>
+    public string Variant { get; init; } = Image.LookAssets.Black;
 
-    public string File => Image.LookAssets.WallpaperFile(Target == "lock" ? "lock" : Variant);
-    public override string Describe() => $"wallpaper[{Target}] -> {File}";
+    public bool SolidBlack => Target != "lock" && Variant == Image.LookAssets.Black;
+    /// <summary>The image file, or empty for the solid black desktop.</summary>
+    public string File => SolidBlack ? "" : Image.LookAssets.WallpaperFile(Target == "lock" ? "lock" : Variant);
+    public override string Describe() => SolidBlack ? "wallpaper[desktop] -> solid black" : $"wallpaper[{Target}] -> {File}";
 }

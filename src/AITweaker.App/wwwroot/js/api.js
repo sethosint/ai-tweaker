@@ -159,7 +159,7 @@
     "system.reboot": async () => { log("warn", "system", "demo: reboot skipped"); return true; },
     "image.preview": async ({ options }) => {
       const o = options || {};
-      const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look") || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));
+      const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look" && t.level >= 1) || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));
       const baked = pick.filter((t) => t.offline);
       const apps = o.removeApps === false ? [] : D.apps.filter((a) => (a.recommended && !a.important && !a.keepWhen) || (o.extraApps || []).includes(a.package)).map((a) => a.package);
       return {

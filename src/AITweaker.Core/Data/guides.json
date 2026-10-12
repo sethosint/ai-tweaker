@@ -682,5 +682,164 @@
         ]
       }
     ]
+  },
+  {
+    "id": "openshell",
+    "name": "Open-Shell",
+    "icon": "start",
+    "detect": "app.openShell",
+    "source": "ai",
+    "summary": {
+      "ru": "Бесплатный классический «Пуск» в стиле Windows 7, как на вашем скриншоте. Основное выставляется автоматически — твик «Классический «Пуск» как на референсе».",
+      "en": "A free classic Windows 7-style Start, like your screenshot. The essentials are set automatically by the 'Classic Start like the reference' tweak."
+    },
+    "autoTweaks": ["look.openshell", "look.dark", "look.accent"],
+    "sections": [
+      {
+        "title": { "ru": "Что выставляется автоматически", "en": "Set automatically" },
+        "path": "Open-Shell Menu Settings",
+        "settings": [
+          { "name": "Start menu style", "value": "Windows 7 style" },
+          { "name": "Skin", "value": "Immersive", "note": { "ru": "Плоский скин, который следует тёмной теме Windows.", "en": "A flat skin that follows Windows dark mode." } },
+          { "name": "Show user picture", "value": "OFF" },
+          { "name": "Small icons", "value": "ON" },
+          { "name": "Replace Start button", "value": "OFF", "note": { "ru": "Остаётся родная кнопка «Пуск» с логотипом Windows.", "en": "The native Windows Start button stays." } }
+        ],
+        "note": { "ru": "Применяется вместе с тёмной темой и чёрной панелью задач. Откат возвращает прежние настройки Open-Shell.", "en": "Applied together with dark mode and the black taskbar. Rollback restores your previous Open-Shell settings." }
+      },
+      {
+        "title": { "ru": "Правая колонка", "en": "Right column" },
+        "path": "Open-Shell → Customize Start Menu",
+        "settings": [
+          { "name": "Downloads", "value": "Display as a link" },
+          { "name": "Computer (This PC)", "value": "Display as a link" },
+          { "name": "Control Panel", "value": "Display as a menu" },
+          { "name": "PC Settings", "value": "Display as a link" },
+          { "name": "Documents, Pictures, Music, Games, Network…", "value": "Don't display" }
+        ]
+      },
+      {
+        "title": { "ru": "Если хочется подправить вручную", "en": "Manual adjustments" },
+        "path": "Пуск → правый клик → Settings",
+        "settings": [
+          { "name": "Show all settings", "value": "ON", "note": { "ru": "Открывает все вкладки настроек.", "en": "Unlocks all settings tabs." } },
+          { "name": "Main Menu → Programs style", "value": "Inline", "note": { "ru": "Список «Все программы» прямо в меню, с кнопкой «Назад».", "en": "The All Programs list inside the menu, with a Back button." } },
+          { "name": "Skin → Skin options", "value": "Opaque, Small icons" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "startallback",
+    "name": "StartAllBack",
+    "icon": "start",
+    "detect": "app.startAllBack",
+    "source": "ai",
+    "summary": {
+      "ru": "Платная альтернатива Open-Shell, которая заодно меняет панель задач и Проводник. Ниже — настройки под вид с вашего скриншота. Лицензию покупают у автора, есть пробный период.",
+      "en": "A paid alternative to Open-Shell that also restyles the taskbar and Explorer. Below are the settings for the look in your screenshot. Licenses are bought from the author; there is a trial."
+    },
+    "autoTweaks": ["look.dark", "look.accent", "look.wallpaper"],
+    "sections": [
+      {
+        "title": { "ru": "Установка", "en": "Install" },
+        "path": "Вкладка «Установка» → StartAllBack",
+        "settings": [
+          { "name": "Источник / Source", "value": "startallback.com (через winget)" },
+          { "name": "Лицензия / License", "value": "платная, есть пробный период" }
+        ],
+        "note": { "ru": "AI Tweaker ставит официальный установщик и не трогает лицензию. Если платить не хочется — Open-Shell даёт такой же «Пуск» бесплатно и настраивается автоматически.", "en": "AI Tweaker installs the official installer and never touches licensing. If you don't want to pay, Open-Shell gives the same Start for free and is configured automatically." }
+      },
+      {
+        "title": { "ru": "Тема", "en": "Theme" },
+        "path": "StartAllBack → Welcome",
+        "settings": [
+          { "name": "Base theme", "value": "Remastered 7" }
+        ],
+        "note": { "ru": "Remastered 7 даёт двухколоночный «Пуск» с поиском «Search programs and files» и кнопкой «Shut down», как на скриншоте.", "en": "Remastered 7 gives the two-column Start with 'Search programs and files' and the 'Shut down' button, like the screenshot." }
+      },
+      {
+        "title": { "ru": "Пуск", "en": "Start menu" },
+        "path": "StartAllBack → Start menu",
+        "settings": [
+          { "name": "Visual style", "value": "Plain8", "note": { "ru": "Плоский вид без стекла — как на скриншоте.", "en": "Flat, no glass — like the screenshot." } },
+          { "name": "Icon size", "value": "Small" },
+          { "name": "Control Panel", "value": "Display as menu" },
+          { "name": "Downloads, This PC, Settings", "value": "Show as links" },
+          { "name": "Highlight newly installed programs", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Панель задач", "en": "Taskbar" },
+        "path": "StartAllBack → Taskbar",
+        "settings": [
+          { "name": "Visual style", "value": "Plain8" },
+          { "name": "Icon size", "value": "Small" },
+          { "name": "Center task icons", "value": "OFF" },
+          { "name": "Combine taskbar buttons", "value": "Always, hide labels" },
+          { "name": "Colour", "value": "Чёрный — даёт твик «Чёрные панель задач и «Пуск»»" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cru",
+    "name": "CRU — растянутое разрешение",
+    "icon": "display",
+    "source": "ai",
+    "summary": {
+      "ru": "Как добавить своё разрешение (например, 4:3) и растянуть его на весь экран без чёрных полос — через CRU (любая видеокарта) или встроенными средствами NVIDIA/AMD.",
+      "en": "How to add your own resolution (e.g. 4:3) and stretch it to full screen without black bars — with CRU (any GPU) or with the NVIDIA/AMD control panels."
+    },
+    "sections": [
+      {
+        "title": { "ru": "1. Добавить разрешение в CRU", "en": "1. Add the resolution in CRU" },
+        "path": "CRU.exe → Detailed resolutions → Add…",
+        "settings": [
+          { "name": "Монитор / Monitor", "value": "ваш основной (верхний список)" },
+          { "name": "Timing", "value": "Automatic (PC)" },
+          { "name": "Active", "value": "1440 × 1080 или 1280 × 960 (4:3)", "note": { "ru": "Ширина и высота разрешения, в котором будет игра.", "en": "The width and height the game will run at." } },
+          { "name": "Refresh rate", "value": "максимальная частота монитора", "note": { "ru": "Например, 144/165/240 Гц — иначе потеряете плавность.", "en": "E.g. 144/165/240 Hz — otherwise you lose smoothness." } }
+        ],
+        "note": { "ru": "CRU бесплатный, скачивается на вкладке «Установка». Запустите CRU.exe, добавьте разрешение и нажмите OK во всех окнах.", "en": "CRU is free (Install tab). Run CRU.exe, add the resolution and press OK in every window." }
+      },
+      {
+        "title": { "ru": "2. Перезапустить драйвер", "en": "2. Restart the graphics driver" },
+        "path": "Папка CRU → restart64.exe",
+        "settings": [
+          { "name": "restart64.exe", "value": "запустить / run", "note": { "ru": "Экран на пару секунд погаснет — это нормально.", "en": "The screen goes black for a couple of seconds — that's normal." } }
+        ],
+        "note": { "ru": "Если разрешение не появилось в списке — перезагрузите компьютер. Вернуть всё как было: reset-all.exe, затем restart64.exe.", "en": "If the resolution doesn't show up, reboot. To undo everything: reset-all.exe, then restart64.exe." }
+      },
+      {
+        "title": { "ru": "3. NVIDIA: растянуть на весь экран", "en": "3. NVIDIA: stretch to full screen" },
+        "path": "NVIDIA Control Panel → Display → Adjust desktop size and position",
+        "settings": [
+          { "name": "Select a scaling mode", "value": "Full-screen" },
+          { "name": "Perform scaling on", "value": "GPU" },
+          { "name": "Override the scaling mode set by games and programs", "value": "ON" }
+        ],
+        "note": { "ru": "Разрешение можно создать и без CRU: Change resolution → Customize → Create Custom Resolution.", "en": "You can also create the resolution without CRU: Change resolution → Customize → Create Custom Resolution." }
+      },
+      {
+        "title": { "ru": "3. AMD: растянуть на весь экран", "en": "3. AMD: stretch to full screen" },
+        "path": "AMD Software → Settings → Display",
+        "settings": [
+          { "name": "GPU Scaling", "value": "ON" },
+          { "name": "Scaling Mode", "value": "Full panel" }
+        ],
+        "note": { "ru": "В AMD Software есть и свои кастомные разрешения: Display → Custom Resolutions → Create New.", "en": "AMD Software has its own custom resolutions too: Display → Custom Resolutions → Create New." }
+      },
+      {
+        "title": { "ru": "4. Включить в игре", "en": "4. Use it in the game" },
+        "path": "Настройки игры → Видео",
+        "settings": [
+          { "name": "Режим / Mode", "value": "Полноэкранный / Fullscreen" },
+          { "name": "Разрешение / Resolution", "value": "ваше растянутое, например 1440 × 1080" },
+          { "name": "Масштабирование (CS2 и др.)", "value": "Растянутое / Stretched" }
+        ],
+        "note": { "ru": "В оконном и безрамочном режимах растяжение не работает — только полноэкранный. Рабочий стол можно оставить на родном разрешении; переключиться на растянутое можно и во вкладке «Инструменты».", "en": "Stretching only works in exclusive fullscreen, not windowed or borderless. Keep the desktop native; you can also switch to the stretched mode from the Tools tab." }
+      }
+    ]
   }
 ]

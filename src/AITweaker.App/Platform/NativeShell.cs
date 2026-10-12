@@ -20,6 +20,14 @@ internal static partial class Native
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool SystemParametersInfo(uint action, uint param, [Out] char[] vparam, uint winIni);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetSysColors(int count, int[] elements, int[] colors);
+
+    private const int COLOR_DESKTOP = 1;
+
+    /// <summary>Changes the desktop background colour right away (the registry value only applies at next sign-in).</summary>
+    public static bool SetDesktopColor(byte r, byte g, byte b) => SetSysColors(1, [COLOR_DESKTOP], [r | g << 8 | b << 16]);
+
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam, uint flags, uint timeout, out UIntPtr result);
 
