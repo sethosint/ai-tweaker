@@ -19,6 +19,8 @@ public sealed class UnattendOptions
     public bool DisableAutoBitLocker { get; set; } = true;
     /// <summary>Copy AI Tweaker from the USB stick to the desktop on first logon.</summary>
     public bool CopyTweaker { get; set; } = true;
+    /// <summary>Start AI Tweaker on first logon to finish the hardware-specific tuning (needs <see cref="CopyTweaker"/>).</summary>
+    public bool RunTweakerAfterSetup { get; set; } = true;
     /// <summary>Select Windows 11 Pro with the public generic install key (does not activate).</summary>
     public bool SelectPro { get; set; } = true;
 }
@@ -144,6 +146,14 @@ public static class UnattendGenerator
             sb.AppendLine($"          <CommandLine>{X(CopyTweakerCommand)}</CommandLine>");
             sb.AppendLine("          <Description>Copy AI Tweaker to the desktop</Description>");
             sb.AppendLine("        </SynchronousCommand>");
+            if (o.RunTweakerAfterSetup)
+            {
+                sb.AppendLine("        <SynchronousCommand wcm:action=\"add\">");
+                sb.AppendLine("          <Order>2</Order>");
+                sb.AppendLine($"          <CommandLine>{X(RunTweakerCommand)}</CommandLine>");
+                sb.AppendLine("          <Description>Finish tuning with AI Tweaker</Description>");
+                sb.AppendLine("        </SynchronousCommand>");
+            }
             sb.AppendLine("      </FirstLogonCommands>");
         }
         sb.AppendLine("    </component>");
@@ -151,6 +161,9 @@ public static class UnattendGenerator
         sb.AppendLine("</unattend>");
         return sb.ToString();
     }
+
+    /// <summary>Starts AI Tweaker in first-run mode without blocking the logon (it scans the hardware and offers auto-tuning).</summary>
+    public const string RunTweakerCommand = "cmd.exe /c if exist \"%PUBLIC%\\Desktop\\AITweaker.exe\" start \"\" \"%PUBLIC%\\Desktop\\AITweaker.exe\" --first-run";
 
     /// <summary>Finds the USB stick by its AITweaker folder and copies the exe to the public desktop.</summary>
     public const string CopyTweakerCommand =

@@ -49,7 +49,12 @@
       try { st.net = await call("net.test", { count: 30, custom: st.custom.trim() }); } catch { /* toast */ } finally { off(); b.done(); }
       render();
     };
-    $("#netReset").onclick = async () => { if (await confirmBox(t("net.reset"), t("net.resetQ"), t("net.reset"), "danger", true)) { await call("net.reset"); toast("✓", "ok"); } };
+    $("#netReset").onclick = async () => {
+      if (!(await confirmBox(t("net.reset"), t("net.resetQ"), t("net.reset"), "danger", true))) return;
+      const b = busy(t("net.reset"));
+      try { await call("net.reset"); } catch { return; } finally { b.done(); }
+      await App.restartPrompt("reboot", `<div class="callout ok">✓ ${t("net.resetDone")}</div>`);
+    };
     $("#memPurge").onclick = async () => { const r = await call("memory.purge"); st.freed = r.freedBytes; render(); };
     $("#dnsFlush").onclick = async () => { await call("net.flushdns"); toast("DNS ✓", "ok"); };
     $("#expRestart").onclick = async () => { await call("explorer.restart"); toast("Explorer ✓", "ok"); };

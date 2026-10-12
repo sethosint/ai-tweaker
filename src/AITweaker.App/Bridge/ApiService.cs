@@ -55,7 +55,12 @@ public sealed class ApiService
         "bios.list" => await BiosAsync(),
         "bios.reboot" => await RebootAsync(firmware: true),
         "system.reboot" => await RebootAsync(firmware: false),
-        "ame.run" => await Exclusive(() => AmeLauncher.RunAsync(Str(p, "playbook") ?? "atlas", (s, v) => _emit("ame.progress", new { step = s, value = v }), NewLongTask())),
+        "image.preview" => ImagePreview(p),
+        "image.build" => await Exclusive(() => ImageBuilder.BuildAsync(Str(p, "iso") ?? "", OfflineImagePlan.Build(_catalog, ImageOptions(p)), (s, v) => _emit("image.progress", new { step = s, value = v }), NewLongTask())),
+        "image.existing" => File.Exists(Path.Combine(ImageBuilder.OutputFolder, "sources", "install.wim")) ? ImageBuilder.OutputFolder : null,
+        "system.logoff" => await LogoffAsync(),
+        "system.rebootPending" => SettingsStore.RebootPending,
+        "firstrun.done" => Do(() => { SettingsStore.Current.FirstRunDone = true; SettingsStore.Save(); }),
         "usb.list" => await UsbCreator.ListAsync(),
         "usb.pickIso" => await _onUi(PickIso),
         "usb.downloadIso" => await Exclusive(() => UsbCreator.DownloadIsoAsync(Str(p, "language") ?? "Russian", (s, v) => _emit("usb.progress", new { step = s, value = v }), NewLongTask())),
@@ -75,7 +80,7 @@ public sealed class ApiService
         "system.theme" => SystemThemeReader.Read(),
         "net.test" => await Exclusive(() => NetworkTest.RunAsync(Targets(p), Int(p, "count") ?? 30, (h, i, n) => _emit("net.progress", new { host = h, i, n }), NewLongTask())),
         "net.flushdns" => await NetworkTest.FlushDnsAsync(),
-        "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); return true; }),
+        "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); SettingsStore.MarkRebootPending(); return true; }),
         "startup.list" => StartupManager.List(),
         "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
         "clean.analyze" => await Task.Run(Cleaner.Analyze),
@@ -106,11 +111,31 @@ public sealed class ApiService
                 hasKey = SettingsStore.GetClaudeKey() is not null,
                 pingHost = s.PingHost,
                 createRestorePoint = s.CreateRestorePoint,
+                autoRestartSeconds = s.AutoRestartSeconds,
             },
+            rebootPending = SettingsStore.RebootPending,
+            image = InstalledImage(),
+            // Started by autounattend after a clean install, or the first launch on a PC installed from our image.
+            firstRun = !SettingsStore.Current.FirstRunDone
+                && (Environment.GetCommandLineArgs().Contains("--first-run", StringComparer.OrdinalIgnoreCase) || InstalledImage() is not null),
             models = ClaudeAdvisor.Models,
             categories = _catalog.Categories,
             log = AppLog.Snapshot().TakeLast(100),
         };
+    }
+
+    /// <summary>AITweaker-image.json that <see cref="ImageBuilder"/> leaves in Windows\ when this PC was installed from our image.</summary>
+    private static JsonElement? InstalledImage()
+    {
+        try
+        {
+            var f = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "AITweaker-image.json");
+            return File.Exists(f) ? JsonDocument.Parse(File.ReadAllText(f)).RootElement.Clone() : null;
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     private async Task<SystemProfile> ProfileAsync()
@@ -189,6 +214,7 @@ public sealed class ApiService
             exec.Progress += (i, n, id) => _emit("apply.progress", new { i, n, id });
             var summary = await exec.ApplyAsync(tweaks, restorePoint, profileName, NewLongTask());
             AppLog.Ok("apply", $"{summary.Results.Count(r => r.Ok)}/{summary.Results.Count} tweaks applied{(summary.RebootRequired ? ", reboot required" : "")}");
+            if (summary.RebootRequired) SettingsStore.MarkRebootPending();
             return summary;
         });
     }
@@ -197,7 +223,9 @@ public sealed class ApiService
     {
         var profile = await ProfileAsync();
         var tweaks = ids.Select(_catalog.Find).OfType<TweakDefinition>().ToList();
-        return await Exclusive(() => new TweakExecutor(profile).RevertAsync(tweaks));
+        var results = await Exclusive(() => new TweakExecutor(profile).RevertAsync(tweaks));
+        if (results.Any(r => r.Ok && _catalog.Find(r.Id)?.Reboot == true)) SettingsStore.MarkRebootPending();
+        return results;
     }
 
     private object Backups() => new
@@ -275,6 +303,45 @@ public sealed class ApiService
         };
     }
 
+    private static OfflineImageOptions ImageOptions(JsonElement p)
+    {
+        var o = new OfflineImageOptions();
+        if (!p.TryGetProperty("options", out var e) || e.ValueKind != JsonValueKind.Object) return o;
+        o.MaxLevel = Int(e, "level") is { } lvl ? Math.Clamp(lvl, 1, 3) : 2;
+        o.ExtraApps = Ids(e, "extraApps") ?? [];
+        o.RemoveApps = Bool(e, "removeApps") ?? true;
+        o.RemoveLegacyComponents = Bool(e, "removeComponents") ?? true;
+        o.InjectDrivers = Bool(e, "drivers") ?? false;
+        o.CleanupComponents = Bool(e, "cleanup") ?? true;
+        o.IntegrateUpdates = Bool(e, "updates") ?? true;
+        o.ApplyLook = Bool(e, "look") ?? true;
+        return o;
+    }
+
+    private object ImagePreview(JsonElement p)
+    {
+        var plan = OfflineImagePlan.Build(_catalog, ImageOptions(p));
+        return new
+        {
+            tweaks = plan.TweakIds.Select(id => new { id, name = _catalog.Find(id)?.Name, category = _catalog.Find(id)?.Category }),
+            registryValues = plan.Registry.Count,
+            services = plan.Services.Select(s => s.Name).Distinct(),
+            apps = plan.Apps,
+            capabilities = plan.Capabilities,
+            afterInstall = plan.Skipped.Count,
+            look = plan.Options.ApplyLook,
+            updates = plan.Options.IntegrateUpdates,
+        };
+    }
+
+    private static async Task<object> LogoffAsync()
+    {
+        AppLog.Warn("system", "signing out in 5 seconds");
+        await Task.Delay(5000);
+        await ProcessRunner.RunAsync("shutdown.exe", "/l");
+        return true;
+    }
+
     private static async Task<object> RestartExplorer()
     {
         await TweakExecutor.RestartExplorerAsync();
@@ -320,6 +387,7 @@ public sealed class ApiService
         o.TimeZone = Str(e, "timeZone") ?? o.TimeZone;
         o.BypassRequirements = Bool(e, "bypass") ?? true;
         o.CopyTweaker = Bool(e, "copyTweaker") ?? true;
+        o.RunTweakerAfterSetup = o.CopyTweaker && (Bool(e, "runAfterSetup") ?? true);
         o.DisableAutoBitLocker = Bool(e, "disableBitLocker") ?? true;
         if (Str(e, "locale") is { } loc)
         {
@@ -355,6 +423,7 @@ public sealed class ApiService
         if (Str(p, "model") is { } model && ClaudeAdvisor.Models.Contains(model)) s.ClaudeModel = model;
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;
         if (Bool(p, "createRestorePoint") is { } rp) s.CreateRestorePoint = rp;
+        if (Int(p, "autoRestartSeconds") is { } ar) s.AutoRestartSeconds = Math.Clamp(ar, 0, 600);
         SettingsStore.Save();
         if (p.TryGetProperty("apiKey", out var k)) SettingsStore.SetClaudeKey(k.ValueKind == JsonValueKind.String ? k.GetString() : null);
         return new { hasKey = SettingsStore.GetClaudeKey() is not null };

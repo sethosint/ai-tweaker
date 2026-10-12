@@ -43,9 +43,12 @@ public static class UsbCreator
         return iso;
     }
 
-    public static async Task CreateAsync(int diskNumber, string isoPath, UnattendOptions options, Action<string, double> progress, CancellationToken ct = default)
+    /// <param name="source">An official ISO, or the folder produced by <see cref="ImageBuilder"/>.</param>
+    public static async Task CreateAsync(int diskNumber, string source, UnattendOptions options, Action<string, double> progress, CancellationToken ct = default)
     {
-        if (!File.Exists(isoPath)) throw new FileNotFoundException("ISO not found", isoPath);
+        bool isIso = source.EndsWith(".iso", StringComparison.OrdinalIgnoreCase);
+        if (isIso ? !File.Exists(source) : !File.Exists(Path.Combine(source, "sources", "install.wim")))
+            throw new FileNotFoundException("Windows image not found", source);
         var disks = await ListAsync();
         var disk = disks.FirstOrDefault(d => d.Number == diskNumber) ?? throw new InvalidOperationException($"Disk {diskNumber} is not a removable USB disk");
         if (disk.SizeBytes < 7_500_000_000) throw new InvalidOperationException("The USB stick must be at least 8 GB (16 GB recommended)");
@@ -53,13 +56,14 @@ public static class UsbCreator
         var unattend = Path.Combine(AppPaths.Downloads, "autounattend.xml");
         await File.WriteAllTextAsync(unattend, UnattendGenerator.Generate(options), ct);
         var self = options.CopyTweaker ? Environment.ProcessPath : null;
-        long isoBytes = new FileInfo(isoPath).Length;
+        long isoBytes = isIso ? new FileInfo(source).Length : Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
 
         AppLog.Warn("usb", $"erasing disk {disk.Number}: {disk.Name} ({disk.SizeBytes / 1_000_000_000} GB)");
         var script = $$"""
             $ErrorActionPreference = 'Stop'
             $N = {{diskNumber}}
-            $Iso = {{ProcessRunner.PsQuote(isoPath)}}
+            $Source = {{ProcessRunner.PsQuote(source)}}
+            $IsIso = ${{isIso.ToString().ToLowerInvariant()}}
             $Unattend = {{ProcessRunner.PsQuote(unattend)}}
             $Tweaker = {{(self is null ? "$null" : ProcessRunner.PsQuote(self))}}
             $disk = Get-Disk -Number $N
@@ -75,16 +79,21 @@ public static class UsbCreator
             $usb = (Get-Partition -DiskNumber $N -PartitionNumber $part.PartitionNumber).DriveLetter
             Write-Output "USB:$usb"
             Write-Output 'STEP:mount'
-            $img = Mount-DiskImage -ImagePath $Iso -PassThru
+            if ($IsIso) {
+              $img = Mount-DiskImage -ImagePath $Source -PassThru
+              $letter = $null
+              for ($i = 0; $i -lt 15 -and -not $letter; $i++) { $letter = ($img | Get-Volume).DriveLetter; if (-not $letter) { Start-Sleep 1 } }
+              if (-not $letter) { Dismount-DiskImage -ImagePath $Source | Out-Null; throw 'The ISO was mounted but got no drive letter' }
+              $src = "$($letter):"
+            } else {
+              $src = $Source.TrimEnd('\')
+            }
             try {
-              $src = $null
-              for ($i = 0; $i -lt 15 -and -not $src; $i++) { $src = ($img | Get-Volume).DriveLetter; if (-not $src) { Start-Sleep 1 } }
-              if (-not $src) { throw 'The ISO was mounted but got no drive letter' }
               Write-Output 'STEP:copy'
               # "X:\." instead of "X:\": a trailing backslash before a quote would escape the quote for robocopy.
-              robocopy "$($src):\." "$($usb):\." /E /XF install.wim /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+              robocopy "$src\." "$($usb):\." /E /XF install.wim /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
               if ($LASTEXITCODE -ge 8) { throw "robocopy failed with code $LASTEXITCODE" }
-              $wim = "$($src):\sources\install.wim"
+              $wim = "$src\sources\install.wim"
               if (Test-Path $wim) {
                 if ((Get-Item $wim).Length -ge 4GB) {
                   Write-Output 'STEP:split'
@@ -101,7 +110,7 @@ public static class UsbCreator
                 Copy-Item $Tweaker "$($usb):\AITweaker\AITweaker.exe" -Force
               }
             } finally {
-              Dismount-DiskImage -ImagePath $Iso | Out-Null
+              if ($IsIso) { Dismount-DiskImage -ImagePath $Source | Out-Null }
             }
             Write-Output 'STEP:done'
             """;

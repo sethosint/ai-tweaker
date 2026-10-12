@@ -47,4 +47,14 @@ public class UnattendTests
     [InlineData("a@b")]
     public void RejectsInvalidUserNames(string name) =>
         Assert.Throws<ArgumentException>(() => UnattendGenerator.Generate(new UnattendOptions { UserName = name }));
+
+    [Fact]
+    public void StartsAITweakerAfterSetup()
+    {
+        var xml = UnattendGenerator.Generate(new UnattendOptions());
+        Assert.Contains("--first-run", xml);
+        Assert.True(xml.IndexOf("<Order>1</Order>", StringComparison.Ordinal) < xml.IndexOf("--first-run", StringComparison.Ordinal));
+        Assert.DoesNotContain("--first-run", UnattendGenerator.Generate(new UnattendOptions { RunTweakerAfterSetup = false }));
+        System.Xml.Linq.XDocument.Parse(xml);
+    }
 }

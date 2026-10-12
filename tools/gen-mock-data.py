@@ -7,6 +7,7 @@ Usage: python3 tools/gen-mock-data.py
 import glob
 import json
 import os
+import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "src", "AITweaker.Core", "Data")
@@ -52,7 +53,35 @@ def describe(a):
         return "remove appx " + ", ".join(a["packages"])
     if t == "display":
         return "display -> max refresh rate"
+    if t == "wallpaper":
+        return f"wallpaper[{a.get('target', 'desktop')}] -> AI Tweaker {a.get('variant', 'dark')}"
     return t
+
+
+# Mirror of OfflineImagePlan.Reject (C#) for the demo preview of the AI Tweaker image.
+IMAGE_FACTS = {"os.build", "os.win11"}
+OFFLINE_ROOTS = ("HKLM\\SOFTWARE\\", "HKLM\\SYSTEM\\CURRENTCONTROLSET\\", "HKCU\\")
+
+
+def decidable(when):
+    if not when:
+        return True
+    ids = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", re.sub(r'"[^"]*"', "", when))) - {"true", "false"}
+    return ids <= IMAGE_FACTS
+
+
+def offline(t):
+    if not decidable(t.get("when")):
+        return False
+    for a in t["actions"]:
+        if not decidable(a.get("when")):
+            return False
+        if a["type"] == "registry":
+            if "*" in a["path"] or not a["path"].upper().startswith(OFFLINE_ROOTS):
+                return False
+        elif a["type"] not in ("service", "wallpaper"):
+            return False
+    return True
 
 
 tweaks = []
@@ -64,7 +93,7 @@ for path in sorted(glob.glob(os.path.join(DATA, "tweaks", "*.json"))):
                 "level": t.get("level", 2), "risk": t.get("risk", "low"), "confirm": t.get("confirm", False),
                 "confirmText": t.get("confirmText"), "reboot": t.get("reboot", False), "logoff": t.get("logoff", False),
                 "restartExplorer": t.get("restartExplorer", False), "reversible": t.get("reversible", True),
-                "when": t.get("when"), "why": t.get("why"), "actions": [describe(a) for a in t["actions"]],
+                "when": t.get("when"), "why": t.get("why"), "actions": [describe(a) for a in t["actions"]], "offline": offline(t),
             })
 
 data = {

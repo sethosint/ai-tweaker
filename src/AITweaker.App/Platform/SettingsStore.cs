@@ -18,6 +18,12 @@ public sealed class AppSettings
     public string PingHost { get; set; } = "1.1.1.1";
     public string? UltimateSchemeGuid { get; set; }
     public bool CreateRestorePoint { get; set; } = true;
+    /// <summary>When changes that need a reboot were made; cleared once Windows has booted after that.</summary>
+    public DateTime? RebootPendingSince { get; set; }
+    /// <summary>Seconds of the automatic restart countdown (0 = never restart automatically).</summary>
+    public int AutoRestartSeconds { get; set; } = 60;
+    /// <summary>The post-install welcome (scan → auto-tune → look → restart) was completed or dismissed for good.</summary>
+    public bool FirstRunDone { get; set; }
 }
 
 public static class SettingsStore
@@ -52,6 +58,27 @@ public static class SettingsStore
         {
             File.WriteAllText(FilePath, JsonSerializer.Serialize(Current, new JsonSerializerOptions { WriteIndented = true }));
         }
+    }
+
+    /// <summary>True while changes made by AI Tweaker still wait for a reboot.</summary>
+    public static bool RebootPending
+    {
+        get
+        {
+            var since = Current.RebootPendingSince;
+            if (since is null) return false;
+            var boot = DateTime.Now - TimeSpan.FromMilliseconds(Environment.TickCount64);
+            if (since > boot) return true;
+            Current.RebootPendingSince = null; // Windows restarted since then
+            Save();
+            return false;
+        }
+    }
+
+    public static void MarkRebootPending()
+    {
+        Current.RebootPendingSince = DateTime.Now;
+        Save();
     }
 
     public static string? GetClaudeKey()

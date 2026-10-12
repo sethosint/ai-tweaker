@@ -252,30 +252,53 @@
     $("#toBios").onclick = async () => { if (await confirmBox(t("bios.reboot"), t("bios.rebootQ"), t("bios.reboot"), "danger", true)) call("bios.reboot"); };
   };
 
-  // ------------------------------------------------------------------ [08] image
+  // ------------------------------------------------------------------ [09] image (own AI Tweaker image + USB)
 
-  const usb = { iso: "", disk: null, disks: null, lang: "Russian", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, disableBitLocker: true } };
+  const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
+  const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
+  const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
   const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
+  const imgOptions = () => ({ level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
 
   V.image = async () => {
     const v = $("#v-image");
-    if (usb.disks === null) { usb.disks = []; call("usb.list", {}, { silent: true }).then((d) => { usb.disks = d; if (S.view === "image") V.image(); }).catch(() => {}); }
+    if (usb.disks === null) {
+      usb.disks = [];
+      call("usb.list", {}, { silent: true }).then((d) => { usb.disks = d; if (S.view === "image") V.image(); }).catch(() => {});
+      call("image.existing", {}, { silent: true }).then((f) => { if (f) { usb.built = usb.built || { folder: f }; if (S.view === "image") V.image(); } }).catch(() => {});
+    }
     const o = usb.opt;
+    const src = usb.source === "built" && usb.built ? usb.built.folder : usb.iso;
     v.innerHTML = html`
       <div class="page-h"><div><span class="code">SEC-09 // IMAGE</span><h1>${t("image.title")}</h1><p>${t("image.desc")}</p></div></div>
       <div class="grid cols-2" style="align-items:start">
-        <div class="panel"><div class="panel-h"><span class="code">AME</span>${t("ame.title")}</div><div class="panel-b" style="display:grid;gap:12px">
-          <div style="color:var(--ink-2)">${t("ame.desc")}</div>
-          ${[["atlas", "AtlasOS", t("ame.atlas")], ["revi", "ReviOS", t("ame.revi")]].map(([id, n, d]) => html`<div class="trow" style="grid-template-columns:1fr auto"><div><div class="tt">${n}</div><div class="td">${d}</div></div><button class="btn primary sm" data-pb="${id}">⇩ ${t("ame.run")}</button></div>`).join("")}
-          <div class="callout">ameliorated.io · atlasos.net · revi.cc</div>
-        </div></div>
-        <div class="panel"><div class="panel-h"><span class="code">USB</span>${t("usb.title")}</div><div class="panel-b steps">
+        <div class="panel"><div class="panel-h"><span class="code">AIT</span>${t("ib.title")}</div><div class="panel-b steps">
+          <div class="callout">${t("ib.desc")}</div>
           <div class="step"><h4>${t("usb.iso")}</h4>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="isoPick">📂 ${t("usb.pick")}</button>
               <select class="input" id="isoLang" style="width:auto">${["Russian", "English", "English International", "Ukrainian", "Kazakh"].map((l) => `<option ${usb.lang === l ? "selected" : ""}>${l}</option>`).join("")}</select>
               <button class="btn sm" id="isoDl">⇩ ${t("usb.download")}</button></div>
             <div class="tid" style="margin-top:8px;word-break:break-all">${esc(usb.iso || "—")}</div>
             <div class="td" style="margin-top:6px;color:var(--muted)">${t("usb.fidoNote")}</div></div>
+          <div class="step"><h4>${t("ib.contents")}</h4>
+            <label class="field">${t("ib.level")}<select class="input" id="ibLevel">${[1, 2, 3].map((l) => `<option value="${l}" ${img.level === l ? "selected" : ""}>${t("prof." + ["Safe", "Balanced", "Performance"][l - 1])}</option>`).join("")}</select></label>
+            <div style="display:grid;gap:8px;margin-top:10px">
+              ${[["look", "ib.look"], ["updates", "ib.updates"], ["removeApps", "ib.apps"], ["removeComponents", "ib.components"], ["cleanup", "ib.cleanup"], ["drivers", "ib.drivers"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-ib="${k}" ${img[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
+            ${img.look ? `<div class="look-thumbs">${["dark", "lock", "light"].map((n) => `<figure><img src="img/aitweaker-${n}.webp" alt="" loading="lazy"><figcaption>${t("look." + n)}</figcaption></figure>`).join("")}</div>` : ""}
+            <div class="cat-h" style="margin-top:12px;font-size:11px">${t("ib.extra")}</div>
+            <div style="display:grid;gap:6px;margin-top:8px">${EXTRA.map(([pkg, n]) => `<label class="check"><input type="checkbox" data-extra="${pkg}" ${img.extraApps.includes(pkg) ? "checked" : ""}><span class="box"></span>${n} <span class="chip crit" style="margin-left:4px">⚠</span></label>`).join("")}</div>
+            <div class="td" style="margin-top:8px;color:var(--muted)">${t("ib.extraNote")}</div></div>
+          <div class="step"><h4>${t("ib.build")}</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="ibPreview">${t("ib.preview")}</button><button class="btn hazard" id="ibBuild" ${usb.iso ? "" : "disabled"}><span>⚙ ${t("ib.build")}</span></button></div>
+            ${usb.built ? `<div class="callout ok" style="margin-top:10px">✓ ${t("ib.ready")}: <span class="tid">${esc(usb.built.folder)}</span>${usb.built.tweaks != null ? `<br>${usb.built.version ? `Windows 11 ${esc(usb.built.version)} · build ${esc(usb.built.build)}${usb.built.update ? " · " + esc(usb.built.update) : ""}<br>` : ""}${usb.built.tweaks} tweaks · ${usb.built.apps} apps · install.wim ${(usb.built.wimBytes / 1073741824).toFixed(2)} GB` : ""}</div>` : ""}
+            <div class="td" style="margin-top:8px;color:var(--muted)">${t("ib.note")}</div></div>
+        </div></div>
+
+        <div class="panel"><div class="panel-h"><span class="code">USB</span>${t("usb.title")}</div><div class="panel-b steps">
+          <div class="step"><h4>${t("usb.source")}</h4>
+            <label class="check" style="display:flex;margin:4px 0"><input type="radio" name="usbsrc" value="built" ${usb.source === "built" ? "checked" : ""} ${usb.built ? "" : "disabled"}><span class="box" style="border-radius:50%"></span>${t("usb.srcBuilt")}</label>
+            <label class="check" style="display:flex;margin:4px 0"><input type="radio" name="usbsrc" value="iso" ${usb.source === "iso" || !usb.built ? "checked" : ""}><span class="box" style="border-radius:50%"></span>${t("usb.srcIso")}</label>
+            <div class="tid" style="word-break:break-all">${esc(src || "—")}</div></div>
           <div class="step"><h4>${t("usb.disk")}</h4>
             ${usb.disks.length ? usb.disks.map((d) => `<label class="check" style="display:flex;margin:4px 0"><input type="radio" name="disk" value="${d.number}" ${usb.disk === d.number ? "checked" : ""}><span class="box" style="border-radius:50%"></span>#${d.number} · ${esc(d.name)} · ${(d.sizeBytes / 1e9).toFixed(1)} GB</label>`).join("") : `<div class="td">${t("usb.noDisk")}</div>`}
             <button class="btn sm ghost" id="diskRefresh" style="margin-top:6px">⟳ ${t("usb.refresh")}</button></div>
@@ -286,13 +309,12 @@
             <label class="field">${t("usb.tz")}<select class="input" data-o="timeZone">${TZ.map(([id, n]) => `<option value="${id}" ${o.timeZone === id ? "selected" : ""}>${n}</option>`).join("")}</select></label>
             <label class="field">${t("usb.locale")}<select class="input" data-o="locale">${["ru-RU", "en-US", "uk-UA", "kk-KZ", "be-BY"].map((l) => `<option ${o.locale === l ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
             <div style="display:grid;gap:8px;margin-top:10px">
-              ${[["bypass", "usb.bypass"], ["copyTweaker", "usb.copy"], ["disableBitLocker", "usb.bitlocker"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-b="${k}" ${o[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
+              ${[["bypass", "usb.bypass"], ["copyTweaker", "usb.copy"], ["runAfterSetup", "usb.runAfter"], ["disableBitLocker", "usb.bitlocker"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-b="${k}" ${o[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
             <div class="callout" style="margin-top:10px">${t("usb.note")}</div></div>
-          <div class="step"><h4>${t("usb.create")}</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="xmlPrev">${t("usb.preview")}</button><button class="btn hazard" id="usbGo" ${usb.iso && usb.disk !== null ? "" : "disabled"}><span>⚡ ${t("usb.create")}</span></button></div></div>
+          <div class="step"><h4>${t("usb.create")}</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="xmlPrev">${t("usb.preview")}</button><button class="btn hazard" id="usbGo" ${src && usb.disk !== null ? "" : "disabled"}><span>⚡ ${t("usb.create")}</span></button></div></div>
         </div></div>
       </div>`;
 
-    v.querySelectorAll("[data-pb]").forEach((b) => (b.onclick = () => runAme(b.dataset.pb)));
     $("#isoPick").onclick = async () => { const p = await call("usb.pickIso"); if (p) { usb.iso = p; V.image(); } };
     $("#isoLang").onchange = (e) => (usb.lang = e.target.value);
     $("#isoDl").onclick = async () => {
@@ -301,23 +323,44 @@
       try { usb.iso = await call("usb.downloadIso", { language: usb.lang }); } catch { /* toast shown */ } finally { off(); b.done(); }
       V.image();
     };
+    $("#ibLevel").onchange = (e) => (img.level = +e.target.value);
+    v.querySelectorAll("[data-ib]").forEach((i) => (i.onchange = () => { img[i.dataset.ib] = i.checked; if (i.dataset.ib === "look") V.image(); }));
+    v.querySelectorAll("[data-extra]").forEach((i) => (i.onchange = async () => {
+      if (i.checked) {
+        const a = (window.MOCK_DATA ? MOCK_DATA.apps : []).find((x) => x.package === i.dataset.extra);
+        const ok = await confirmBox(t("confirm.title"), a && a.warning ? esc(L(a.warning)) : esc(i.dataset.extra), t("confirm.remove"), "danger", true);
+        if (!ok) { i.checked = false; return; }
+        img.extraApps.push(i.dataset.extra);
+      } else img.extraApps = img.extraApps.filter((x) => x !== i.dataset.extra);
+    }));
+    $("#ibPreview").onclick = async () => {
+      const pv = await call("image.preview", { options: imgOptions() });
+      modal({
+        title: t("ib.preview"), wide: true,
+        body: html`<div class="kv"><b>${t("ib.pvTweaks")}</b><span>${pv.tweaks.length} · ${pv.registryValues} registry · ${pv.services.length} services</span><b>${t("ib.pvApps")}</b><span>${pv.apps.length}</span><b>${t("ib.pvComponents")}</b><span>${pv.capabilities.length}</span><b>${t("ib.pvAfter")}</b><span>${pv.afterInstall}</span></div>
+          <div class="pre">${esc(pv.tweaks.map((x) => `✓ ${L(x.name)}  [${x.id}]`).join("\n"))}\n\n${esc(pv.apps.map((x) => `✕ ${x}`).join("\n"))}\n\n${esc(pv.capabilities.map((x) => `✕ ${x}*`).join("\n"))}</div>`,
+        buttons: [{ label: t("close"), cls: "ghost" }],
+      });
+    };
+    $("#ibBuild").onclick = async () => {
+      if (!(await confirmBox(t("ib.build"), t("ib.buildQ"), t("ib.build")))) return;
+      const b = busy(t("busy.image"));
+      const off = API.on("image.progress", (p) => b.progress(p.value, `${t("ib.step." + p.step)} · ${Math.round(p.value * 100)}%`));
+      try { usb.built = await call("image.build", { iso: usb.iso, options: imgOptions() }); usb.source = "built"; toast(t("ib.ready"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
+      V.image();
+    };
+    v.querySelectorAll("input[name=usbsrc]").forEach((r) => (r.onchange = () => { usb.source = r.value; V.image(); }));
     v.querySelectorAll("input[name=disk]").forEach((r) => (r.onchange = () => { usb.disk = +r.value; V.image(); }));
     $("#diskRefresh").onclick = async () => { usb.disks = await call("usb.list"); V.image(); };
     v.querySelectorAll("[data-o]").forEach((i) => (i.onchange = () => (o[i.dataset.o] = i.value)));
     v.querySelectorAll("[data-b]").forEach((i) => (i.onchange = () => (o[i.dataset.b] = i.checked)));
     $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
-    $("#usbGo").onclick = createUsb;
+    $("#usbGo").onclick = () => createUsb(src);
   };
 
-  async function runAme(pb) {
-    const b = busy(t("busy.ame"));
-    const off = API.on("ame.progress", (p) => b.progress(p.value, p.step));
-    try { const path = await call("ame.run", { playbook: pb }); toast(path, "ok"); } catch { /* toast */ } finally { off(); b.done(); }
-  }
-
-  async function createUsb() {
+  async function createUsb(src) {
     const d = usb.disks.find((x) => x.number === usb.disk);
-    if (!d) return;
+    if (!d || !src) return;
     const typed = await modal({
       title: t("usb.create"), hazard: true,
       body: html`<div><b>#${d.number} · ${esc(d.name)} · ${(d.sizeBytes / 1e9).toFixed(1)} GB</b></div><div>${t("usb.confirm")}</div><input class="input" id="typed" autocomplete="off">`,
@@ -327,7 +370,7 @@
     if (typed !== "go" || String(usb.typed).trim() !== String(d.number)) return;
     const b = busy(t("busy.usb"));
     const off = API.on("usb.progress", (p) => b.progress(p.value, `${p.step} · ${Math.round(p.value * 100)}%`));
-    try { await call("usb.create", { disk: d.number, iso: usb.iso, options: usb.opt }); toast("USB ✓", "ok"); } catch { /* toast */ } finally { off(); b.done(); }
+    try { await call("usb.create", { disk: d.number, iso: src, options: usb.opt }); toast("USB ✓", "ok"); } catch { /* toast */ } finally { off(); b.done(); }
   }
 
   // ------------------------------------------------------------------ [09] AI

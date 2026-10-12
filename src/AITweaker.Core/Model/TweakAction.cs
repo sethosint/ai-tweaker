@@ -19,6 +19,7 @@ namespace AITweaker.Core.Model;
 [JsonDerivedType(typeof(DirectXSettingAction), "directx")]
 [JsonDerivedType(typeof(AppxRemoveAction), "appx")]
 [JsonDerivedType(typeof(DisplayRefreshAction), "display")]
+[JsonDerivedType(typeof(WallpaperAction), "wallpaper")]
 public abstract class TweakAction
 {
     /// <summary>Optional per-action condition (e.g. different values on laptops).</summary>
@@ -195,4 +196,16 @@ public sealed class AppxRemoveAction : TweakAction
 public sealed class DisplayRefreshAction : TweakAction
 {
     public override string Describe() => "display -> max refresh rate";
+}
+
+/// <summary>Sets one of AI Tweaker's own wallpapers (shipped inside the app) as the desktop or lock-screen image.</summary>
+public sealed class WallpaperAction : TweakAction
+{
+    /// <summary>desktop | lock</summary>
+    public string Target { get; init; } = "desktop";
+    /// <summary>dark | light (ignored for the lock screen)</summary>
+    public string Variant { get; init; } = "dark";
+
+    public string File => Image.LookAssets.WallpaperFile(Target == "lock" ? "lock" : Variant);
+    public override string Describe() => $"wallpaper[{Target}] -> {File}";
 }

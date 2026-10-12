@@ -37,7 +37,7 @@ public class CatalogTests
         Assert.True(Catalog.Apps.Count >= 30);
         Assert.True(Catalog.Guides.Count >= 8);
         Assert.True(Catalog.Bios.Count >= 6);
-        Assert.Equal(10, Catalog.Categories.Count);
+        Assert.Equal(11, Catalog.Categories.Count);
     }
 
     [Fact]

@@ -1,7 +1,7 @@
 /* [01] Dashboard — system index, live sensors, configuration, events, issues, progress, optimization map, monitoring. */
 (function () {
-  const CAT_CODE = { privacy: "P", gaming: "G", input: "I", network: "N", power: "W", devices: "D", system: "S", interface: "U", apps: "A", security: "X" };
-  const GROUPS = { latency: ["input", "network", "devices"], fps: ["gaming", "power", "security"], privacy: ["privacy"], clean: ["system", "interface", "apps"] };
+  const CAT_CODE = { privacy: "P", gaming: "G", input: "I", network: "N", power: "W", devices: "D", system: "S", interface: "U", look: "L", apps: "A", security: "X" };
+  const GROUPS = { latency: ["input", "network", "devices"], fps: ["gaming", "power", "security"], privacy: ["privacy"], clean: ["system", "interface", "look", "apps"] };
   let logFilter = "all";
 
   const planItems = () => (S.plan ? S.plan.items : []);

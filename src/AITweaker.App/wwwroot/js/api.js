@@ -37,7 +37,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true } };
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null };
 
   const profile = {
     os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
@@ -84,7 +84,7 @@
   const statusOf = (t) => (mock.applied.has(t.id) ? "applied" : evalWhen(t.when) ? "off" : "n/a");
 
   const handlers = {
-    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true }),
+    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
     "system.scan": async () => {
       log("info", "scan", "scanning hardware and Windows configuration…");
       await sleep(1400);
@@ -116,7 +116,9 @@
         results.push({ id: t.id, ok: true });
       }
       mock.sessions.unshift({ id: Math.random().toString(16).slice(2, 14), time: now(), kind: "apply", profile: mock.settings.profile, applied: ids, failed: [], restorePoint });
-      return { results, restorePointCreated: !!restorePoint, rebootRequired: list.some((t) => t.reboot), logoffRequired: list.some((t) => t.logoff) };
+      const rebootRequired = list.some((t) => t.reboot);
+      if (rebootRequired) mock.rebootPending = true;
+      return { results, restorePointCreated: !!restorePoint, rebootRequired, logoffRequired: list.some((t) => t.logoff) };
     },
     "tweaks.revert": async ({ ids }) => {
       for (const id of ids) { await sleep(80); mock.applied.delete(id); log("ok", id, "rolled back"); }
@@ -155,11 +157,31 @@
     }),
     "bios.reboot": async () => { log("warn", "system", "demo: reboot into BIOS skipped"); return true; },
     "system.reboot": async () => { log("warn", "system", "demo: reboot skipped"); return true; },
-    "ame.run": async ({ playbook }) => {
-      for (let v = 0; v <= 1; v += 0.1) { emit("ame.progress", { step: v < 0.45 ? "AME Wizard" : playbook, value: v }); await sleep(180); }
-      log("ok", "ame", "demo: AME Wizard would launch now");
-      return "C:\\Users\\demo\\AppData\\Local\\AITweaker\\downloads\\ame\\AtlasPlaybook.apbx";
+    "image.preview": async ({ options }) => {
+      const o = options || {};
+      const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look") || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));
+      const baked = pick.filter((t) => t.offline);
+      const apps = o.removeApps === false ? [] : D.apps.filter((a) => (a.recommended && !a.important && !a.keepWhen) || (o.extraApps || []).includes(a.package)).map((a) => a.package);
+      return {
+        tweaks: baked.map((t) => ({ id: t.id, name: t.name, category: t.category })),
+        registryValues: baked.reduce((n, t) => n + t.actions.filter((a) => a.startsWith("reg ")).length, 0),
+        services: [...new Set(baked.flatMap((t) => t.actions.filter((a) => a.startsWith("service ")).map((a) => a.split(" ")[1])))],
+        apps, capabilities: o.removeComponents === false ? [] : ["Browser.InternetExplorer~", "MathRecognizer~", "Microsoft.Windows.WordPad~", "App.StepsRecorder~", "App.Support.QuickAssist~", "Media.WindowsMediaPlayer~"],
+        afterInstall: pick.length - baked.length, look: o.look !== false, updates: o.updates !== false,
+      };
     },
+    "image.build": async ({ options }) => {
+      const o = options || {};
+      const steps = ["prepare", "copy", "export", "mount", ...(o.updates !== false ? ["updates"] : []), "apps", "components", "registry", ...(o.drivers ? ["drivers"] : []), "cleanup", "commit", "compress", "done"];
+      for (let i = 0; i < steps.length; i++) { emit("image.progress", { step: steps[i], value: (i + 1) / steps.length }); log("info", "image", steps[i]); await sleep(420); }
+      const pv = await handlers["image.preview"]({ options: o });
+      mock.image = { folder: "C:\\ProgramData\\AITweaker\\image\\iso", tweaks: pv.tweaks.length, apps: pv.apps.length, capabilities: pv.capabilities.length, drivers: !!o.drivers, wimBytes: 5.41e9, version: "25H2", build: "26200.7019", update: o.updates !== false ? "KB5067036" : null };
+      log("ok", "image", "AI Tweaker image built (demo)");
+      return mock.image;
+    },
+    "image.existing": async () => (mock.image ? mock.image.folder : null),
+    "system.logoff": async () => { log("warn", "system", "demo: sign-out skipped"); return true; },
+    "system.rebootPending": async () => mock.rebootPending,
     "usb.list": async () => [{ number: 3, name: "SanDisk Ultra USB 3.0", sizeBytes: 30752000000, partitionStyle: "MBR" }],
     "usb.pickIso": async () => "C:\\Users\\demo\\Downloads\\Win11_25H2_Russian_x64.iso",
     "usb.downloadIso": async () => { for (let v = 0; v <= 1; v += 0.05) { emit("usb.progress", { step: "iso", value: v }); await sleep(120); } return "C:\\Users\\demo\\Downloads\\Win11_Russian_x64.iso"; },
@@ -193,7 +215,7 @@
       return hosts.map(([host, label, base]) => ({ host, label, sent: 30, received: 30, avgMs: base + 0.4, minMs: base - 2, maxMs: base + 6, jitterMs: +(1 + Math.random() * 3).toFixed(1), lossPercent: 0 }));
     },
     "net.flushdns": async () => ({ exitCode: 0 }),
-    "net.reset": async () => true,
+    "net.reset": async () => { await sleep(700); mock.rebootPending = true; log("warn", "network", "demo: Winsock/TCP-IP reset skipped"); return true; },
     "startup.list": async () => mock.startup,
     "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },
     "clean.analyze": async () => { await sleep(500); return [["temp-user", 912e6, 4210], ["temp-windows", 214e6, 388], ["shader-nvidia", 1.9e9, 1630], ["shader-amd", 0, 0], ["shader-directx", 640e6, 2210], ["windows-update", 3.1e9, 77], ["crash-dumps", 88e6, 12]].map(([id, bytes, files]) => ({ id, path: "", bytes, files })); },

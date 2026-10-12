@@ -145,35 +145,6 @@
     ]
   },
   {
-    "id": "interface.dark-theme",
-    "category": "interface",
-    "level": 0,
-    "name": { "ru": "Тёмная тема Windows", "en": "Windows dark theme" },
-    "description": {
-      "ru": "Включает тёмную тему для системы и приложений.",
-      "en": "Turns on dark mode for the system and apps."
-    },
-    "actions": [
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "AppsUseLightTheme", "kind": "dword", "value": 0 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "SystemUsesLightTheme", "kind": "dword", "value": 0 }
-    ]
-  },
-  {
-    "id": "interface.taskbar-clean",
-    "category": "interface",
-    "level": 0,
-    "restartExplorer": true,
-    "name": { "ru": "Чистая панель задач", "en": "Clean taskbar" },
-    "description": {
-      "ru": "Убирает кнопку «Представление задач» и сворачивает строку поиска в значок.",
-      "en": "Hides the Task View button and collapses the search box to an icon."
-    },
-    "actions": [
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "kind": "dword", "value": 0 },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "kind": "dword", "value": 1 }
-    ]
-  },
-  {
     "id": "interface.taskbar-left",
     "category": "interface",
     "level": 0,

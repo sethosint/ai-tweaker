@@ -8,3 +8,7 @@ publish/
 .idea/
 *.swp
 TestResults/
+
+# wallpaper render intermediates
+tools/wallpapers/svg/
+tools/wallpapers/png/

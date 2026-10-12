@@ -7,6 +7,7 @@
   { "id": "devices",   "icon": "cpu",       "name": { "ru": "Устройства и прерывания",  "en": "Devices & interrupts" } },
   { "id": "system",    "icon": "gear",      "name": { "ru": "Система и службы",         "en": "System & services" } },
   { "id": "interface", "icon": "layout",    "name": { "ru": "Интерфейс и кастомизация", "en": "Interface & customization" } },
+  { "id": "look",      "icon": "palette",   "name": { "ru": "Внешний вид AI Tweaker",   "en": "AI Tweaker look" } },
   { "id": "apps",      "icon": "apps",      "name": { "ru": "Программы",                "en": "Applications" } },
   { "id": "security",  "icon": "shield",    "name": { "ru": "Безопасность ↔ FPS",       "en": "Security ↔ FPS" } }
 ]

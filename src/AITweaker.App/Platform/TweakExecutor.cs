@@ -47,6 +47,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         }
 
         if (ctx.AdaptersToRestart.Count > 0) await NicOps.RestartAdaptersAsync(ctx.AdaptersToRestart);
+        Native.BroadcastSettingChange("ImmersiveColorSet", "WindowsThemeElement", "Policy");
         if (restartExplorer) await RestartExplorerAsync();
 
         BackupStore.AddSession(new SessionLog
@@ -112,6 +113,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         DirectXSettingAction a => DirectXOps.ApplyAsync(a, ctx),
         AppxRemoveAction a => AppxOps.ApplyAsync(a, ctx),
         DisplayRefreshAction a => DisplayOps.ApplyAsync(a, ctx),
+        WallpaperAction a => WallpaperOps.ApplyAsync(a, ctx),
         _ => throw new NotSupportedException(action.GetType().Name),
     };
 
@@ -155,6 +157,7 @@ public sealed class TweakExecutor(SystemProfile profile)
             results.Add(new TweakResult(t.Id, errors.Count == 0, errors.Count == 0 ? null : string.Join("; ", errors)));
         }
         if (adapters.Count > 0) await NicOps.RestartAdaptersAsync(adapters);
+        Native.BroadcastSettingChange("ImmersiveColorSet", "WindowsThemeElement", "Policy");
         if (restartExplorer) await RestartExplorerAsync();
         BackupStore.AddSession(new SessionLog
         {
@@ -178,6 +181,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         "undo-command" or "undo-powershell" => CommandOps.RevertAsync(r),
         "device" => DeviceOps.RevertAsync(r),
         "display" => DisplayOps.RevertAsync(r),
+        "wallpaper" => WallpaperOps.RevertAsync(r),
         _ => Task.CompletedTask, // "info": irreversible (removed apps)
     };
 
@@ -232,6 +236,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         InterruptAffinityAction a => InterruptOps.CheckAffinity(a, ctx),
         DirectXSettingAction a => DirectXOps.Check(a),
         DisplayRefreshAction => DisplayOps.Check(),
+        WallpaperAction a => WallpaperOps.Check(a),
         _ => null,
     };
 

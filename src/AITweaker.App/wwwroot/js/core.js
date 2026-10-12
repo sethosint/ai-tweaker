@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", theme: "day", themeMode: "auto", accentMode: "system", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
+    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "system", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -145,6 +145,7 @@
           <button class="search-btn" id="searchBtn">⌕ <span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
           <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
           ${S.init && S.init.isAdmin ? `<span class="chip ok">● ${t("admin")}</span>` : `<span class="chip crit">● ${t("notAdmin")}</span>`}
+          <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>⟳ ${t("rs.chip")}</button>
         </div>
         <div class="top-right">
           <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">☀ ${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">☾ ${t("shift.night")}</button></div>
@@ -164,6 +165,7 @@
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
+    $("#rebootChip").onclick = () => App.restartPrompt("reboot");
     $("#shiftSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.v); };
     $("#langSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setLang(b.dataset.v); };
     updateBadges();
@@ -223,15 +225,18 @@
           <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="industrial" ${S.accentMode === "industrial" ? "selected" : ""}>${t("settings.accent.industrial")}</option></select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
+        <label class="field">${t("settings.autoRestart")}
+          <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
         <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
       onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
+        const autoRestartSeconds = +$("#setAr", ov).value;
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, accent: S.accentMode });
-        Object.assign(s, { pingHost, createRestorePoint });
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode });
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });
