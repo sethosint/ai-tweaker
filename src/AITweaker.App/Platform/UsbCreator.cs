@@ -67,7 +67,8 @@ public static class UsbCreator
             Write-Output 'STEP:clean'
             if ($disk.PartitionStyle -ne 'RAW') { Clear-Disk -Number $N -RemoveData -RemoveOEM -Confirm:$false }
             Initialize-Disk -Number $N -PartitionStyle MBR
-            $size = [Math]::Min((Get-Disk -Number $N).Size - 8MB, 32GB)
+            # Windows refuses to format FAT32 volumes larger than 32 GB.
+            $size = [Math]::Min((Get-Disk -Number $N).Size - 8MB, 32000MB)
             $part = New-Partition -DiskNumber $N -Size $size -IsActive -AssignDriveLetter
             Write-Output 'STEP:format'
             Format-Volume -Partition $part -FileSystem FAT32 -NewFileSystemLabel 'WIN11' -Confirm:$false | Out-Null
@@ -76,9 +77,12 @@ public static class UsbCreator
             Write-Output 'STEP:mount'
             $img = Mount-DiskImage -ImagePath $Iso -PassThru
             try {
-              $src = ($img | Get-Volume).DriveLetter
+              $src = $null
+              for ($i = 0; $i -lt 15 -and -not $src; $i++) { $src = ($img | Get-Volume).DriveLetter; if (-not $src) { Start-Sleep 1 } }
+              if (-not $src) { throw 'The ISO was mounted but got no drive letter' }
               Write-Output 'STEP:copy'
-              robocopy "$($src):\" "$($usb):\" /E /XF install.wim /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+              # "X:\." instead of "X:\": a trailing backslash before a quote would escape the quote for robocopy.
+              robocopy "$($src):\." "$($usb):\." /E /XF install.wim /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
               if ($LASTEXITCODE -ge 8) { throw "robocopy failed with code $LASTEXITCODE" }
               $wim = "$($src):\sources\install.wim"
               if (Test-Path $wim) {

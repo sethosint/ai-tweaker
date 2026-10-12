@@ -87,7 +87,8 @@ public static class BackupStore
             if (State.TryGetValue(tweakId, out var existing))
             {
                 existing.AppliedAt = DateTime.Now;
-                if (captured.Count > 0) existing.Changes.AddRange(captured);
+                var known = existing.Changes.Select(Identity).ToHashSet();
+                existing.Changes.AddRange(captured.Where(c => c.Kind == "info" || known.Add(Identity(c))));
             }
             else
             {
@@ -96,6 +97,22 @@ public static class BackupStore
             Flush();
         }
     }
+
+    /// <summary>What a record is about (not its old value): used to keep only the first, original snapshot of each item.</summary>
+    internal static string Identity(ChangeRecord r) => r.Kind + "|" + r.Kind switch
+    {
+        "registry" => $"{r["path"]}|{r["name"]}",
+        "service" => r["name"],
+        "task" => r["path"],
+        "power-setting" => $"{r["scheme"]}|{r["subgroup"]}|{r["setting"]}",
+        "power-scheme" => "",
+        "bcd" => r["element"],
+        "undo-command" => $"{r["file"]}|{r["args"]}",
+        "undo-powershell" => r["script"],
+        "device" => r["id"],
+        "display" => r["device"],
+        _ => Guid.NewGuid().ToString(),
+    };
 
     public static void Remove(string tweakId)
     {

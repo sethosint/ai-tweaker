@@ -18,9 +18,9 @@ public static class TaskOps
             dynamic f = svc.GetFolder(folder);
             return f.GetTask(name);
         }
-        catch (System.Runtime.InteropServices.COMException)
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or FileNotFoundException or DirectoryNotFoundException)
         {
-            return null; // folder or task does not exist on this build
+            return null; // folder or task does not exist on this build (HRESULT 0x80070002/3)
         }
     }
 

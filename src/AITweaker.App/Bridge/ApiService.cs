@@ -165,7 +165,10 @@ public sealed class ApiService
         var profile = await ProfileAsync();
         // Keep catalog order: power plan before power settings, services before tasks, etc.
         var set = ids.ToHashSet();
-        var tweaks = _catalog.Tweaks.Where(t => set.Contains(t.Id)).ToList();
+        // Power plan switches run first so every power setting lands on the final active scheme.
+        var tweaks = _catalog.Tweaks.Where(t => set.Contains(t.Id))
+            .OrderBy(t => t.Actions.Any(a => a is PowerSchemeAction) ? 0 : 1)
+            .ToList();
         if (tweaks.Count == 0) throw new InvalidOperationException("Nothing selected");
         return await Exclusive(async () =>
         {

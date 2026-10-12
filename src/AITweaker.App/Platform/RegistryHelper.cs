@@ -7,6 +7,12 @@ namespace AITweaker.App.Platform;
 /// <summary>Registry plumbing: hive parsing, wildcard expansion, typed values and string snapshots for backups.</summary>
 public static class RegistryHelper
 {
+    // Hive roots are opened once (64-bit view) and never disposed.
+    private static readonly RegistryKey Hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+    private static readonly RegistryKey Hkcu = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
+    private static readonly RegistryKey Hku = RegistryKey.OpenBaseKey(RegistryHive.Users, RegistryView.Registry64);
+    private static readonly RegistryKey Hkcr = RegistryKey.OpenBaseKey(RegistryHive.ClassesRoot, RegistryView.Registry64);
+
     public static (RegistryKey Root, string SubPath) Split(string path)
     {
         int i = path.IndexOf('\\');
@@ -14,10 +20,10 @@ public static class RegistryHelper
         string sub = i < 0 ? "" : path[(i + 1)..];
         RegistryKey root = hive.ToUpperInvariant() switch
         {
-            "HKLM" or "HKEY_LOCAL_MACHINE" => RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64),
-            "HKCU" or "HKEY_CURRENT_USER" => RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64),
-            "HKU" or "HKEY_USERS" => RegistryKey.OpenBaseKey(RegistryHive.Users, RegistryView.Registry64),
-            "HKCR" or "HKEY_CLASSES_ROOT" => RegistryKey.OpenBaseKey(RegistryHive.ClassesRoot, RegistryView.Registry64),
+            "HKLM" or "HKEY_LOCAL_MACHINE" => Hklm,
+            "HKCU" or "HKEY_CURRENT_USER" => Hkcu,
+            "HKU" or "HKEY_USERS" => Hku,
+            "HKCR" or "HKEY_CLASSES_ROOT" => Hkcr,
             _ => throw new ArgumentException($"Unknown registry hive in '{path}'"),
         };
         return (root, sub);
@@ -26,8 +32,16 @@ public static class RegistryHelper
     public static bool KeyExists(string path)
     {
         var (root, sub) = Split(path);
-        using var k = root.OpenSubKey(sub);
-        return k is not null;
+        if (sub.Length == 0) return true;
+        try
+        {
+            using var k = root.OpenSubKey(sub);
+            return k is not null;
+        }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException)
+        {
+            return true; // exists but is not readable
+        }
     }
 
     /// <summary>Expands '*' segments into every existing matching key. Paths without '*' are returned as-is.</summary>
@@ -46,7 +60,12 @@ public static class RegistryHelper
                     var (root, sub) = Split(prefix);
                     try
                     {
-                        using var k = sub.Length == 0 ? root : root.OpenSubKey(sub);
+                        if (sub.Length == 0)
+                        {
+                            next.AddRange(root.GetSubKeyNames().Select(n => prefix + "\\" + n));
+                            continue;
+                        }
+                        using var k = root.OpenSubKey(sub);
                         if (k is null) continue;
                         next.AddRange(k.GetSubKeyNames().Select(n => prefix + "\\" + n));
                     }

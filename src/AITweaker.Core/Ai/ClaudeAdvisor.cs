@@ -22,7 +22,8 @@ public sealed class AiAnalysis
     [JsonPropertyName("recommendations")] public List<AiRecommendation> Recommendations { get; set; } = [];
     [JsonPropertyName("avoid")] public List<AiRecommendation> Avoid { get; set; } = [];
     [JsonPropertyName("tips")] public List<string> Tips { get; set; } = [];
-    [JsonIgnore] public string Model { get; set; } = "";
+    /// <summary>Filled from the API response (not part of the JSON schema Claude answers with).</summary>
+    [JsonPropertyName("model")] public string Model { get; set; } = "";
 }
 
 public sealed class AiAdvisorException(string message, Exception? inner = null) : Exception(message, inner);

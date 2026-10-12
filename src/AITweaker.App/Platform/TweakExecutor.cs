@@ -66,7 +66,7 @@ public sealed class TweakExecutor(SystemProfile profile)
     {
         ctx.CurrentTweak = t.Id;
         ctx.Changes.Clear();
-        ctx.Capture = !BackupStore.Has(t.Id); // keep the ORIGINAL snapshot on re-apply
+        ctx.Capture = true; // BackupStore keeps only the first (original) snapshot of every item
         var errors = new List<string>();
         var sw = Stopwatch.StartNew();
         AppLog.Info(t.Id, $"applying: {t.Name.En}");
@@ -85,7 +85,7 @@ public sealed class TweakExecutor(SystemProfile profile)
             }
         }
 
-        if (ctx.Changes.Count > 0 || !BackupStore.Has(t.Id)) BackupStore.Save(t.Id, ctx.Changes.ToList());
+        BackupStore.Save(t.Id, ctx.Changes.ToList());
 
         if (errors.Count == 0)
         {
