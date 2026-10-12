@@ -174,7 +174,7 @@ public sealed class OfflineImagePlan
     }
 
     /// <summary>The wallpaper file is copied into the image; new accounts and the lock screen point at it.</summary>
-    private static IEnumerable<OfflineRegistryOp> Wallpaper(WallpaperAction w, string id)
+    internal static IEnumerable<OfflineRegistryOp> Wallpaper(WallpaperAction w, string id)
     {
         if (w.Target == "lock")
         {

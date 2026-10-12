@@ -16,7 +16,7 @@
     "level": 2,
     "restartExplorer": true,
     "name": { "ru": "Чёрные панель задач и «Пуск»", "en": "Black taskbar and Start" },
-    "description": { "ru": "Монохромный акцент AI Tweaker: панель задач и «Пуск» становятся чёрными, как на референсе, а переключатели, ссылки и выделение — светло-серыми, чтобы их было хорошо видно. Заголовки окон остаются обычными.", "en": "AI Tweaker's monochrome accent: the taskbar and Start turn black, like the reference, while toggles, links and selection stay light grey so they remain visible. Window title bars stay normal." },
+    "description": { "ru": "Монохромный акцент AI Tweaker: панель задач и «Пуск» становятся чёрными, а переключатели, ссылки и выделение — светло-серыми, чтобы их было хорошо видно. Заголовки окон остаются обычными.", "en": "AI Tweaker's monochrome accent: the taskbar and Start turn black, while toggles, links and selection stay light grey so they remain visible. Window title bars stay normal." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Control Panel\\Desktop", "name": "AutoColorization", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Accent", "name": "AccentPalette", "kind": "binary", "value": "4ODgAL29vQCampoAGhoaAAAAAAAAAAAAAAAAAG5ubgA=" },
@@ -34,7 +34,7 @@
     "category": "look",
     "level": 2,
     "name": { "ru": "Чёрный рабочий стол", "en": "Black desktop" },
-    "description": { "ru": "Сплошной чёрный фон рабочего стола вместо картинки, как на референсе: ничего не отвлекает, значки читаются идеально. Отключает смену обоев «Windows: интересное».", "en": "A solid black desktop instead of a picture, like the reference: nothing distracts, icons read perfectly. Turns off Windows Spotlight on the desktop." },
+    "description": { "ru": "Сплошной чёрный фон рабочего стола вместо картинки: ничего не отвлекает, значки читаются идеально. Отключает смену обоев «Windows: интересное».", "en": "A solid black desktop instead of a picture: nothing distracts, icons read perfectly. Turns off Windows Spotlight on the desktop." },
     "actions": [
       { "type": "wallpaper", "target": "desktop", "variant": "black" }
     ]
@@ -76,7 +76,7 @@
     "category": "look",
     "level": 2,
     "restartExplorer": true,
-    "name": { "ru": "Панель задач как на референсе", "en": "Taskbar like the reference" },
+    "name": { "ru": "Панель задач: значки слева, без лишних кнопок", "en": "Taskbar: icons on the left, no extra buttons" },
     "description": { "ru": "Значки и «Пуск» слева, мелкие кнопки (Windows 11 24H2+), поиск — значком, без кнопок «Представление задач» и Copilot.", "en": "Icons and Start on the left, small buttons (Windows 11 24H2+), search as an icon, no Task View or Copilot buttons." },
     "actions": [
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAl", "kind": "dword", "value": 0 },
@@ -115,8 +115,8 @@
     "category": "look",
     "level": 2,
     "when": "app.openShell",
-    "name": { "ru": "Классический «Пуск» как на референсе (Open-Shell)", "en": "Classic Start like the reference (Open-Shell)" },
-    "description": { "ru": "Настраивает бесплатный Open-Shell под ваш скриншот: «Пуск» в стиле Windows 7 — слева программы со списком «Все программы» и поиском «Search programs and files», справа «Загрузки», «Этот компьютер», раскрывающаяся «Панель управления» и «Параметры». Тёмный плоский скин, мелкие значки, кнопка «Пуск» остаётся родной. Open-Shell ставится на вкладке «Установка».", "en": "Configures the free Open-Shell to match your screenshot: a Windows 7-style Start — programs with 'All programs' and 'Search programs and files' on the left; Downloads, This PC, a cascading Control Panel and Settings on the right. Dark flat skin, small icons, the native Start button stays. Install Open-Shell from the Install tab." },
+    "name": { "ru": "Классический «Пуск» в стиле Windows 7 (Open-Shell)", "en": "Classic Windows 7-style Start (Open-Shell)" },
+    "description": { "ru": "Настраивает бесплатный Open-Shell: «Пуск» в стиле Windows 7 — слева программы со списком «Все программы» и поиском «Search programs and files», справа «Загрузки», «Этот компьютер», раскрывающаяся «Панель управления» и «Параметры». Тёмный плоский скин, мелкие значки, кнопка «Пуск» остаётся родной. Open-Shell ставится на вкладке «Установка».", "en": "Configures the free Open-Shell: a Windows 7-style Start — programs with 'All programs' and 'Search programs and files' on the left; Downloads, This PC, a cascading Control Panel and Settings on the right. Dark flat skin, small icons, the native Start button stays. Install Open-Shell from the Install tab." },
     "actions": [
       { "type": "powershell", "script": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }", "undo": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }" },
       { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "MenuStyle", "kind": "string", "value": "Win7" },
@@ -124,6 +124,7 @@
       { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "SkinOptionsW7", "kind": "multi", "value": ["USER_IMAGE=0", "SMALL_ICONS=1", "LARGE_FONT=0", "ICON_FRAMES=0", "OPAQUE=1"] },
       { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "MenuItems7", "kind": "multi", "value": ["Item1.Command=downloads", "Item1.Settings=NOEXPAND", "Item2.Command=computer", "Item2.Settings=NOEXPAND", "Item3.Command=control_panel", "Item3.Settings=TRACK_RECENT", "Item4.Command=pc_settings", "Item4.Settings=TRACK_RECENT"] },
       { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu\\Settings", "name": "EnableStartButton", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\OpenShell\\StartMenu", "name": "ShowedStyle2", "kind": "dword", "value": 1 },
       { "type": "powershell", "script": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }", "undo": "$e = Join-Path $env:ProgramFiles 'Open-Shell\\StartMenu.exe'; if (Test-Path $e) { & $e -reloadsettings }" }
     ]
   }

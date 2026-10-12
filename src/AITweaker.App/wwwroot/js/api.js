@@ -186,6 +186,8 @@
         for (const hz of w === 2560 ? [180, 144, 120, 60] : [144, 120, 60]) modes.push({ width: w, height: h, hz });
       return [{ device: "\\\\.\\DISPLAY1", name: "ASUS VG27AQ3A", current: { width: 2560, height: 1440, hz: 60 }, modes }];
     },
+    "image.ame": async () => { await sleep(700); return { path: "C:\\Users\\demo\\Desktop\\AI Tweaker.apbx", protected: true, options: 16, files: 28 }; },
+    "shell.reveal": async () => true,
     "display.set": async () => true,
     "display.keep": async () => true,
     "display.revert": async () => true,

@@ -70,6 +70,8 @@ public sealed class InstallProgram
     public string Group { get; init; } = "tools";
     /// <summary>winget package id (Microsoft's package manager), e.g. <c>Valve.Steam</c>.</summary>
     public string? Winget { get; init; }
+    /// <summary>Installer arguments passed to winget instead of the package's own silent switches (e.g. to install only some components).</summary>
+    public string? Override { get; init; }
     /// <summary>Direct link to an official portable zip (used when there is no winget package).</summary>
     public string? Download { get; init; }
     /// <summary>Official page, opened when neither winget nor the direct download works.</summary>

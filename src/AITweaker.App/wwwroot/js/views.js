@@ -315,9 +315,27 @@
             <div class="callout" style="margin-top:10px">${t("usb.note")}</div></div>
           <div class="step"><h4>${t("usb.create")}</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="xmlPrev">${t("usb.preview")}</button><button class="btn hazard" id="usbGo" ${src && usb.disk !== null ? "" : "disabled"}><span>${t("usb.create")}</span></button></div></div>
         </div></div>
+      </div>
+
+      <div class="panel" style="margin-top:16px"><div class="panel-h">${t("ame.title")}</div>
+        <div class="panel-b" style="display:grid;gap:12px">
+          <div class="td" style="color:var(--muted)">${t("ame.desc")}</div>
+          <ol class="ame-steps"><li>${t("ame.s1")}</li><li>${t("ame.s2")}</li><li>${t("ame.s3")}</li></ol>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="ameSave">${icon("download")}${t("ame.save")}</button><button class="btn ghost" id="ameGet">${icon("external")}${t("ame.get")}</button></div>
+          ${usb.ame ? html`<div class="callout ${usb.ame.protected ? "ok" : "warn"}" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+            <span>${usb.ame.protected ? icon("check") : ""}${t("ame.saved")}: <span class="tid">${esc(usb.ame.path)}</span>${usb.ame.protected ? "" : `<br>${t("ame.plain")}`}</span>
+            <button class="btn sm" id="ameShow">${t("ame.show")}</button></div>` : ""}
+        </div>
       </div>`;
 
     $("#isoPick").onclick = async () => { const p = await call("usb.pickIso"); if (p) { usb.iso = p; V.image(); } };
+    $("#ameGet").onclick = () => call("shell.open", { url: "https://ameliorated.io/" });
+    $("#ameSave").onclick = async () => {
+      const b = busy(t("ame.save"));
+      try { usb.ame = await call("image.ame"); toast(t("ame.saved"), "ok"); } catch { /* toast */ } finally { b.done(); }
+      V.image();
+    };
+    if ($("#ameShow")) $("#ameShow").onclick = () => call("shell.reveal", { path: usb.ame.path });
     $("#isoLang").onchange = (e) => (usb.lang = e.target.value);
     $("#isoDl").onclick = async () => {
       const b = busy(t("usb.download"));

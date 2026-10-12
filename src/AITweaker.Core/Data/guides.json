@@ -690,8 +690,8 @@
     "detect": "app.openShell",
     "source": "ai",
     "summary": {
-      "ru": "Бесплатный классический «Пуск» в стиле Windows 7, как на вашем скриншоте. Основное выставляется автоматически — твик «Классический «Пуск» как на референсе».",
-      "en": "A free classic Windows 7-style Start, like your screenshot. The essentials are set automatically by the 'Classic Start like the reference' tweak."
+      "ru": "Бесплатный классический «Пуск» в стиле Windows 7. Основное выставляется автоматически — твик «Классический «Пуск» в стиле Windows 7».",
+      "en": "A free classic Windows 7-style Start. The essentials are set automatically by the 'Classic Windows 7-style Start' tweak."
     },
     "autoTweaks": ["look.openshell", "look.dark", "look.accent"],
     "sections": [
@@ -736,8 +736,8 @@
     "detect": "app.startAllBack",
     "source": "ai",
     "summary": {
-      "ru": "Платная альтернатива Open-Shell, которая заодно меняет панель задач и Проводник. Ниже — настройки под вид с вашего скриншота. Лицензию покупают у автора, есть пробный период.",
-      "en": "A paid alternative to Open-Shell that also restyles the taskbar and Explorer. Below are the settings for the look in your screenshot. Licenses are bought from the author; there is a trial."
+      "ru": "Платная альтернатива Open-Shell, которая заодно меняет панель задач и Проводник. Ниже — настройки под вид AI Tweaker. Лицензию покупают у автора, есть пробный период.",
+      "en": "A paid alternative to Open-Shell that also restyles the taskbar and Explorer. Below are the settings for the AI Tweaker look. Licenses are bought from the author; there is a trial."
     },
     "autoTweaks": ["look.dark", "look.accent", "look.wallpaper"],
     "sections": [
@@ -756,13 +756,13 @@
         "settings": [
           { "name": "Base theme", "value": "Remastered 7" }
         ],
-        "note": { "ru": "Remastered 7 даёт двухколоночный «Пуск» с поиском «Search programs and files» и кнопкой «Shut down», как на скриншоте.", "en": "Remastered 7 gives the two-column Start with 'Search programs and files' and the 'Shut down' button, like the screenshot." }
+        "note": { "ru": "Remastered 7 даёт двухколоночный «Пуск» с поиском «Search programs and files» и кнопкой «Shut down».", "en": "Remastered 7 gives the two-column Start with 'Search programs and files' and the 'Shut down' button." }
       },
       {
         "title": { "ru": "Пуск", "en": "Start menu" },
         "path": "StartAllBack → Start menu",
         "settings": [
-          { "name": "Visual style", "value": "Plain8", "note": { "ru": "Плоский вид без стекла — как на скриншоте.", "en": "Flat, no glass — like the screenshot." } },
+          { "name": "Visual style", "value": "Plain8", "note": { "ru": "Плоский вид без стекла.", "en": "Flat, no glass." } },
           { "name": "Icon size", "value": "Small" },
           { "name": "Control Panel", "value": "Display as menu" },
           { "name": "Downloads, This PC, Settings", "value": "Show as links" },

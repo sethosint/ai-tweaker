@@ -97,4 +97,10 @@ public static class ProcessRunner
     }
 
     public static void OpenFolder(string path) => Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
+
+    /// <summary>Opens Explorer with the file selected (only for files that exist).</summary>
+    public static void Reveal(string path)
+    {
+        if (File.Exists(path)) Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+    }
 }

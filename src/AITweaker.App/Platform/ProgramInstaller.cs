@@ -132,7 +132,8 @@ public static class ProgramInstaller
 
     private static async Task<(bool Ok, bool Reboot, string? Error)> WingetAsync(string winget, InstallProgram p, CancellationToken ct)
     {
-        var args = $"install --id {p.Winget} --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity";
+        var args = $"install --id {p.Winget} --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity"
+            + (p.Override is null ? "" : $" --override \"{p.Override}\"");
         int code = 0;
         string output = "";
         for (int attempt = 0; attempt < 3; attempt++)

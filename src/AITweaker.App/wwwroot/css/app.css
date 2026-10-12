@@ -390,6 +390,9 @@ label.field { display: grid; gap: 6px; font: 500 12.5px/1.3 var(--font); color: 
 .callout.ok { background: color-mix(in srgb, var(--ok) 8%, transparent); border-color: color-mix(in srgb, var(--ok) 20%, transparent); }
 .callout.warn { background: color-mix(in srgb, var(--warn) 9%, transparent); border-color: color-mix(in srgb, var(--warn) 22%, transparent); }
 .callout .ico { vertical-align: -3px; margin-right: 6px; }
+.ame-steps { margin: 0; padding: 0; list-style: none; counter-reset: ame; display: grid; gap: 8px; }
+.ame-steps li { counter-increment: ame; display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.ame-steps li::before { content: counter(ame); width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--muted); }
 .steps { counter-reset: s; display: grid; gap: 14px; }
 .step { border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; position: relative; border-radius: var(--r); }
 .step h4 { margin: 0 0 10px; font: 600 14px/1.3 var(--font); display: flex; gap: 10px; align-items: center; }

@@ -152,6 +152,8 @@ public class LookAndUpdatesTests
             items.Where(i => i!.Contains(".Command=")).Select(i => i!.Split('=')[1]));
         Assert.Contains("Item3.Settings=TRACK_RECENT", items);   // Control Panel expands as a menu
         Assert.Contains("Item1.Settings=NOEXPAND", items);       // Downloads is a plain link
+        // the first Start click opens the menu, not Open-Shell's style picker (StartMenuDLL\MenuContainer.cpp)
+        Assert.Contains(t.Actions.OfType<RegistryAction>(), a => a.Path == @"HKCU\Software\OpenShell\StartMenu" && a.Name == "ShowedStyle2");
         // reload runs first (its undo reloads after rollback) and last (after the new values are written)
         Assert.IsType<PowerShellAction>(t.Actions[0]);
         Assert.IsType<PowerShellAction>(t.Actions[^1]);
