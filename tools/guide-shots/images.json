@@ -1,0 +1,202 @@
+{
+  "obs": {
+    "General": [
+      "obs-general.webp"
+    ],
+    "Output — streaming": [
+      "obs-stream.webp",
+      "obs-stream-encoder.webp"
+    ],
+    "Output — recording": [
+      "obs-record.webp",
+      "obs-record-encoder.webp"
+    ],
+    "Output — audio and replay": [
+      "obs-audio-bitrate.webp",
+      "obs-replay.webp"
+    ],
+    "Audio": [
+      "obs-audio.webp",
+      "obs-audio-advanced.webp"
+    ],
+    "Video": [
+      "obs-video.webp"
+    ],
+    "Advanced": [
+      "obs-advanced.webp",
+      "obs-advanced-network.webp"
+    ]
+  },
+  "spotify": {
+    "Quality and library": [
+      "spotify-quality.webp"
+    ],
+    "Display and video": [
+      "spotify-display.webp"
+    ],
+    "Playback": [
+      "spotify-playback.webp"
+    ],
+    "Startup, storage and compatibility": [
+      "spotify-startup.webp"
+    ],
+    "Privacy": [
+      "spotify-privacy.webp"
+    ]
+  },
+  "discord": {
+    "Game Overlay": [
+      "discord-overlay.webp"
+    ],
+    "System": [
+      "discord-system.webp"
+    ],
+    "Animations (Accessibility → Reduced Motion)": [
+      "discord-motion.webp"
+    ],
+    "Chat box & search": [
+      "discord-chatbox.webp"
+    ],
+    "Voice — advanced": [
+      "discord-voice.webp"
+    ],
+    "Streaming & sounds": [
+      "discord-streaming.webp"
+    ],
+    "Clips": [
+      "discord-clips.webp"
+    ],
+    "Diagnostics (Voice → Advanced)": [
+      "discord-diagnostics.webp"
+    ],
+    "Notifications": [
+      "discord-notifications.webp",
+      "discord-sounds.webp"
+    ],
+    "Email": [
+      "discord-email.webp"
+    ],
+    "Notifications — advanced": [
+      "discord-notifications-advanced.webp"
+    ],
+    "Data & privacy": [
+      "discord-data.webp"
+    ],
+    "Profile and voice encryption": [
+      "discord-profile.webp"
+    ],
+    "Activity": [
+      "discord-activity.webp"
+    ],
+    "Advanced": [
+      "discord-advanced.webp"
+    ]
+  },
+  "epic": {
+    "Launcher settings": [
+      "epic-preferences.webp"
+    ],
+    "Desktop notifications": [
+      "epic-notifications.webp"
+    ]
+  },
+  "steam": {
+    "Interface": [
+      "steam-interface.webp",
+      "steam-interface-advanced.webp"
+    ],
+    "Library": [
+      "steam-library.webp"
+    ],
+    "Downloads": [
+      "steam-downloads.webp",
+      "steam-updates.webp",
+      "steam-downloads-more.webp"
+    ],
+    "Shader Pre-Caching": [
+      "steam-shaders.webp"
+    ],
+    "In Game (overlay)": [
+      "steam-ingame.webp"
+    ],
+    "Game Recording": [
+      "steam-recording.webp"
+    ],
+    "Cloud": [
+      "steam-cloud.webp"
+    ],
+    "Remote Play & Broadcast": [
+      "steam-remoteplay.webp",
+      "steam-broadcast.webp"
+    ],
+    "Friends & Chat": [
+      "steam-friends.webp",
+      "steam-chat.webp"
+    ],
+    "Notifications": [
+      "steam-notifications.webp"
+    ]
+  },
+  "nvidia-app": {
+    "Graphics — global settings": [
+      "nvidia-global.webp",
+      "nvidia-global-legacy.webp"
+    ],
+    "Features": [
+      "nvidia-features.webp"
+    ],
+    "Display & G-SYNC": [
+      "nvidia-gsync.webp",
+      "nvidia-display.webp"
+    ],
+    "Scaling": [
+      "nvidia-scaling.webp"
+    ],
+    "Color": [
+      "nvidia-color.webp"
+    ],
+    "Video": [
+      "nvidia-video.webp"
+    ],
+    "Advanced": [
+      "nvidia-advanced.webp"
+    ],
+    "Statistics": [
+      "nvidia-statistics.webp"
+    ],
+    "HUD configuration": [
+      "nvidia-hud.webp"
+    ],
+    "Highlights": [
+      "nvidia-highlights.webp"
+    ],
+    "Video capture": [
+      "nvidia-capture.webp",
+      "nvidia-capture-bitrate.webp"
+    ],
+    "Notifications & privacy": [
+      "nvidia-notifications.webp",
+      "nvidia-privacy.webp"
+    ]
+  },
+  "amd-software": {
+    "Graphics (global)": [
+      "amd-graphics.webp"
+    ],
+    "Graphics — advanced": [
+      "amd-graphics-advanced.webp"
+    ],
+    "System": [
+      "amd-system.webp"
+    ],
+    "Hotkeys": [
+      "amd-hotkeys.webp"
+    ],
+    "Preferences": [
+      "amd-preferences.webp"
+    ],
+    "Performance metrics": [
+      "amd-metrics.webp"
+    ]
+  }
+}

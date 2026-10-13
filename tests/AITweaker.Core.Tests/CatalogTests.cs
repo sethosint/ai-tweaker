@@ -35,7 +35,7 @@ public class CatalogTests
     {
         Assert.True(Catalog.Tweaks.Count >= 60, $"only {Catalog.Tweaks.Count} tweaks");
         Assert.True(Catalog.Apps.Count >= 30);
-        Assert.True(Catalog.Guides.Count >= 8);
+        Assert.Equal(7, Catalog.Guides.Count); // the programs the user configures: GPU apps, Discord, Steam, Epic, OBS, Spotify
         Assert.True(Catalog.Bios.Count >= 6);
         Assert.Equal(11, Catalog.Categories.Count);
     }
@@ -217,12 +217,18 @@ public class CatalogTests
             {
                 Assert.False(string.IsNullOrWhiteSpace(s.Path), $"{g.Id}: section without a path");
                 Assert.NotEmpty(s.Settings);
-                if (s.Image is not null)
-                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", s.Image)), $"missing guide screenshot {s.Image}");
+                // every section shows the real settings screen next to the text
+                Assert.True(s.Images.Count > 0, $"{g.Id}: {s.Title.En} has no screenshot");
+                foreach (var image in s.Images)
+                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", image)), $"missing guide screenshot {image}");
             }
             foreach (var id in g.AutoTweaks)
                 Assert.NotNull(Catalog.Find(id));
         }
+        // and no screenshot ships that no guide uses
+        var used = Catalog.Guides.SelectMany(g => g.Sections).SelectMany(s => s.Images).ToHashSet();
+        foreach (var file in Directory.GetFiles(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides")))
+            Assert.Contains(Path.GetFileName(file), used);
     }
 
     [Fact]
@@ -271,11 +277,14 @@ public class CatalogTests
             Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
         }
         // the main programs come from their vendors' own installers, not winget
-        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "vlc", "everything", "mpv" })
+        foreach (var id in new[] { "chrome", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "mpv" })
             Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github ?? x.Page) is not null, id);
         // the apps from the user's own setup are there
-        foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
+        foreach (var id in new[] { "chrome", "discord", "ayugram", "spotify", "obs", "epic", "steam", "openshell", "cru" })
             Assert.Contains(Catalog.Programs, p => p.Id == id);
+        // and what the user took out stays out
+        foreach (var id in new[] { "brave", "firefox", "claude", "battlenet", "vlc", "capcut", "everything", "notepadpp", "powertoys", "autoruns", "startallback", "whatsapp", "netflix", "gamingservices", "xbox", "minecraft" })
+            Assert.DoesNotContain(Catalog.Programs, p => p.Id == id);
     }
 
     [Fact]

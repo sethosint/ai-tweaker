@@ -337,7 +337,19 @@
   // ------------------------------------------------------------------ [06] app guides
 
   // Brand colour of each program's badge in the list.
-  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff", autoruns: "#00a4ef" };
+  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff" };
+
+  /** Full-size screenshot over the page; click anywhere or Esc closes it. */
+  function zoomShot(src) {
+    const o = document.createElement("div");
+    o.className = "shot-zoom";
+    o.innerHTML = `<img src="${esc(src)}" alt="">`;
+    const close = () => { o.remove(); document.removeEventListener("keydown", onKey); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    o.onclick = close;
+    document.addEventListener("keydown", onKey);
+    document.body.append(o);
+  }
 
   const autoOf = (g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "n/a");
   const pendingOf = (g) => autoOf(g).filter((id) => S.status[id] !== "applied");
@@ -378,12 +390,13 @@
       <div class="app-block man">
         <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t(auto.length ? "apps.manualD" : "apps.manualD0").replaceAll("{app}", esc(g.name))}</span></div></div>
       </div>
-      ${g.sections.map((s, si) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
+      ${g.sections.map((s, si) => html`<div class="guide-sec ${(s.images || []).length ? "" : "noimg"}">
         <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
           ${s.settings.map((st) => { const vv = String(st.value); const cls = vv === "ON" ? "on" : vv === "OFF" ? "off" : ""; return html`<div class="setting"><div><div class="sn">${esc(st.name)}</div>${st.note ? `<div class="snote">${esc(L(st.note))}</div>` : ""}</div><span class="val ${cls}" title="${esc(vv)}">${esc(vv)}</span></div>`; }).join("")}
           ${s.note ? `<div class="note-box">${esc(L(s.note))}</div>` : ""}</div>
-        ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" loading="lazy"></div>` : ""}
+        ${(s.images || []).length ? `<div class="gs-r"><div class="gs-shots">${s.images.map((im) => `<button class="gs-shot" data-shot="guides/${esc(im)}" title="${t("apps.zoom")}"><img src="guides/${esc(im)}" alt="${esc(L(s.title))}" loading="lazy"></button>`).join("")}</div></div>` : ""}
       </div>`).join("")}`;
+    v.querySelectorAll("[data-shot]").forEach((b) => (b.onclick = () => zoomShot(b.dataset.shot)));
     $("#gBack").onclick = () => V.apps();
     if ($("#gInstall")) $("#gInstall").onclick = () => go("install", { focus: g.id });
     if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(pend);
