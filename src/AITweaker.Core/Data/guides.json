@@ -865,91 +865,369 @@
       "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
       "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
-    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "gaming.nvidia-shader-cache", "gaming.nvidia-ansel.off", "gaming.nvidia-gsync-preset", "privacy.nvidia-telemetry"],
+    "autoTweaks": [
+      "gaming.nvidia-3d",
+      "gaming.nvidia-texture",
+      "gaming.nvidia-shader-cache",
+      "gaming.nvidia-ansel.off",
+      "gaming.nvidia-gsync-preset",
+      "privacy.nvidia-telemetry"
+    ],
     "sections": [
       {
-        "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
+        "title": {
+          "ru": "Графика — глобальные настройки",
+          "en": "Graphics — global settings"
+        },
         "path": "NVIDIA App → Graphics → Global Settings",
         "settings": [
-          { "name": "Low Latency Mode", "value": "On", "note": { "ru": "В играх с NVIDIA Reflex включайте Reflex в самой игре — он важнее.", "en": "In games with NVIDIA Reflex turn Reflex on in the game — it matters more." } },
-          { "name": "Power Management Mode", "value": "Prefer maximum performance", "note": { "ru": "На ноутбуке от батареи — Normal.", "en": "On a laptop on battery — Normal." } },
-          { "name": "Texture Filtering - Quality", "value": "High performance" },
-          { "name": "Vertical Sync", "value": "Off", "note": { "ru": "С G-SYNC: On + ограничение FPS ниже частоты экрана.", "en": "With G-SYNC: On + an FPS cap below the refresh rate." } },
-          { "name": "Max Frame Rate", "value": "Off", "note": { "ru": "С G-SYNC — частота экрана минус 3 (например 177 для 180 Гц).", "en": "With G-SYNC — refresh rate minus 3 (e.g. 177 for 180 Hz)." } },
-          { "name": "Background Application Max Frame Rate", "value": "Off" },
-          { "name": "Shader Cache Size", "value": "Unlimited", "note": { "ru": "AI Tweaker выставляет сам.", "en": "AI Tweaker sets it itself." } },
-          { "name": "Threaded Optimization", "value": "Auto" },
-          { "name": "Image Scaling", "value": "Off" }
+          {
+            "name": "DLSS Override - Model Presets",
+            "value": "Use 3D app setting"
+          },
+          {
+            "name": "DLSS Override - Frame Generation Mode",
+            "value": "Use 3D app setting"
+          },
+          {
+            "name": "DLSS Override - Super Resolution Mode",
+            "value": "Use 3D app setting"
+          },
+          {
+            "name": "Smooth Motion",
+            "value": "Off",
+            "note": {
+              "ru": "Генерация кадров на уровне драйвера добавляет задержку — в соревновательных играх она не нужна.",
+              "en": "Driver-level frame generation adds latency — not wanted in competitive games."
+            }
+          },
+          {
+            "name": "Low Latency Mode",
+            "value": "On"
+          },
+          {
+            "name": "BatteryBoost",
+            "value": "Off",
+            "note": {
+              "ru": "Только у ноутбуков: от батареи ограничивает FPS. Играйте от сети.",
+              "en": "Laptops only: caps FPS on battery. Play plugged in."
+            }
+          },
+          {
+            "name": "CUDA Memory Fallback",
+            "value": "Prefer no fallback"
+          },
+          {
+            "name": "DSR - Factors",
+            "value": "Off"
+          },
+          {
+            "name": "GPU App Assignment",
+            "value": "ваша видеокарта NVIDIA / your NVIDIA GPU",
+            "note": {
+              "ru": "На ноутбуке — дискретная, а не встроенная графика.",
+              "en": "On a laptop pick the discrete GPU, not the integrated one."
+            }
+          },
+          {
+            "name": "Image Scaling",
+            "value": "Off"
+          },
+          {
+            "name": "Max Frame Rate",
+            "value": "Off"
+          },
+          {
+            "name": "Monitor Technology",
+            "value": "G-SYNC"
+          },
+          {
+            "name": "OpenGL GDI Compatibility",
+            "value": "Prefer performance"
+          },
+          {
+            "name": "Power Management Mode",
+            "value": "Prefer maximum performance",
+            "note": {
+              "ru": "На ноутбуке держит частоты и от батареи — играйте от сети.",
+              "en": "On a laptop it holds clocks on battery too — play plugged in."
+            }
+          },
+          {
+            "name": "RTX Dynamic Vibrance",
+            "value": "Off"
+          },
+          {
+            "name": "Shader Cache",
+            "value": "Size: 100 GB, Shader Compiler: Off",
+            "note": {
+              "ru": "Большой кэш — шейдеры не компилируются заново после каждого обновления игры. AI Tweaker ставит размер «Без ограничений».",
+              "en": "A large cache means shaders aren't rebuilt after every game update. AI Tweaker sets the size to Unlimited."
+            }
+          },
+          {
+            "name": "Vertical Sync",
+            "value": "Off"
+          },
+          {
+            "name": "Virtual Reality – Variable Rate Super Sampling",
+            "value": "Off"
+          },
+          {
+            "name": "Vulkan/OpenGL Present Method",
+            "value": "Prefer native",
+            "note": {
+              "ru": "Кадры Vulkan/OpenGL идут на экран напрямую, без прослойки DXGI — меньше задержка.",
+              "en": "Vulkan/OpenGL frames reach the screen directly, without the DXGI layer — less latency."
+            }
+          },
+          {
+            "name": "Anisotropic Filtering",
+            "value": "Application-controlled",
+            "note": {
+              "ru": "NVIDIA App иногда показывает вместо названия «manage3dSettings.AnisotropicFiltering.values.1» — это баг подписи, не настройки.",
+              "en": "NVIDIA App sometimes shows \"manage3dSettings.AnisotropicFiltering.values.1\" instead of the name — a label bug, not a setting."
+            }
+          },
+          {
+            "name": "Antialiasing - FXAA",
+            "value": "Off"
+          },
+          {
+            "name": "Antialiasing - Transparency",
+            "value": "Off"
+          },
+          {
+            "name": "Background Application Max Frame Rate",
+            "value": "Off"
+          },
+          {
+            "name": "Multi-Frame Sampled AA (MFAA)",
+            "value": "Off"
+          },
+          {
+            "name": "PhysX",
+            "value": "Auto"
+          },
+          {
+            "name": "Texture Filtering - Anisotropic Sample Optimization",
+            "value": "On"
+          },
+          {
+            "name": "Texture Filtering - Negative LOD Bias",
+            "value": "Clamp"
+          },
+          {
+            "name": "Texture Filtering - Quality",
+            "value": "High performance"
+          },
+          {
+            "name": "Texture Filtering - Trilinear Optimization",
+            "value": "On"
+          }
         ],
-        "note": { "ru": "Первые три пункта AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки драйвера» (с откатом).", "en": "AI Tweaker sets the first three itself: Drivers → NVIDIA · driver settings (with rollback)." }
+        "note": {
+          "ru": "AI Tweaker сам выставляет Low Latency Mode, Power Management Mode (на ПК), Texture Filtering - Quality, Shader Cache и выключает фоторежим — «Драйверы → NVIDIA · настройки драйвера», с откатом. Остальное — по списку.",
+          "en": "AI Tweaker sets Low Latency Mode, Power Management Mode (desktops), Texture Filtering - Quality and Shader Cache and turns photo mode off itself — Drivers → NVIDIA driver settings, with rollback. The rest by the list."
+        }
       },
       {
-        "title": { "ru": "Автооптимизация игр", "en": "Automatic game optimization" },
-        "path": "NVIDIA App → Graphics → ⋮ → Settings",
+        "title": {
+          "ru": "Функции",
+          "en": "Features"
+        },
+        "path": "NVIDIA App → Settings → Features",
         "settings": [
-          { "name": "Automatically optimize newly added games and apps", "value": "OFF", "note": { "ru": "Иначе NVIDIA App сама меняет графику в играх.", "en": "Otherwise NVIDIA App changes your games' graphics on its own." } }
+          {
+            "name": "NVIDIA overlay",
+            "value": "ON (Alt+Z)",
+            "note": {
+              "ru": "Нужен для Instant Replay и статистики. Не пользуетесь — выключайте.",
+              "en": "Needed for Instant Replay and statistics. Don't use them — turn it off."
+            }
+          },
+          {
+            "name": "Game filters and Photo mode",
+            "value": "OFF"
+          },
+          {
+            "name": "Automatically download drivers and let me choose when to install",
+            "value": "OFF",
+            "note": {
+              "ru": "Драйвер видеокарты ставит AI Tweaker: «Драйверы → NVIDIA», чистая установка без лишнего.",
+              "en": "AI Tweaker installs the GPU driver: Drivers → NVIDIA, a clean install without extras."
+            }
+          },
+          {
+            "name": "Automatically optimize newly added games and apps",
+            "value": "OFF"
+          },
+          {
+            "name": "Desktop Context Menu → NVIDIA App",
+            "value": "ON"
+          }
         ]
       },
       {
-        "title": { "ru": "Дисплей и G-SYNC", "en": "Display & G-SYNC" },
+        "title": {
+          "ru": "Дисплей и G-SYNC",
+          "en": "Display & G-SYNC"
+        },
         "path": "NVIDIA App → System → Displays",
         "settings": [
-          { "name": "Refresh rate", "value": "Maximum" },
-          { "name": "Enable G-SYNC, G-SYNC Compatible", "value": "ON", "note": { "ru": "Если монитор поддерживает (FreeSync/G-SYNC).", "en": "If the monitor supports it (FreeSync/G-SYNC)." } },
-          { "name": "G-SYNC mode", "value": "Full screen" },
-          { "name": "Output dynamic range", "value": "Full" },
-          { "name": "Output color depth", "value": "Highest available" }
+          {
+            "name": "Refresh rate",
+            "value": "Maximum"
+          },
+          {
+            "name": "Enable G-SYNC, G-SYNC Compatible",
+            "value": "ON",
+            "note": {
+              "ru": "Если монитор поддерживает (FreeSync/G-SYNC).",
+              "en": "If the monitor supports it (FreeSync/G-SYNC)."
+            }
+          },
+          {
+            "name": "G-SYNC mode",
+            "value": "Full screen"
+          },
+          {
+            "name": "Output dynamic range",
+            "value": "Full"
+          },
+          {
+            "name": "Output color depth",
+            "value": "Highest available"
+          }
         ]
       },
       {
-        "title": { "ru": "Статистика", "en": "Statistics" },
+        "title": {
+          "ru": "Статистика",
+          "en": "Statistics"
+        },
         "path": "NVIDIA App → Settings → Features → Statistics",
         "settings": [
-          { "name": "Show statistics in heads up display (Alt+R)", "value": "OFF" },
-          { "name": "Statistics view", "value": "Basic" }
+          {
+            "name": "Show statistics in heads up display (Alt+R)",
+            "value": "OFF"
+          },
+          {
+            "name": "Statistics view",
+            "value": "Basic"
+          }
         ]
       },
       {
-        "title": { "ru": "Настройка HUD", "en": "HUD configuration" },
+        "title": {
+          "ru": "Настройка HUD",
+          "en": "HUD configuration"
+        },
         "path": "Statistics → Configure heads up display",
         "settings": [
-          { "name": "Statistics overlay", "value": "Upper right" },
-          { "name": "Horizontal / Vertical position", "value": "100 / 0" },
-          { "name": "Layout", "value": "Linear" },
-          { "name": "Background opacity", "value": "0" },
-          { "name": "Font Size / Font color", "value": "Standard / White" },
-          { "name": "Status indicators (Record, Instant Replay, Highlights, Microphone, Statistics logging)", "value": "None" }
+          {
+            "name": "Statistics overlay",
+            "value": "Upper right"
+          },
+          {
+            "name": "Horizontal / Vertical position",
+            "value": "100 / 0"
+          },
+          {
+            "name": "Layout",
+            "value": "Linear"
+          },
+          {
+            "name": "Background opacity",
+            "value": "0"
+          },
+          {
+            "name": "Font Size / Font color",
+            "value": "Standard / White"
+          },
+          {
+            "name": "Status indicators (Record, Instant Replay, Highlights, Microphone, Statistics logging)",
+            "value": "None"
+          }
         ]
       },
       {
-        "title": { "ru": "Хайлайты", "en": "Highlights" },
+        "title": {
+          "ru": "Хайлайты",
+          "en": "Highlights"
+        },
         "path": "NVIDIA App → Settings → Features → Highlights",
         "settings": [
-          { "name": "Capture highlights", "value": "OFF" }
+          {
+            "name": "Capture highlights",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Запись видео", "en": "Video capture" },
+        "title": {
+          "ru": "Запись видео",
+          "en": "Video capture"
+        },
         "path": "Highlights → Configure video capture",
         "settings": [
-          { "name": "Desktop capture", "value": "ON" },
-          { "name": "Instant Replay length", "value": "00:20" },
-          { "name": "Quality", "value": "High" },
-          { "name": "Resolution", "value": "1080p HD" },
-          { "name": "Frame rate", "value": "60 FPS" },
-          { "name": "Codec", "value": "H.264/HEVC" },
-          { "name": "Bit rate (Mbps)", "value": "16" }
+          {
+            "name": "Desktop capture",
+            "value": "ON"
+          },
+          {
+            "name": "Instant Replay length",
+            "value": "00:20"
+          },
+          {
+            "name": "Quality",
+            "value": "High"
+          },
+          {
+            "name": "Resolution",
+            "value": "1080p HD"
+          },
+          {
+            "name": "Frame rate",
+            "value": "60 FPS"
+          },
+          {
+            "name": "Codec",
+            "value": "H.264/HEVC"
+          },
+          {
+            "name": "Bit rate (Mbps)",
+            "value": "16"
+          }
         ]
       },
       {
-        "title": { "ru": "Уведомления и приватность", "en": "Notifications & privacy" },
+        "title": {
+          "ru": "Уведомления и приватность",
+          "en": "Notifications & privacy"
+        },
         "path": "NVIDIA App → Settings → Notifications / About",
         "settings": [
-          { "name": "Driver updates (notification)", "value": "OFF" },
-          { "name": "Available rewards", "value": "OFF" },
-          { "name": "Opt in to access Beta or experimental features", "value": "OFF" },
-          { "name": "Configuration, performance, and usage data", "value": "OFF" },
-          { "name": "Error and crash data", "value": "OFF" }
+          {
+            "name": "Driver updates (notification)",
+            "value": "OFF"
+          },
+          {
+            "name": "Available rewards",
+            "value": "OFF"
+          },
+          {
+            "name": "Opt in to access Beta or experimental features",
+            "value": "OFF"
+          },
+          {
+            "name": "Configuration, performance, and usage data",
+            "value": "OFF"
+          },
+          {
+            "name": "Error and crash data",
+            "value": "OFF"
+          }
         ]
       }
     ]
