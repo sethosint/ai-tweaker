@@ -33,6 +33,7 @@
     const hzList = disp ? disp.modes.filter((m) => `${m.width}x${m.height}` === resKey).map((m) => m.hz) : [];
     const onCurrent = disp && resKey === `${disp.current.width}x${disp.current.height}`;
     const hz = hzList.includes(st.hz) ? st.hz : onCurrent && hzList.includes(disp.current.hz) ? disp.current.hz : Math.max(0, ...hzList);
+    const junk = st.startup ? st.startup.filter((e) => e.enabled && e.suggest === "off").length : 0;
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("tools.title")}</h1><p>${t("tools.desc")}</p></div></div>
       <div class="grid cols-2" style="align-items:start">
@@ -70,8 +71,9 @@
         </div>
 
         <div class="panel"><div class="panel-h">${t("startup.title")}<span class="right">${st.startup ? st.startup.filter((e) => e.enabled).length + "/" + st.startup.length : ""}</span></div>
-          <div class="panel-b" style="padding-bottom:0"><div class="td" style="color:var(--muted)">${t("startup.desc")}</div></div>
-          <div>${st.startup ? (st.startup.length ? st.startup.map((e) => `<div class="tool-row"><div><div class="tn">${esc(e.name)}</div><div class="tdsc">${esc(e.location)} · ${esc(e.scope)} · ${esc(e.command)}</div></div><div class="switch ${e.enabled ? "on" : ""}" data-sid="${esc(e.id)}" role="switch" aria-checked="${e.enabled}"></div></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`) : `<div class="empty" style="margin:12px">…</div>`}</div>
+          <div class="panel-b" style="padding-bottom:0;display:grid;gap:10px"><div class="td" style="color:var(--muted)">${t("startup.desc")}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">${junk ? `<button class="btn primary sm" id="suClean">${t("startup.clean")} (${junk})</button>` : `<button class="btn done sm" disabled>${icon("check")}${t("startup.clean0")}</button>`}<button class="btn ghost sm" id="suAutoruns">${icon("external")}Autoruns</button></div></div>
+          <div>${st.startup ? (st.startup.length ? st.startup.map((e) => `<div class="tool-row"><div><div class="tn">${esc(e.name)} ${e.suggest === "off" ? `<span class="chip warn">${t("startup.off")}</span>` : e.suggest === "keep" ? `<span class="chip ok">${t("startup.keep")}</span>` : ""}</div><div class="tdsc">${esc(e.location)} · ${esc(e.scope)} · ${esc(e.command)}</div></div><div class="switch ${e.enabled ? "on" : ""}" data-sid="${esc(e.id)}" role="switch" aria-checked="${e.enabled}"></div></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`) : `<div class="empty" style="margin:12px">…</div>`}</div>
         </div>
 
         <div class="panel"><div class="panel-h">${t("clean.title")}<span class="right">${st.clean ? mb(st.clean.filter((c) => st.cleanSel.has(c.id)).reduce((a, c) => a + c.bytes, 0)) : ""}</span></div>
@@ -114,6 +116,14 @@
     };
     $("#dnsFlush").onclick = async () => { await call("net.flushdns"); toast(t("toast.dns"), "ok"); };
     $("#expRestart").onclick = async () => { await call("explorer.restart"); toast(t("toast.explorer"), "ok"); };
+    if ($("#suClean")) $("#suClean").onclick = async () => {
+      let n = 0;
+      try { n = await call("startup.cleanup"); } catch { return; }
+      toast(t("startup.cleaned").replace("{n}", n), "ok");
+      st.startup = await call("startup.list");
+      render();
+    };
+    $("#suAutoruns").onclick = () => go("apps", { guide: "autoruns" });
     v.querySelectorAll("[data-sid]").forEach((sw) => (sw.onclick = async () => {
       const e = st.startup.find((x) => x.id === sw.dataset.sid);
       await call("startup.set", { id: e.id, enabled: !e.enabled });

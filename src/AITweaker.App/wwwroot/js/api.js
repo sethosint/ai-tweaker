@@ -96,7 +96,7 @@
   const statusOf = (t) => (mock.applied.has(t.id) ? "applied" : evalWhen(t.when) ? "off" : "n/a");
 
   const handlers = {
-    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
+    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, programIds: D.programs.map((p) => p.id), log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
     "system.scan": async () => {
       log("info", "scan", "scanning hardware and Windows configuration…");
       await sleep(1400);
@@ -293,6 +293,7 @@
     "net.flushdns": async () => ({ exitCode: 0 }),
     "net.reset": async () => { await sleep(700); mock.rebootPending = true; log("warn", "network", "demo: Winsock/TCP-IP reset skipped"); return true; },
     "startup.list": async () => mock.startup,
+    "startup.cleanup": async () => { const list = mock.startup.filter((e) => e.enabled && e.suggest === "off"); list.forEach((e) => (e.enabled = false)); log("ok", "startup", `${list.length} startup entries switched off`); return list.length; },
     "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },
     "clean.analyze": async () => { await sleep(500); return [["temp-user", 912e6, 4210], ["temp-windows", 214e6, 388], ["shader-nvidia", 1.9e9, 1630], ["shader-amd", 0, 0], ["shader-directx", 640e6, 2210], ["windows-update", 3.1e9, 77], ["crash-dumps", 88e6, 12]].map(([id, bytes, files]) => ({ id, path: "", bytes, files })); },
     "clean.run": async ({ ids }) => { await sleep(900); return ids.length * 3.2e8; },
@@ -335,10 +336,13 @@
   };
 
   mock.startup = [
-    { id: "HKCU|Run|Discord", name: "Discord", command: "C:\\Users\\demo\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU Run", enabled: true, scope: "user" },
-    { id: "HKCU|Run|Steam", name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", location: "HKCU Run", enabled: true, scope: "user" },
-    { id: "HKLM|Run|RtkAudUService", name: "RtkAudUService", command: "C:\\Windows\\System32\\RtkAudUService64.exe -background", location: "HKLM Run", enabled: true, scope: "all users" },
-    { id: "HKCU|Run|OneDrive", name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU Run", enabled: false, scope: "user" },
+    { id: "HKCU|Run|Discord", name: "Discord", command: "C:\\Users\\demo\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKCU|Run|Steam", name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKCU|Run|MicrosoftEdgeAutoLaunch_0F2A", name: "MicrosoftEdgeAutoLaunch_0F2A", command: "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --no-startup-window", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKLM|Run|RtkAudUService", name: "RtkAudUService", command: "C:\\Windows\\System32\\RtkAudUService64.exe -background", location: "HKLM Run", enabled: true, scope: "all users", suggest: "keep" },
+    { id: "HKLM|Run|SecurityHealth", name: "SecurityHealth", command: "%windir%\\system32\\SecurityHealthSystray.exe", location: "HKLM Run", enabled: true, scope: "all users", suggest: "keep" },
+    { id: "HKCU|StartupFolder|Lightshot.lnk", name: "Lightshot", command: "C:\\Users\\demo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Lightshot.lnk", location: "Startup folder", enabled: true, scope: "user", suggest: null },
+    { id: "HKCU|Run|OneDrive", name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU Run", enabled: false, scope: "user", suggest: "off" },
   ];
 
   function startMockTelemetry() {

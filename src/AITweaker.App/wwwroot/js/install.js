@@ -9,12 +9,14 @@
     if (!st.sel) st.sel = new Set(st.data.programs.filter((p) => p.recommended && !p.installed).map((p) => p.id));
   }
 
-  V.install = async () => {
+  V.install = async (opts = {}) => {
     const v = $("#v-install");
     if (!st.data) {
       v.innerHTML = `<div class="empty">${t("loading")}</div>`;
       try { await load(); } catch { return; }
     }
+    // Opened for one program (from its guide or the display tools): tick it so one click installs it.
+    if (opts.focus && st.data.programs.some((p) => p.id === opts.focus && !p.installed)) st.sel.add(opts.focus);
     const d = st.data;
     const extTweak = S.byId["apps.chrome.extensions"];
     const extApplied = S.status["apps.chrome.extensions"] === "applied";
@@ -26,7 +28,7 @@
       ${d.winget || d.programs.every((p) => p.source || !p.winget) ? "" : html`<div class="callout warn" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${t("inst.noWinget")}</span><button class="btn sm" id="iRepair">${t("inst.repair")}</button></div>`}
       ${GROUPS.map((g) => { const list = d.programs.filter((p) => p.group === g); if (!list.length) return ""; return html`<div class="cat-group">
         <div class="cat-h">${t("inst.g." + g)}<span class="n">${list.filter((p) => st.sel.has(p.id)).length}/${list.length}</span></div>
-        ${list.map((p) => html`<div class="trow ${p.installed ? "is-installed" : ""}">
+        ${list.map((p) => html`<div class="trow ${p.installed ? "is-installed" : ""}" data-row="${p.id}">
           <label class="check"><input type="checkbox" data-id="${p.id}" ${st.sel.has(p.id) ? "checked" : ""}><span class="box"></span></label>
           <div><div class="tt">${esc(p.name)} ${p.paid ? `<span class="chip warn">${t("inst.paid")}</span>` : ""}</div>
             ${p.note ? `<div class="td">${esc(L(p.note))}</div>` : ""}
@@ -52,6 +54,7 @@
         <div class="sum">${t("inst.hint")}</div>
       </div>`;
 
+    if (opts.focus) { const row = v.querySelector(`[data-row="${CSS.escape(opts.focus)}"]`); if (row) { row.scrollIntoView({ block: "center" }); row.classList.add("hl"); } }
     v.querySelectorAll("[data-id]").forEach((c) => (c.onchange = () => { c.checked ? st.sel.add(c.dataset.id) : st.sel.delete(c.dataset.id); V.install(); }));
     v.querySelectorAll("[data-un]").forEach((b) => (b.onclick = () => uninstall(b.dataset.un)));
     v.querySelectorAll("[data-url]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.url })));

@@ -73,6 +73,10 @@ public sealed class InstallProgram
     public string? Override { get; init; }
     /// <summary>Direct link to an official portable zip (used when there is no winget package).</summary>
     public string? Download { get; init; }
+    /// <summary>Which program in the portable zip the Start menu shortcut opens (default: the one named like the id).</summary>
+    public string? Exe { get; init; }
+    /// <summary>The program in the portable zip must carry a valid digital signature, or nothing is installed.</summary>
+    public bool Signed { get; init; }
     /// <summary>
     /// Direct link to the vendor's own installer (.exe or .msi), downloaded and run when the user clicks Install.
     /// <c>{lang}</c> is replaced with the interface language (ru / en-US).

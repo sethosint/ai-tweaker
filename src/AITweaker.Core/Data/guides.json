@@ -953,5 +953,80 @@
       }
     ],
     "autoTweaks": ["apps.autostart.cleanup"]
+  },
+  {
+    "id": "autoruns",
+    "name": "Autoruns",
+    "icon": "autoruns",
+    "detect": "app.autoruns",
+    "summary": {
+      "ru": "Всё, что стартует вместе с Windows, в одном окне. Снимайте галочки с лишнего, ничего не удаляя, — драйверы, звук, античиты и защиту не трогайте.",
+      "en": "Everything that starts with Windows in one window. Untick what you don't need without deleting anything — leave drivers, audio, anti-cheat and security alone."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Запуск и фильтры", "en": "Start and filters" },
+        "path": "Start → Autoruns (Run as administrator) → Options",
+        "settings": [
+          { "name": "Run as administrator", "value": "ON", "note": { "ru": "Без прав администратора не видны и не меняются общие записи (HKLM, службы).", "en": "Without admin rights machine-wide entries (HKLM, services) can't be seen or changed." } },
+          { "name": "Options → Hide Microsoft Entries", "value": "ON", "note": { "ru": "Прячет компоненты Windows — их трогать не нужно.", "en": "Hides Windows components — they don't need touching." } },
+          { "name": "Options → Hide Windows Entries", "value": "ON" },
+          { "name": "Options → Hide Empty Locations", "value": "ON" },
+          { "name": "Options → Scan Options → Verify code signatures", "value": "ON", "note": { "ru": "Показывает, кем подписан файл. Без подписи — повод присмотреться.", "en": "Shows who signed each file. No signature is a reason to take a closer look." } },
+          { "name": "Options → Scan Options → Check VirusTotal.com", "value": "OFF", "note": { "ru": "По желанию: отправляет хеши файлов в VirusTotal и показывает, сколько антивирусов на них ругаются.", "en": "Optional: sends file hashes to VirusTotal and shows how many scanners flag them." } }
+        ],
+        "note": { "ru": "Главное правило: снимайте галочку, а не нажимайте Delete. Галочка возвращается одним кликом, удалённую запись восстановить сложно.", "en": "The main rule: untick, don't press Delete. A tick comes back in one click; a deleted entry is hard to restore." }
+      },
+      {
+        "title": { "ru": "Logon — автозагрузка", "en": "Logon — startup" },
+        "path": "Autoruns → Logon",
+        "settings": [
+          { "name": "Лаунчеры: Steam, Epic, EA, Battle.net, Ubisoft, GOG, Riot Client", "value": "OFF", "note": { "ru": "Откроются сами, когда запустите игру.", "en": "They open by themselves when you start a game." } },
+          { "name": "Обновлялки программ (Adobe, Java, CCleaner…)", "value": "OFF" },
+          { "name": "Discord, Telegram, Spotify, Teams, Skype", "value": "OFF", "note": { "ru": "Если не нужны сразу после входа. Те же записи AI Tweaker отключает сам во вкладке «Инструменты» → «Автозагрузка».", "en": "If you don't need them right after sign-in. AI Tweaker switches the same entries off itself in Tools → Startup." } },
+          { "name": "OneDrive, Google Drive, Dropbox, Яндекс Диск", "value": "OFF", "note": { "ru": "Если не нужна постоянная синхронизация.", "en": "If you don't need constant syncing." } },
+          { "name": "Звук: Realtek, Nahimic, Dolby, Waves", "value": "ON", "note": { "ru": "Без них могут пропасть эффекты и настройки звука.", "en": "Without them sound effects and settings can disappear." } },
+          { "name": "Мышь и клавиатура: Logitech G HUB, Razer, SteelSeries, Corsair", "value": "ON", "note": { "ru": "Хранят DPI, частоту опроса и макросы.", "en": "They keep DPI, polling rate and macros." } },
+          { "name": "SecurityHealth (значок «Безопасности Windows»)", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Scheduled Tasks — задачи", "en": "Scheduled Tasks" },
+        "path": "Autoruns → Scheduled Tasks",
+        "settings": [
+          { "name": "Задачи обновления браузеров (GoogleUpdateTask, MicrosoftEdgeUpdateTask)", "value": "ON", "note": { "ru": "Оставьте: через них приходят исправления безопасности браузера.", "en": "Keep them: browser security fixes arrive through them." } },
+          { "name": "Задачи сторонних программ: Adobe, CCleaner, телеметрия производителя ноутбука", "value": "OFF" },
+          { "name": "Задачи драйверов видеокарты (NVIDIA, AMD)", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Services — службы", "en": "Services" },
+        "path": "Autoruns → Services",
+        "settings": [
+          { "name": "Античиты: vgc (Vanguard), EasyAntiCheat, BEService, FACEIT", "value": "ON", "note": { "ru": "Без них онлайн-игры не запустятся.", "en": "Online games won't start without them." } },
+          { "name": "Службы видеокарты и звука", "value": "ON" },
+          { "name": "Службы уже удалённых программ (жёлтые, File not found)", "value": "Delete", "note": { "ru": "Это остатки: файла уже нет, запись можно удалить.", "en": "These are leftovers: the file is gone, the entry can be deleted." } },
+          { "name": "Остальные системные службы Windows", "value": "Не трогать / Leave", "note": { "ru": "Ими удобнее и безопаснее управлять во вкладке «Службы» AI Tweaker — там есть откат.", "en": "They're easier and safer to manage in AI Tweaker's Services tab, which has rollback." } }
+        ]
+      },
+      {
+        "title": { "ru": "Цвета строк", "en": "Row colours" },
+        "path": "Autoruns",
+        "settings": [
+          { "name": "Жёлтая строка", "value": "File not found", "note": { "ru": "Файл удалён — запись осталась от старой программы.", "en": "The file is gone — the entry is left over from an old program." } },
+          { "name": "Розовая / красная строка", "value": "Not verified", "note": { "ru": "Нет подписи или издатель не подтверждён. Не обязательно вирус, но проверьте, что это за программа.", "en": "No signature or the publisher isn't verified. Not necessarily malware, but check what the program is." } }
+        ]
+      },
+      {
+        "title": { "ru": "Что никогда не трогать", "en": "Never touch" },
+        "path": "Autoruns → Drivers / Boot Execute / Winlogon / LSA Providers / Winsock Providers / KnownDLLs",
+        "settings": [
+          { "name": "Drivers", "value": "Не трогать / Leave" },
+          { "name": "Boot Execute, Winlogon", "value": "Не трогать / Leave" },
+          { "name": "LSA Providers, Winsock Providers, KnownDLLs", "value": "Не трогать / Leave" }
+        ],
+        "note": { "ru": "Изменения в этих разделах могут помешать Windows загрузиться или выйти в сеть.", "en": "Changes in these sections can stop Windows from booting or getting online." }
+      }
+    ]
   }
 ]

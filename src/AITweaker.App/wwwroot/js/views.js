@@ -323,7 +323,7 @@
   // ------------------------------------------------------------------ [06] app guides
 
   // Brand colour of each program's badge in the list.
-  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff" };
+  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff", autoruns: "#00a4ef" };
 
   const autoOf = (g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "n/a");
   const pendingOf = (g) => autoOf(g).filter((id) => S.status[id] !== "applied");
@@ -355,14 +355,14 @@
     const auto = autoOf(g), pend = pendingOf(g);
     v.innerHTML = html`
       <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
-        <div class="actions"><button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
+        <div class="actions">${!g.installed && (S.init.programIds || []).includes(g.id) ? `<button class="btn primary sm" id="gInstall">${icon("download")}${t("apps.install")}</button>` : ""}<button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
       ${auto.length ? html`<div class="app-block auto">
         <div class="ab-h">${icon("tune")}<div><b>${t("apps.autoT")}</b><span>${t("apps.autoD")}</span></div>
           ${pend.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${pend.length})</button>` : `<span class="chip ok">${icon("check")}${t("apps.autoDone")}</span>`}</div>
         ${auto.map((id) => { const tw = S.byId[id]; return html`<div class="ab-row"><div><div class="tt">${esc(L(tw.name))}</div><div class="td">${esc(L(tw.description))}</div></div>${statusChip(id)}</div>`; }).join("")}
       </div>` : ""}
       <div class="app-block man">
-        <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t("apps.manualD").replaceAll("{app}", esc(g.name))}</span></div></div>
+        <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t(auto.length ? "apps.manualD" : "apps.manualD0").replaceAll("{app}", esc(g.name))}</span></div></div>
       </div>
       ${g.sections.map((s, si) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
         <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
@@ -371,6 +371,7 @@
         ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" loading="lazy"></div>` : ""}
       </div>`).join("")}`;
     $("#gBack").onclick = () => V.apps();
+    if ($("#gInstall")) $("#gInstall").onclick = () => go("install", { focus: g.id });
     if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(pend);
   };
 

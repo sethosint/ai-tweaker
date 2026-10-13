@@ -319,8 +319,18 @@ public static class ProgramInstaller
         ZipFile.ExtractToDirectory(zip, target);
         File.Delete(zip);
         var exe = Directory.EnumerateFiles(target, "*.exe", SearchOption.AllDirectories)
-            .OrderByDescending(f => Path.GetFileNameWithoutExtension(f).Equals(p.Id, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(f => p.Exe is not null && Path.GetFileName(f).Equals(p.Exe, StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(f => Path.GetFileNameWithoutExtension(f).Equals(p.Id, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault();
+        if (p.Signed)
+        {
+            var sig = exe is null ? null : await ProcessRunner.PowerShellAsync($"(Get-AuthenticodeSignature -FilePath {ProcessRunner.PsQuote(exe)}).Status", TimeSpan.FromMinutes(1), ct: ct);
+            if (sig is null || !sig.Output.Contains("Valid"))
+            {
+                Directory.Delete(target, recursive: true);
+                return new InstallResult(p.Id, p.Name, false, "download", "the downloaded program has no valid signature" + (sig is null ? "" : ": " + sig.Output.Trim()));
+            }
+        }
         if (exe is not null)
         {
             var lnk = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), p.Name.Split(" — ")[0] + ".lnk");

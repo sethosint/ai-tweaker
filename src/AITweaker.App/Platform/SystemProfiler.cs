@@ -331,6 +331,7 @@ public static class SystemProfiler
         {
             ["steam"] = () => RegistryHelper.KeyExists(@"HKCU\Software\Valve\Steam") || File.Exists(Path.Combine(pf86, "Steam", "steam.exe")),
             ["discord"] = () => File.Exists(Path.Combine(local, "Discord", "Update.exe")),
+            ["autoruns"] = () => Directory.Exists(Path.Combine(ProgramInstaller.ToolsDir, "autoruns")),
             ["chrome"] = () => AppPath("chrome.exe"),
             ["edge"] = () => AppPath("msedge.exe"),
             ["firefox"] = () => AppPath("firefox.exe"),

@@ -127,6 +127,7 @@ public sealed class ApiService
         "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); SettingsStore.MarkRebootPending(); return true; }),
         "startup.list" => StartupManager.List(),
         "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
+        "startup.cleanup" => StartupManager.DisableUnneeded(),
         "clean.analyze" => await Task.Run(Cleaner.Analyze),
         "clean.run" => await Exclusive(() => Cleaner.CleanAsync(Ids(p) ?? [])),
         "memory.purge" => MemoryTools.PurgeStandby(),
@@ -174,6 +175,7 @@ public sealed class ApiService
                 && (Environment.GetCommandLineArgs().Contains("--first-run", StringComparer.OrdinalIgnoreCase) || InstalledImage() is not null),
             models = ClaudeAdvisor.Models,
             categories = _catalog.Categories,
+            programIds = _catalog.Programs.Select(x => x.Id),
             log = AppLog.Snapshot().TakeLast(100),
         };
     }
