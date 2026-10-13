@@ -52,7 +52,7 @@
     ].map(([name, displayName, description, state, start, essential, tweaks]) => ({ name, displayName, description, state, start, essential, changed: false, tweaks: tweaks || [] })) };
 
   const profile = {
-    os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
+    os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2", language: "ru-RU" },
     cpu: { name: "AMD Ryzen 7 9850X3D 8-Core Processor", vendor: "AMD", cores: 8, threads: 16, maxClockMhz: 4700, isHybrid: false, pCores: 8, eCores: 0, isX3D: true, microcodeRevision: 192, topology: [] },
     gpus: [{ name: "NVIDIA GeForce RTX 5070 Ti", vendor: "NVIDIA", driverVersion: "32.0.15.8157", driverDate: "2026-03-02T00:00:00", vramMb: 16303, isDiscrete: true }],
     memory: { totalGb: 32, type: "DDR5", configuredSpeed: 4800, xmpLikelyOff: true, modules: [{ capacityGb: 16, speed: 6000, configuredSpeed: 4800 }, { capacityGb: 16, speed: 6000, configuredSpeed: 4800 }] },

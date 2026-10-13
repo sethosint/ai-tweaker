@@ -345,7 +345,8 @@
   // ------------------------------------------------------------------ [09] image (own AI Tweaker image + USB)
 
   const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
-  const rein = { source: "dl", mode: "clean" };
+  // Without a USB stick the English Windows 11 is offered; files and apps can only be kept with an image in the system's own language.
+  const rein = { source: "dl", mode: "clean", lang: "English" };
   const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
   const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
@@ -493,6 +494,9 @@
   function reinstallPanel() {
     if (rein.source === "built" && !usb.built) rein.source = "dl";
     if (rein.source === "iso" && !usb.iso) rein.source = "dl";
+    const osLang = (S.scan && S.scan.profile.os.language) || "";
+    const keepBlocked = rein.source === "dl" && osLang && !/^en/i.test(osLang);
+    if (keepBlocked && rein.mode !== "clean") rein.mode = "clean";
     const opt = (name, value, label, desc, on, dis) => `<label class="rein-opt ${on ? "on" : ""} ${dis ? "dis" : ""}"><input type="radio" name="${name}" value="${value}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span><b>${label}</b>${desc ? `<span>${desc}</span>` : ""}</span></label>`;
     return html`<div class="panel rein" style="margin-bottom:30px">
       <div class="panel-h">${t("rein.title")}<span class="right"><button class="btn sm ghost" id="reinUsb">${t("rein.usbBtn")}${icon("arrow")}</button></span></div>
@@ -500,12 +504,12 @@
         <div class="td" style="color:var(--muted);margin-bottom:16px;max-width:900px">${t("rein.desc")}</div>
         <div class="grid cols-2" style="gap:22px">
           <div><div class="rein-k">${t("rein.src")}</div><div class="rein-list">
-            ${opt("reinsrc", "dl", t("rein.srcDl").replace("{lang}", esc(usb.lang)), t("rein.srcDlD"), rein.source === "dl")}
+            ${opt("reinsrc", "dl", t("rein.srcDl"), t("rein.srcDlD"), rein.source === "dl")}
             ${opt("reinsrc", "built", t("rein.srcBuilt"), usb.built ? esc(usb.built.folder) : t("rein.srcBuiltNo"), rein.source === "built", !usb.built)}
             ${opt("reinsrc", "iso", t("rein.srcIso"), usb.iso ? esc(usb.iso) : t("rein.srcIsoNo"), rein.source === "iso", !usb.iso)}
           </div></div>
           <div><div class="rein-k">${t("rein.mode")}</div><div class="rein-list">
-            ${["clean", "dataonly", "upgrade"].map((m) => opt("reinmode", m, t("rein.m." + m), t("rein.m." + m + "D"), rein.mode === m)).join("")}
+            ${["clean", "dataonly", "upgrade"].map((m) => opt("reinmode", m, t("rein.m." + m), m !== "clean" && keepBlocked ? t("rein.langNote").replace("{lang}", esc(osLang)) : t("rein.m." + m + "D"), rein.mode === m, m !== "clean" && keepBlocked)).join("")}
           </div></div>
         </div>
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px">
@@ -532,7 +536,7 @@
     const off = [API.on("reinstall.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : { fido: 0.03, mount: 0.88, check: 0.92, setup: 0.97 }[p.step] || 0.5, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : ""))),
       API.on("usb.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : 0.03, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : "")))];
     let r = null;
-    try { r = await call("reinstall.start", { source: rein.source, iso: usb.iso, mode: rein.mode, language: usb.lang }); } catch { /* toast */ } finally { off.forEach((f) => f()); b.done(); }
+    try { r = await call("reinstall.start", { source: rein.source, iso: usb.iso, mode: rein.mode, language: rein.lang }); } catch { /* toast */ } finally { off.forEach((f) => f()); b.done(); }
     if (!r) return;
     await modal({ title: t("rein.startedT"), body: html`<div>${t("rein.started")}</div><div class="callout">${t("rein.after")}</div><div class="tid">${esc(r.setup)} ${esc(r.arguments)}</div>`, buttons: [{ label: t("ok"), cls: "primary" }] });
   }

@@ -16,6 +16,10 @@ public static class LocalReinstall
     public static async Task<ReinstallStarted> StartAsync(SystemProfile profile, string? source, string mode, string language, Action<string, double> progress, CancellationToken ct = default)
     {
         var args = LocalSetup.Arguments(mode);
+        // Setup keeps files and apps only when the image is in the installed Windows' language
+        if (string.IsNullOrWhiteSpace(source) && mode != "clean" && language.StartsWith("English", StringComparison.OrdinalIgnoreCase)
+            && !profile.Os.Language.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Files and apps can only be kept with an image in the system language ({profile.Os.Language}). Choose a clean install or your own ISO in that language.");
         if (string.IsNullOrWhiteSpace(source)) source = await UsbCreator.DownloadIsoAsync(language, progress, ct);
 
         progress("mount", 0);
