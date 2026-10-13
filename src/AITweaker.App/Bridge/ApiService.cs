@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
 using AITweaker.App.Platform;
-using AITweaker.Core.Ai;
 using AITweaker.Core.Bench;
 using AITweaker.Core.Bios;
 using AITweaker.Core.Catalog;
@@ -109,7 +108,6 @@ public sealed class ApiService
             return true;
         }),
         "task.cancel" => Do(() => _longTask?.Cancel()),
-        "ai.analyze" => await AnalyzeAsync(Str(p, "profile") ?? SettingsStore.Current.Profile),
         "settings.set" => SetSettings(p),
         "report.export" => await ExportReportAsync(),
         "shell.open" => Do(() => ProcessRunner.OpenUrl(Str(p, "url") ?? "")),
@@ -170,10 +168,7 @@ public sealed class ApiService
                 language = s.Language,
                 theme = s.Theme,
                 accent = s.Accent,
-                showAdvisor = s.ShowAdvisor,
                 profile = s.Profile,
-                model = s.ClaudeModel,
-                hasKey = SettingsStore.GetClaudeKey() is not null,
                 pingHost = s.PingHost,
                 createRestorePoint = s.CreateRestorePoint,
                 autoRestartSeconds = s.AutoRestartSeconds,
@@ -183,7 +178,6 @@ public sealed class ApiService
             // Started by autounattend after a clean install, or the first launch on a PC installed from our image.
             firstRun = !SettingsStore.Current.FirstRunDone
                 && (Environment.GetCommandLineArgs().Contains("--first-run", StringComparer.OrdinalIgnoreCase) || InstalledImage() is not null),
-            models = ClaudeAdvisor.Models,
             categories = _catalog.Categories,
             programIds = _catalog.Programs.Select(x => x.Id),
             log = AppLog.Snapshot().TakeLast(100),
@@ -536,20 +530,6 @@ public sealed class ApiService
         return o;
     }
 
-    // ------------------------------------------------------------------ AI
-
-    private async Task<object> AnalyzeAsync(string profileName)
-    {
-        var key = SettingsStore.GetClaudeKey() ?? throw new AiAdvisorException(SettingsStore.Current.Language == "en" ? "Add your Claude API key in AI settings first." : "Сначала добавьте API-ключ Claude в настройках AI.");
-        var profile = await ProfileAsync();
-        var level = Enum.TryParse<TuneProfile>(profileName, true, out var l) ? l : TuneProfile.Performance;
-        var plan = _engine.BuildPlan(profile, level);
-        AppLog.Info("ai", $"asking {SettingsStore.Current.ClaudeModel} to analyze this PC…");
-        var analysis = await new ClaudeAdvisor(key, SettingsStore.Current.ClaudeModel).AnalyzeAsync(profile, plan, _insights, SettingsStore.Current.Language);
-        AppLog.Ok("ai", $"Claude recommends {analysis.Recommendations.Count} tweaks, advises against {analysis.Avoid.Count}");
-        return analysis;
-    }
-
     // ------------------------------------------------------------------ settings / report
 
     private static object SetSettings(JsonElement p)
@@ -558,15 +538,12 @@ public sealed class ApiService
         if (Str(p, "language") is { } lang) s.Language = lang == "en" ? "en" : "ru";
         if (Str(p, "theme") is { } theme) s.Theme = theme is "night" or "day" ? theme : "auto";
         if (Str(p, "accent") is { } accent) s.Accent = accent is "mono" or "system" ? accent : "industrial";
-        if (Bool(p, "showAdvisor") is { } adv) s.ShowAdvisor = adv;
         if (Str(p, "profile") is { } prof && Enum.TryParse<TuneProfile>(prof, true, out _)) s.Profile = prof;
-        if (Str(p, "model") is { } model && ClaudeAdvisor.Models.Contains(model)) s.ClaudeModel = model;
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;
         if (Bool(p, "createRestorePoint") is { } rp) s.CreateRestorePoint = rp;
         if (Int(p, "autoRestartSeconds") is { } ar) s.AutoRestartSeconds = Math.Clamp(ar, 0, 600);
         SettingsStore.Save();
-        if (p.TryGetProperty("apiKey", out var k)) SettingsStore.SetClaudeKey(k.ValueKind == JsonValueKind.String ? k.GetString() : null);
-        return new { hasKey = SettingsStore.GetClaudeKey() is not null };
+        return true;
     }
 
     private async Task<object> ExportReportAsync()

@@ -3,7 +3,7 @@
   const S = (window.S = {
     lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Extreme", gameMode: false, demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
-    log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
+    log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null,
     busy: false, view: "dashboard",
   });
 
@@ -161,11 +161,11 @@
 
   const NAV = [
     ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "06"], ["services", "07"],
-    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
+    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["backup", "11"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
-  const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
+  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", backup: "ROLLBACK" };
+  const navList = () => NAV;
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
   const last = () => S.telemetry[S.telemetry.length - 1] || {};
@@ -239,7 +239,7 @@
         </div>
       </header>
       <nav class="nav"><div class="nav-glider"></div>
-        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === (all.some(([x]) => x === "ai") ? "ai" : "backup") ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === "backup" ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
         <div class="nav-foot">${t("nav.foot")}<br><br><span class="mono">AI TWEAKER ${esc((S.init && S.init.version) || "1.0.0")}${S.init && S.init.machine ? " · " + esc(S.init.machine) : ""}</span></div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
@@ -317,21 +317,16 @@
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="field">${t("settings.autoRestart")}
           <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
-        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>
-        <label class="check"><input type="checkbox" id="setAdv" ${s.showAdvisor ? "checked" : ""}><span class="box"></span>${t("settings.advisor")}</label>
-        <div class="td" style="color:var(--muted);margin-top:-6px;padding-left:26px">${t("settings.advisorD")}</div>`,
-      buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
+        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
+      buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("settings.save"), value: true, cls: "primary" }],
       onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
-        const showAdvisor = $("#setAdv", ov).checked;
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode, showAdvisor });
-        const navChanged = !!s.showAdvisor !== showAdvisor;
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, showAdvisor });
-        if (navChanged) { if (!showAdvisor && S.view === "ai") S.view = "dashboard"; renderShell(); go(S.view); }
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode });
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });

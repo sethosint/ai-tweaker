@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -11,12 +10,7 @@ public sealed class AppSettings
     public string Theme { get; set; } = "auto";
     /// <summary>industrial (signal orange) | system (Windows accent color) | mono (monochrome)</summary>
     public string Accent { get; set; } = "industrial";
-    /// <summary>Show the optional Advisor tab (needs the user's own paid Claude API key).</summary>
-    public bool ShowAdvisor { get; set; }
     public string Profile { get; set; } = "Extreme";
-    public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;
-    /// <summary>API key encrypted with DPAPI (current user), base64.</summary>
-    public string? ClaudeKeyProtected { get; set; }
     public string PingHost { get; set; } = "1.1.1.1";
     public string? UltimateSchemeGuid { get; set; }
     public bool CreateRestorePoint { get; set; } = true;
@@ -83,25 +77,4 @@ public static class SettingsStore
         Save();
     }
 
-    public static string? GetClaudeKey()
-    {
-        var p = Current.ClaudeKeyProtected;
-        if (string.IsNullOrEmpty(p)) return null;
-        try
-        {
-            return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(p), null, DataProtectionScope.CurrentUser));
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public static void SetClaudeKey(string? key)
-    {
-        Current.ClaudeKeyProtected = string.IsNullOrWhiteSpace(key)
-            ? null
-            : Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(key.Trim()), null, DataProtectionScope.CurrentUser));
-        Save();
-    }
 }

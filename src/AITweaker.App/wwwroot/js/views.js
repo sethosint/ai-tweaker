@@ -616,47 +616,6 @@
     try { await call("usb.create", { disk: d.number, iso: src, options: usb.opt }); toast(t("usb.done"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
   }
 
-  // ------------------------------------------------------------------ [09] AI
-
-  V.ai = () => {
-    const v = $("#v-ai");
-    const s = S.init.settings;
-    const a = S.ai;
-    v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("ai.title")}</h1><p>${t("ai.desc")}</p></div></div>
-      <div class="grid cols-2" style="align-items:start">
-        <div class="panel"><div class="panel-h">${t("ai.key")}<span class="right">${s.hasKey ? `<span class="chip ok">${t("ai.keySaved")}</span>` : ""}</span></div><div class="panel-b" style="display:grid;gap:10px">
-          <input class="input" type="password" id="aiKey" placeholder="sk-ant-…" autocomplete="off">
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" id="aiSave">${t("ai.save")}</button>${s.hasKey ? `<button class="btn sm danger" id="aiDel">${t("ai.removeKey")}</button>` : ""}<button class="btn sm ghost" id="aiGet">${t("ai.getKey")}${icon("external")}</button></div>
-          <label class="field">${t("ai.model")}<select class="input" id="aiModel">${S.init.models.map((m) => `<option ${s.model === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
-          <div class="callout">${t("ai.local")}</div>
-          <button class="btn hazard" id="aiRun" ${s.hasKey && S.scan ? "" : "disabled"}><span>${t("ai.analyze")}</span></button>
-        </div></div>
-        <div class="panel"><div class="panel-h">${t("ai.summary")}<span class="right">${a ? esc(a.model || "") : ""}</span></div><div class="panel-b" style="display:grid;gap:12px">
-          ${a ? html`<div style="font-weight:700">${esc(a.summary)}</div>
-            <div><div class="cat-h">${t("ai.recommend")}<span class="n">${a.recommendations.length}</span></div>${a.recommendations.map((r) => `<div class="trow" style="grid-template-columns:1fr auto"><div><div class="tt">${esc(L((S.byId[r.id] || {}).name) || r.id)}</div><div class="td">${esc(r.reason)}</div></div>${statusChip(r.id)}</div>`).join("")}</div>
-            ${a.avoid.length ? `<div><div class="cat-h">${t("ai.avoid")}<span class="n">${a.avoid.length}</span></div>${a.avoid.map((r) => `<div class="trow" style="grid-template-columns:1fr"><div><div class="tt">${esc(L((S.byId[r.id] || {}).name) || r.id)}</div><div class="td">${esc(r.reason)}</div></div></div>`).join("")}</div>` : ""}
-            ${a.tips.length ? `<div><div class="cat-h">${t("ai.tips")}</div>${a.tips.map((x) => `<div class="setting"><div class="sn">${esc(x)}</div></div>`).join("")}</div>` : ""}
-            <button class="btn primary" id="aiUse">${t("ai.useInTune")}</button>` : `<div class="empty">${t("ai.empty")}</div>`}
-        </div></div>
-      </div>`;
-    $("#aiSave").onclick = async () => { const k = $("#aiKey").value.trim(); if (!k) return; const r = await call("settings.set", { apiKey: k }); s.hasKey = r.hasKey; toast(t("toast.saved"), "ok"); V.ai(); };
-    if ($("#aiDel")) $("#aiDel").onclick = async () => { const r = await call("settings.set", { apiKey: null }); s.hasKey = r.hasKey; V.ai(); };
-    $("#aiGet").onclick = () => call("shell.open", { url: "https://console.anthropic.com/settings/keys" });
-    $("#aiModel").onchange = (e) => { s.model = e.target.value; call("settings.set", { model: s.model }); };
-    $("#aiRun").onclick = async () => {
-      const b = busy(t("busy.ai"));
-      b.progress(0.3, s.model);
-      try { S.ai = await call("ai.analyze", { profile: S.profileName }); } catch { /* toast */ } finally { b.done(); }
-      V.ai();
-    };
-    if ($("#aiUse")) $("#aiUse").onclick = () => {
-      a.recommendations.forEach((r) => S.selected.add(r.id));
-      a.avoid.forEach((r) => S.selected.delete(r.id));
-      go("tune");
-    };
-  };
-
   // ------------------------------------------------------------------ [10] backup
 
   V.backup = async () => {

@@ -31,7 +31,6 @@
     monitor: '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.2"/><path d="M9 20h6M12 16v4"/>',
     bios: '<rect x="3.5" y="5" width="17" height="14" rx="1"/><path d="M3.5 9h17"/><path d="M7 13h4M7 16h7"/>',
     image: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 8 8"/>',
-    ai: '<path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3"/><circle cx="12" cy="12" r="4.5"/>',
     backup: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/><path d="M12 8v4.5l3 2"/>',
   };
   window.icon = (name, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${P[name] || ""}</svg>`;

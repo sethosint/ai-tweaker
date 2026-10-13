@@ -28,7 +28,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
     <PackageReference Include="System.Management" Version="10.0.7" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AITweaker.Core\AITweaker.Core.csproj" />
