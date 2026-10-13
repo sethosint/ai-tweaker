@@ -40,19 +40,21 @@
     const pre = opts.preconfirmed || new Set();
     const accepted = [...ids.filter((id) => pre.has(id)), ...(await confirmImportant(ids.filter((id) => !pre.has(id))))];
     if (!accepted.length) return;
-    const b = busy(t("busy.apply"));
-    const off = API.on("apply.progress", (p) => b.progress(p.i / p.n, `${p.i}/${p.n} · ${p.id}`));
+    const v = applyVeil(t("busy.apply"), accepted.length);
+    const off = API.on("apply.progress", (p) => v.step(p.i, p.n, p.id));
     let summary;
     try {
       summary = await call("tweaks.apply", { ids: accepted, restorePoint: opts.restorePoint ?? S.init.settings.createRestorePoint, profile: S.profileName });
-    } catch { return; } finally { off(); b.done(); }
+    } catch { off(); await v.finish(null); return; }
+    off();
+    await v.finish(summary.results);
     await App.refreshStatus();
     accepted.forEach((id) => S.selected.delete(id));
     go(S.view);
     const ok = summary.results.filter((r) => r.ok), bad = summary.results.filter((r) => !r.ok);
-    const body = html`<div class="metrics" style="grid-template-columns:repeat(2,1fr);border:1px solid var(--line)">
+    const body = html`<div class="metrics">
         <div class="metric ok"><div class="k">${t("done.applied")}</div><div class="v">${ok.length}</div></div>
-        <div class="metric ${bad.length ? "crit" : ""}" style="border-right:0"><div class="k">${t("done.failed")}</div><div class="v">${bad.length}</div></div></div>
+        <div class="metric ${bad.length ? "crit" : ""}"><div class="k">${t("done.failed")}</div><div class="v">${bad.length}</div></div></div>
       ${bad.length ? `<div class="pre">${bad.map((r) => `${esc(r.id)}: ${esc(r.error || "")}`).join("\n")}</div>` : ""}`;
     if (summary.rebootRequired || summary.logoffRequired) await App.restartPrompt(summary.rebootRequired ? "reboot" : "logoff", body);
     else await modal({ title: t("done.title"), body, buttons: [{ label: t("ok"), value: false, cls: "primary" }] });
