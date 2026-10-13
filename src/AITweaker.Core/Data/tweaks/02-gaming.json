@@ -33,10 +33,10 @@
     "category": "gaming",
     "level": 1,
     "when": "gpu.nvidia",
-    "name": { "ru": "Панель NVIDIA: минимальная задержка", "en": "NVIDIA panel: lowest latency" },
+    "name": { "ru": "NVIDIA: минимальная задержка", "en": "NVIDIA: lowest latency" },
     "description": {
-      "ru": "Глобальные параметры 3D (то же, что «Панель управления NVIDIA → Управление параметрами 3D» и NVIDIA App → Графика): режим низкой задержки «Вкл.», предпочтительная частота обновления «Наивысшая доступная», а на ПК — режим питания «Максимальная производительность». Значения, которые были до этого, сохраняются и возвращаются при откате. Нужен драйвер NVIDIA; NVIDIA Profile Inspector скачивается с GitHub автора.",
-      "en": "Global 3D settings (the same as NVIDIA Control Panel → Manage 3D settings and NVIDIA App → Graphics): Low Latency Mode On, preferred refresh rate Highest available and, on desktops, Power management Prefer maximum performance. The previous values are saved and restored on rollback. Needs the NVIDIA driver; NVIDIA Profile Inspector is downloaded from its author's GitHub."
+      "ru": "Глобальные настройки графики NVIDIA (то же, что NVIDIA App → «Графика» → «Глобальные настройки»): режим низкой задержки «Вкл.», предпочтительная частота обновления «Наивысшая доступная», а на ПК — режим питания «Максимальная производительность». Значения, которые были до этого, сохраняются и возвращаются при откате. Нужен драйвер NVIDIA; NVIDIA Profile Inspector скачивается с GitHub автора.",
+      "en": "NVIDIA global graphics settings (the same as NVIDIA App → Graphics → Global settings): Low Latency Mode On, preferred refresh rate Highest available and, on desktops, Power management Prefer maximum performance. The previous values are saved and restored on rollback. Needs the NVIDIA driver; NVIDIA Profile Inspector is downloaded from its author's GitHub."
     },
     "actions": [
       { "type": "nvidia", "settings": [
@@ -52,7 +52,7 @@
     "category": "gaming",
     "level": 2,
     "when": "gpu.nvidia",
-    "name": { "ru": "Панель NVIDIA: фильтрация текстур — производительность", "en": "NVIDIA panel: texture filtering for performance" },
+    "name": { "ru": "NVIDIA: фильтрация текстур — производительность", "en": "NVIDIA: texture filtering for performance" },
     "description": {
       "ru": "«Фильтрация текстур — качество» → «Высокая производительность». Прирост небольшой, картинка почти не меняется; в играх с собственными настройками анизотропии решает игра.",
       "en": "Texture filtering - Quality → High performance. A small gain with hardly any visible change; games with their own anisotropic setting still decide for themselves."

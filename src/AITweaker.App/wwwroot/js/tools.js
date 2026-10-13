@@ -65,7 +65,7 @@
                 <label class="field">${t("disp.res")}<select class="input" id="dispRes">${resList.map((m) => { const k = `${m.width}x${m.height}`; return `<option value="${k}" ${k === resKey ? "selected" : ""}>${m.width} × ${m.height} · ${aspect(m.width, m.height)}${m.width === disp.current.width && m.height === disp.current.height ? " · " + t("disp.now") : ""}</option>`; }).join("")}</select></label>
                 <label class="field">${t("disp.hz")}<select class="input" id="dispHz">${hzList.map((h) => `<option value="${h}" ${h === hz ? "selected" : ""}>${h} Hz</option>`).join("")}</select></label>
               </div>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="dispApply">${t("disp.apply")}</button><button class="btn ghost" id="dispGuide">${t("disp.guide")}</button></div>` : `<div class="empty">…</div>`}
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="dispApply">${t("disp.apply")}</button><button class="btn ghost" id="dispCru">${icon("download")}CRU</button><button class="btn ghost" id="dispCruSite">${icon("external")}monitortests.com</button></div>` : `<div class="empty">…</div>`}
           </div>
         </div>
 
@@ -85,7 +85,8 @@
     if ($("#dispDev")) $("#dispDev").onchange = (e) => { st.dev = e.target.value; st.res = st.hz = null; render(); };
     if ($("#dispRes")) $("#dispRes").onchange = (e) => { st.res = e.target.value; st.hz = null; render(); };
     if ($("#dispHz")) $("#dispHz").onchange = (e) => (st.hz = +e.target.value);
-    if ($("#dispGuide")) $("#dispGuide").onclick = () => go("apps", { guide: "cru" });
+    if ($("#dispCru")) $("#dispCru").onclick = () => go("install", { focus: "cru" });
+    if ($("#dispCruSite")) $("#dispCruSite").onclick = () => call("shell.open", { url: "https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU" });
     if ($("#dispApply")) $("#dispApply").onclick = () => applyMode(disp, resKey, +($("#dispHz").value || hz));
     $("#netRun").onclick = async () => {
       const b = busy(t("net.title"));

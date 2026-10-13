@@ -40,6 +40,8 @@ public sealed class GuideSection
     public required LocalizedText Title { get; init; }
     /// <summary>Settings path inside the app, e.g. "User Settings → Game Overlay".</summary>
     public string Path { get; init; } = "";
+    /// <summary>Optional screenshot in wwwroot/guides, shown as is next to the text.</summary>
+    public string? Image { get; init; }
     public List<GuideSetting> Settings { get; init; } = [];
     public LocalizedText? Note { get; init; }
 }

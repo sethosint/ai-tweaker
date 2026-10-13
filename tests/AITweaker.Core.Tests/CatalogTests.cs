@@ -171,6 +171,8 @@ public class CatalogTests
             {
                 Assert.False(string.IsNullOrWhiteSpace(s.Path), $"{g.Id}: section without a path");
                 Assert.NotEmpty(s.Settings);
+                if (s.Image is not null)
+                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", s.Image)), $"missing guide screenshot {s.Image}");
             }
             foreach (var id in g.AutoTweaks)
                 Assert.NotNull(Catalog.Find(id));
