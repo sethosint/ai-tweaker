@@ -93,6 +93,33 @@
     ]
   },
   {
+    "id": "gaming.vrr-windowed",
+    "category": "gaming",
+    "level": 2,
+    "when": "os.win11",
+    "name": { "ru": "Переменная частота (VRR) для оконных игр", "en": "Variable refresh rate for windowed games" },
+    "description": {
+      "ru": "G-SYNC / FreeSync работает и в играх в окне и без рамки, а не только в полноэкранном режиме: меньше разрывов и рывков без лишней задержки V-Sync. На мониторах без VRR ничего не меняет.",
+      "en": "G-SYNC / FreeSync also works in windowed and borderless games, not only fullscreen: less tearing and stutter without V-Sync latency. Does nothing on monitors without VRR."
+    },
+    "actions": [
+      { "type": "directx", "key": "VRROptimizeEnable", "value": "1" }
+    ]
+  },
+  {
+    "id": "gaming.audio-ducking.off",
+    "category": "gaming",
+    "level": 1,
+    "name": { "ru": "Не приглушать игру во время звонков", "en": "Don't turn the game down during calls" },
+    "description": {
+      "ru": "Windows по умолчанию убавляет все остальные звуки на 80%, когда считает, что идёт звонок (Discord, Telegram) — и игру становится не слышно. После этого громкость не меняется.",
+      "en": "By default Windows turns every other sound down by 80% when it thinks a call is going on (Discord, Telegram), and the game becomes hard to hear. Afterwards volume stays as it is."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Multimedia\\Audio", "name": "UserDuckingPreference", "kind": "dword", "value": 3 }
+    ]
+  },
+  {
     "id": "gaming.mmcss",
     "category": "gaming",
     "level": 2,
