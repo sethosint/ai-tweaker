@@ -430,6 +430,27 @@
             "value": "ON"
           }
         ]
+      },
+      {
+        "title": {
+          "ru": "Расширенные",
+          "en": "Advanced"
+        },
+        "path": "User Settings → Advanced",
+        "settings": [
+          {
+            "name": "Developer Mode",
+            "value": "ON",
+            "note": {
+              "ru": "В меню по правому клику появляется «Копировать ID» — пригодится для ботов, жалоб и поддержки.",
+              "en": "Adds Copy ID to right-click menus — handy for bots, reports and support."
+            }
+          },
+          {
+            "name": "Application Test Mode",
+            "value": "OFF"
+          }
+        ]
       }
     ]
   },
