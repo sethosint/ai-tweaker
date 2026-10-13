@@ -6,6 +6,11 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Publish a release with this new tag (e.g. v1.0.0); empty = just build"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -54,10 +59,13 @@ jobs:
           path: publish/AITweaker.exe
           if-no-files-found: error
       - name: Attach to GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
+        # a pushed v* tag, or a manual run with a tag name (the tag is created on this commit)
+        if: startsWith(github.ref, 'refs/tags/v') || startsWith(inputs.release, 'v')
         uses: softprops/action-gh-release@v2
         with:
-          name: AI Tweaker ${{ github.ref_name }}
+          tag_name: ${{ inputs.release || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: AI Tweaker ${{ inputs.release || github.ref_name }}
           body_path: docs/RELEASE_NOTES.md
           files: publish/AITweaker.exe
           make_latest: true
