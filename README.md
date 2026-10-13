@@ -2,21 +2,23 @@
 
 Настройка Windows 11 под ваш компьютер. Программа сама определяет железо — процессор (Intel/AMD, гибридные P/E-ядра, X3D), видеокарту, память, диски, сеть, монитор, ноутбук или ПК — и применяет то, что подходит именно этой системе: меньше задержка ввода и кадра, ровнее пинг, больше FPS. Всё, что отключает нужное, спрашивается отдельно. Всё обратимо.
 
-![Пульт](docs/images/overview-day.webp)
+![Пульт](docs/images/overview-night.webp)
 
 <details><summary>Ещё скриншоты</summary>
 
-| Ночная смена | Чем вы пользуетесь? |
+| Дневная смена | Применение твиков |
 |---|---|
-| ![](docs/images/overview-night.webp) | ![](docs/images/wizard.webp) |
+| ![](docs/images/overview-day.webp) | ![](docs/images/apply.webp) |
+| **Драйвер NVIDIA и настройки панели** | **Переустановка без флешки** |
+| ![](docs/images/drivers-nvidia.webp) | ![](docs/images/reinstall.webp) |
+| **NVIDIA App: что и где выставить** | **Discord: окно настроек нарисовано рядом** |
+| ![](docs/images/guide-nvidia-app.webp) | ![](docs/images/guide-discord.webp) |
+| **Каталог твиков** | **Чем вы пользуетесь?** |
+| ![](docs/images/tweaks.webp) | ![](docs/images/wizard.webp) |
 | **Установка программ** | **Инструменты: сеть, DNS, разрешение экрана** |
 | ![](docs/images/install.webp) | ![](docs/images/tools.webp) |
-| **Службы Windows** | **Подтверждение важного** |
-| ![](docs/images/services.webp) | ![](docs/images/confirm.webp) |
-| **Образ, флешка и плейбук AME** | **Гайд: растянутое разрешение** |
-| ![](docs/images/image.webp) | ![](docs/images/guide-cru.webp) |
-| **Окно перезагрузки** | |
-| ![](docs/images/restart.webp) | |
+| **Службы Windows** | |
+| ![](docs/images/services.webp) | |
 
 </details>
 
