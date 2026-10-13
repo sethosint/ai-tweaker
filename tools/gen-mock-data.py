@@ -55,6 +55,8 @@ def describe(a):
         return "display -> max refresh rate"
     if t == "wallpaper":
         return "wallpaper[lock] -> AI Tweaker lock screen" if a.get("target") == "lock" else f"wallpaper[desktop] -> {a.get('variant', 'black')}"
+    if t == "file":
+        return f"file {a['path']}: " + ", ".join(f"{k}={json.dumps(v)}" for k, v in a["set"].items())
     return t
 
 

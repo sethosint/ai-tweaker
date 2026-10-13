@@ -17,7 +17,7 @@
     (S.features || []).forEach((f) => f.tweaks.forEach((id) => feats.set(id, f)));
     const asks = sel.filter((id) => App.questionFor(S.byId[id], feats)).length;
     const applied = items.filter((i) => S.status[i.id] === "applied").length;
-    const manual = App.manualList();
+    const man = App.manualLeft();
 
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div></div>
@@ -45,13 +45,14 @@
           <div class="gm-d">${t("gm.cardD")}</div>
           <button class="btn ${S.gameMode ? "danger" : "primary"}" id="gmCard">${S.gameMode ? t("gm.stop") : t("gm.start")}</button>
         </div>
-        <div class="man-card">
-          <div class="man-h">${icon("hand")}<div><b>${t("man.title")}</b><span>${t("man.desc")}</span></div></div>
-          <div class="man-list">${manual.map((m, i) => html`<div class="man-row"><span class="man-n">${String(i + 1).padStart(2, "0")}</span>
-            <div><div class="man-t">${t("man." + m.id)}</div><div class="man-d">${t("man." + m.id + "D")}</div></div>
-            ${m.go || m.url ? `<button class="btn sm ghost" data-man="${i}">${t(m.url ? "man.open" : "man.go")}${icon(m.url ? "external" : "arrow")}</button>` : "<span></span>"}</div>`).join("")}</div>
+        <div class="mt-card">
+          <div class="gm-ico">${icon("manual")}</div>
+          <div class="gm-t">${t("man.title")}<span class="chip ${man.left ? "warn" : "ok"}">${man.left ? t("man.leftN").replace("{n}", man.left) : t("man.allDone")}</span></div>
+          <div class="gm-d">${t("man.teaser")}</div>
+          <button class="btn ghost" id="toManual">${t("man.openTab")}${icon("arrow")}</button>
         </div>
       </div>
+      <div id="tuneGames">${App.gamesPanel()}</div>
       <div class="tune-list-h"><div><b>${t("tune.listT")}</b><span>${t("tune.listD")}</span></div>
         <div class="actions"><button class="btn ghost sm" id="selRec">${t("tune.selectRec")}</button><button class="btn ghost sm" id="selNone">${t("tune.selectNone")}</button></div></div>
       ${groups.map(({ c, list }) => html`<div class="cat-group">
@@ -73,10 +74,12 @@
     $("#gameSetup").onclick = run;
     $("#applyPlan").onclick = run;
     $("#gmCard").onclick = () => App.gameMode();
-    v.querySelectorAll("[data-man]").forEach((b) => (b.onclick = () => {
-      const m = manual[+b.dataset.man];
-      if (m.url) call("shell.open", { url: m.url }).catch(() => {}); else m.go();
-    }));
+    $("#toManual").onclick = () => go("manual");
+    const gamesBox = $("#tuneGames");
+    const drawGames = () => { gamesBox.innerHTML = App.gamesPanel(); App.bindGames(gamesBox, drawGames); };
+    App.bindGames(gamesBox, drawGames);
+    if (!S.games) App.loadGames().then(() => { if (S.view === "tune" && document.body.contains(gamesBox)) drawGames(); });
+    if (!S.bios) call("bios.list", {}, { silent: true }).then((b) => { S.bios = b; if (S.view === "tune") V.tune(); }).catch(() => {});
     v.querySelectorAll("input[data-id]").forEach((cb) => (cb.onchange = () => { cb.checked ? S.selected.add(cb.dataset.id) : S.selected.delete(cb.dataset.id); V.tune(); }));
     $("#selRec").onclick = async () => { await App.buildPlan(); V.tune(); };
     $("#selNone").onclick = () => { S.selected.clear(); V.tune(); };
@@ -322,26 +325,45 @@
   // Brand colour of each program's badge in the list.
   const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff" };
 
+  const autoOf = (g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "n/a");
+  const pendingOf = (g) => autoOf(g).filter((id) => S.status[id] !== "applied");
+  const manualN = (g) => g.sections.reduce((a, s) => a + s.settings.length, 0);
+
   V.apps = async (opts = {}) => {
     const v = $("#v-apps");
     if (needScan(v)) return;
     if (!S.guides) S.guides = await call("guides.list");
     const g = opts.guide && S.guides.find((x) => x.id === opts.guide);
     if (!g) {
+      const installed = S.guides.filter((x) => x.installed);
+      const allPending = [...new Set(installed.flatMap(pendingOf))];
       v.innerHTML = html`
-        <div class="page-h"><div><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div></div>
-        <div class="cards">${S.guides.map((x) => html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
+        <div class="page-h"><div><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div>
+          <div class="actions">${allPending.length ? `<button class="btn primary" id="appsAuto">${t("apps.autoAll")} (${allPending.length})</button>` : `<button class="btn done" disabled>${icon("check")}${t("apps.autoAllDone")}</button>`}</div></div>
+        <div class="apps-legend"><span><i class="lg-auto"></i>${t("apps.legendAuto")}</span><span><i class="lg-man"></i>${t("apps.legendManual")}</span></div>
+        <div class="cards">${S.guides.map((x) => { const a = autoOf(x), pend = pendingOf(x); return html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
           <div class="cn"><span class="app-ico" style="--app-c:${BRAND[x.id] || "var(--accent)"}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
-          <div class="cf"><span class="chip ${x.installed ? "ok" : ""}">${x.installed ? t("apps.installed") : t("apps.notInstalled")}</span><span class="chip">${x.sections.reduce((a, s) => a + s.settings.length, 0)} ${t("apps.settingsN")}</span>${(x.autoTweaks || []).length ? `<span class="chip info">${t("apps.hasAuto")}</span>` : ""}</div>
-        </div>`).join("")}</div>`;
+          <div class="cf">${x.installed ? "" : `<span class="chip">${t("apps.notInstalled")}</span>`}
+            ${a.length ? `<span class="chip ${pend.length ? "info" : "ok"}">${t("apps.autoN")} ${a.length - pend.length}/${a.length}</span>` : ""}
+            <span class="chip">${t("apps.manualN")} ${manualN(x)}</span></div>
+        </div>`; }).join("")}</div>`;
       v.querySelectorAll("[data-g]").forEach((c) => (c.onclick = () => V.apps({ guide: c.dataset.g })));
+      if ($("#appsAuto")) $("#appsAuto").onclick = () => App.apply(allPending);
       return;
     }
-    const auto = (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "applied" && S.status[id] !== "n/a");
+    const auto = autoOf(g), pend = pendingOf(g);
     v.innerHTML = html`
       <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
-        <div class="actions"><button class="btn ghost sm" id="gBack">${t("apps.back")}</button>${auto.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${auto.length})</button>` : ""}</div></div>
+        <div class="actions"><button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
+      ${auto.length ? html`<div class="app-block auto">
+        <div class="ab-h">${icon("tune")}<div><b>${t("apps.autoT")}</b><span>${t("apps.autoD")}</span></div>
+          ${pend.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${pend.length})</button>` : `<span class="chip ok">${icon("check")}${t("apps.autoDone")}</span>`}</div>
+        ${auto.map((id) => { const tw = S.byId[id]; return html`<div class="ab-row"><div><div class="tt">${esc(L(tw.name))}</div><div class="td">${esc(L(tw.description))}</div></div>${statusChip(id)}</div>`; }).join("")}
+      </div>` : ""}
+      <div class="app-block man">
+        <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t("apps.manualD").replaceAll("{app}", esc(g.name))}</span></div></div>
+      </div>
       ${g.sections.map((s, si) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
         <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
           ${s.settings.map((st) => { const vv = String(st.value); const cls = vv === "ON" ? "on" : vv === "OFF" ? "off" : ""; return html`<div class="setting"><div><div class="sn">${esc(st.name)}</div>${st.note ? `<div class="snote">${esc(L(st.note))}</div>` : ""}</div><span class="val ${cls}" title="${esc(vv)}">${esc(vv)}</span></div>`; }).join("")}
@@ -349,33 +371,7 @@
         ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" loading="lazy"></div>` : ""}
       </div>`).join("")}`;
     $("#gBack").onclick = () => V.apps();
-    if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(auto);
-  };
-
-  // ------------------------------------------------------------------ [07] BIOS
-
-  const onOff = (v) => (v ? t("bios.on") : t("bios.off"));
-
-  V.bios = async () => {
-    const v = $("#v-bios");
-    if (needScan(v)) return;
-    if (!S.bios) S.bios = await call("bios.list");
-    const b = S.bios;
-    v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("bios.title")}</h1><p>${t("bios.desc")}</p></div>
-        <div class="actions"><button class="btn danger" id="toBios">${icon("power")}${t("bios.reboot")}</button></div></div>
-      <div class="grid cols-3" style="margin-bottom:14px">
-        <div class="panel"><div class="panel-h">${esc(b.board.manufacturer)}</div><div class="panel-b kv"><b>${t("bios.k.model")}</b><span>${esc(b.board.product)}</span><b>BIOS</b><span>${esc(b.board.biosVersion)} · ${fmtDate(b.board.biosDate)}</span></div></div>
-        <div class="panel"><div class="panel-h">${esc(b.cpu.name.split(" ").slice(0, 4).join(" "))}</div><div class="panel-b kv"><b>${t("bios.k.microcode")}</b><span>${esc(b.cpu.microcode || "—")}</span><b>${t("bios.k.ram")}</b><span>${esc(b.ram.type)} ${b.ram.speed} / ${b.ram.rated} MHz</span></div></div>
-        <div class="panel"><div class="panel-h">${t("bios.k.security")}</div><div class="panel-b kv"><b>Secure Boot</b><span>${onOff(b.security.secureBoot)}</span><b>TPM</b><span>${onOff(b.security.tpm)}</span><b>VBS / HVCI</b><span>${onOff(b.security.vbsRunning)} / ${onOff(b.security.hvciRunning)}</span></div></div>
-      </div>
-      ${b.advice.map((a) => html`<div class="trow">
-        <span class="led ${a.status === "ok" ? "" : a.status === "fix" ? "crit" : "warn"}" style="margin-top:5px"></span>
-        <div><div class="tt">${esc(L(a.title))} <span class="chip ${a.priority === "high" ? "crit" : a.priority === "medium" ? "warn" : ""}">${t("bios.p." + a.priority)}</span></div>
-          <div class="td">${esc(L(a.detail))}</div>
-          <div class="tm"><code style="color:var(--accent)">${esc(a.path)}</code></div></div>
-        <div class="tr"><span class="val">${esc(a.value)}</span><span class="status ${a.status === "ok" ? "applied" : a.status === "fix" ? "partial" : ""}">${t("bios." + a.status)}</span></div></div>`).join("")}`;
-    $("#toBios").onclick = async () => { if (await confirmBox(t("bios.reboot"), t("bios.rebootQ"), t("bios.reboot"), "danger", true)) call("bios.reboot"); };
+    if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(pend);
   };
 
   // ------------------------------------------------------------------ [09] image (own AI Tweaker image + USB)

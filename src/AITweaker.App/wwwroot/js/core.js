@@ -161,10 +161,10 @@
 
   const NAV = [
     ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["services", "07"],
-    ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
+    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OPS", tune: "GAME SETUP", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const CODES = { dashboard: "OPS", tune: "GAME SETUP", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APP SETTINGS", manual: "BY HAND", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
   const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
@@ -200,6 +200,8 @@
   }
 
   window.go = (view, opts = {}) => {
+    // BIOS now lives in the "By hand" tab, as its first section
+    if (view === "bios") { view = "manual"; opts = { ...opts, section: "bios" }; }
     const changed = S.view !== view || !$(".view.on");
     S.view = view;
     $$(".nav-item").forEach((n) => n.classList.toggle("on", n.dataset.view === view));
@@ -343,7 +345,7 @@
     S.catalog.forEach((tw) => idx.push({ type: "tweak", title: L(tw.name), desc: tw.id + " · " + L(tw.description), keys: tw.id + " " + tw.name.ru + " " + tw.name.en + " " + tw.description.ru + " " + tw.description.en, go: () => go("tweaks", { focus: tw.id }) }));
     ((window.MOCK_DATA && MOCK_DATA.guides) || S.guides || []).forEach((g) => g.sections.forEach((sec) => sec.settings.forEach((st) =>
       idx.push({ type: "setting", title: `${g.name}: ${st.name}`, desc: `${L(sec.title)} → ${st.value}`, keys: `${g.name} ${st.name} ${sec.title.ru} ${sec.title.en} ${sec.path}`, go: () => go("apps", { guide: g.id }) }))));
-    ((S.bios && S.bios.advice) || (window.MOCK_DATA && MOCK_DATA.bios) || []).forEach((b) => idx.push({ type: "bios", title: L(b.title), desc: b.value, keys: b.title.ru + " " + b.title.en + " " + b.value, go: () => go("bios") }));
+    ((S.bios && S.bios.advice) || (window.MOCK_DATA && MOCK_DATA.bios) || []).forEach((b) => idx.push({ type: "bios", title: L(b.title), desc: b.value, keys: b.title.ru + " " + b.title.en + " " + b.value, go: () => go("manual", { section: "bios" }) }));
     ((window.MOCK_DATA && MOCK_DATA.apps) || []).forEach((a) => idx.push({ type: "app", title: L(a.name), desc: a.package, keys: a.package + " " + a.name.ru + " " + a.name.en, go: () => go("debloat") }));
     return idx;
   }

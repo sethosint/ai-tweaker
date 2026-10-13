@@ -128,6 +128,9 @@
       try { await call("appx.remove", { names: res.remove }); } catch { /* toast */ } finally { off(); b.done(); }
       S.appx = null;
     }
+    // Every game found gets high CPU priority (and the discrete GPU where there are two) — nothing to ask about.
+    const games = await App.loadGames();
+    if (games.games.length) { try { await call("games.all", {}, { silent: true }); await App.loadGames(true); } catch { /* the tweaks still run */ } }
     await App.apply(ids.filter((id) => !res.kept.has(id)), { restorePoint: opts.restorePoint ?? S.init.settings.createRestorePoint, preconfirmed: res.off });
   };
 
@@ -192,25 +195,46 @@
     toast(t("gm.started").replace("{s}", res.services.length).replace("{a}", res.apps.length).replace("{m}", res.freedMb), "ok", 7000);
   };
 
-  // ------------------------------------------------------------------ by hand
+  // ------------------------------------------------------------------ games
 
-  /** What only the user can do (BIOS, in-game settings, the NVIDIA/AMD apps, hardware), each with a way to get there. */
-  App.manualList = () => {
-    const f = (S.scan && S.scan.facts) || {};
-    return [
-      { id: "xmp", go: () => go("bios") },
-      { id: "rebar", go: () => go("bios") },
-      f["gpu.nvidia"] ? { id: "nvapp", go: () => go("apps", { guide: "nvidia-app" }) } : null,
-      f["gpu.amd"] ? { id: "amdapp", go: () => go("apps", { guide: "amd-software" }) } : null,
-      { id: "reflex" },
-      { id: "cap" },
-      { id: "monitor", go: () => go("tools") },
-      { id: "mouse" },
-      { id: "overlays", go: () => go("apps", { guide: "discord" }) },
-      f["system.laptop"] && f["gpu.discrete"] ? { id: "gpupick", go: () => go("apps", { guide: "windows-graphics" }) } : null,
-      { id: "dnd", url: "ms-settings:notifications" },
-      { id: "update", url: "ms-settings:windowsupdate" },
-      { id: "defender", url: "windowsdefender://threatsettings" },
-    ].filter(Boolean);
+  /** Detected Steam/Epic games and hand-added ones, each with high CPU priority and (with two GPUs) the discrete GPU. */
+  App.loadGames = async (force) => {
+    if (!S.games || force) { try { S.games = await call("games.list", {}, { silent: true }); } catch { S.games = { twoGpus: false, games: [] }; } }
+    return S.games;
+  };
+
+  App.gamesPanel = () => {
+    const g = S.games;
+    if (!g) return `<div class="games"><div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t("games.loading")}</span></div></div></div>`;
+    const sw = (on, exe, key) => `<button class="gp-sw" data-sw="${key}" data-exe="${esc(exe)}" aria-pressed="${on}"><span class="switch ${on ? "on" : ""}"></span>${t("games." + key)}</button>`;
+    const pending = g.games.filter((x) => !x.priority || (g.twoGpus && !x.gpu)).length;
+    return html`<div class="games">
+      <div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t(g.twoGpus ? "games.descGpu" : "games.desc").replace("{n}", g.games.length)}</span></div>
+        <div class="actions"><button class="btn ghost sm" id="gpAdd">${t("games.add")}</button>${g.games.length ? `<button class="btn ${pending ? "primary" : "ghost"} sm" id="gpAll" ${pending ? "" : "disabled"}>${pending ? t("games.all") : t("games.allDone")}</button>` : ""}</div></div>
+      ${g.games.length ? `<div class="gp-list">${g.games.map((x) => html`<div class="gp-row">
+        <div class="gp-n"><b>${esc(x.name)}</b><span class="chip">${t("games.src." + x.source)}</span><small title="${esc(x.exe)}">${esc(x.exe)}</small></div>
+        <div class="gp-ctl">${sw(x.priority, x.exe, "priority")}${g.twoGpus ? sw(x.gpu, x.exe, "gpu") : ""}${x.added ? `<button class="icon-btn sm" data-rm="${esc(x.exe)}" title="${t("games.remove")}">${icon("x")}</button>` : ""}</div>
+      </div>`).join("")}</div>` : `<div class="gp-empty">${t("games.none")}</div>`}
+    </div>`;
+  };
+
+  App.bindGames = (root, rerender) => {
+    const q = (sel) => root.querySelector(sel);
+    root.querySelectorAll("[data-sw]").forEach((b) => (b.onclick = async () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      try { await call("games.set", { exe: b.dataset.exe, [b.dataset.sw]: on }); } catch { return; }
+      const game = S.games.games.find((x) => x.exe === b.dataset.exe);
+      if (game) game[b.dataset.sw] = on;
+      rerender();
+    }));
+    root.querySelectorAll("[data-rm]").forEach((b) => (b.onclick = async () => { try { await call("games.remove", { exe: b.dataset.rm }); } catch { return; } await App.loadGames(true); rerender(); }));
+    if (q("#gpAdd")) q("#gpAdd").onclick = async () => { let ok = false; try { ok = await call("games.add"); } catch { return; } if (ok) { await App.loadGames(true); rerender(); } };
+    if (q("#gpAll")) q("#gpAll").onclick = async () => {
+      let n = 0;
+      try { n = await call("games.all"); } catch { return; }
+      toast(t("games.done").replace("{n}", n), "ok");
+      await App.loadGames(true);
+      rerender();
+    };
   };
 })();

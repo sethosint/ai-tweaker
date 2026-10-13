@@ -24,6 +24,8 @@
     services: '<rect x="4" y="4.5" width="16" height="6" rx="1"/><rect x="4" y="13.5" width="16" height="6" rx="1"/><path d="M7.5 7.5h.01M7.5 16.5h.01M11 7.5h5M11 16.5h5"/>',
     drivers: '<rect x="7" y="7" width="10" height="10" rx="1"/><path d="M10 3.5V7M14 3.5V7M10 17v3.5M14 17v3.5M3.5 10H7M3.5 14H7M17 10h3.5M17 14h3.5"/>',
     apps: '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
+    manual: '<path d="M8 13V6.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5V5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M14 11.5V7a1.5 1.5 0 0 1 3 0v7a6 6 0 0 1-6 6h-.6a5 5 0 0 1-3.9-1.9L4 15a1.5 1.5 0 0 1 2.3-1.9L8 15"/>',
+    monitor: '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.2"/><path d="M9 20h6M12 16v4"/>',
     bios: '<rect x="3.5" y="5" width="17" height="14" rx="1"/><path d="M3.5 9h17"/><path d="M7 13h4M7 16h7"/>',
     image: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 8 8"/>',
     ai: '<path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3"/><circle cx="12" cy="12" r="4.5"/>',

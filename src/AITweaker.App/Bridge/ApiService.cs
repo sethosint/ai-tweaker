@@ -130,6 +130,11 @@ public sealed class ApiService
         "clean.analyze" => await Task.Run(Cleaner.Analyze),
         "clean.run" => await Exclusive(() => Cleaner.CleanAsync(Ids(p) ?? [])),
         "memory.purge" => MemoryTools.PurgeStandby(),
+        "games.list" => await Task.Run(async () => GameProfiles.List(await ProfileAsync())),
+        "games.set" => GameProfiles.Set(Str(p, "exe") ?? "", Bool(p, "priority"), Bool(p, "gpu")),
+        "games.all" => GameProfiles.SetAll(await ProfileAsync()),
+        "games.add" => await _onUi(PickGame) is string exe && GameProfiles.Add(exe),
+        "games.remove" => GameProfiles.Remove(Str(p, "exe") ?? ""),
         "gamemode.state" => GameSession.Describe(await ProfileAsync()),
         "gamemode.start" => await Exclusive(async () => await GameSession.StartAsync(Ids(p, "groups") ?? [], await ProfileAsync())),
         "gamemode.stop" => await GameSession.StopAsync(),
@@ -454,6 +459,17 @@ public sealed class ApiService
     }
 
     // ------------------------------------------------------------------ image
+
+    private static object? PickGame()
+    {
+        using var dlg = new OpenFileDialog
+        {
+            Filter = "Game (*.exe)|*.exe",
+            Title = SettingsStore.Current.Language == "en" ? "Choose the game's .exe" : "Выберите .exe игры",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+        };
+        return dlg.ShowDialog() == DialogResult.OK ? dlg.FileName : null;
+    }
 
     private static object? PickIso()
     {

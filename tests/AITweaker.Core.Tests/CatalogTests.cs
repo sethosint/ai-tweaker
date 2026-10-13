@@ -143,6 +143,13 @@ public class CatalogTests
                 case DeviceAction d:
                     Assert.All(d.Match, m => Assert.EndsWith("\\", m));
                     break;
+                case FileSettingAction f:
+                    // per-user program settings: always under the user's profile, never a system path
+                    Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", f.Path);
+                    Assert.Contains(f.Format, new[] { "json", "prefs" });
+                    Assert.NotEmpty(f.Set);
+                    Assert.True(t.When is not null && t.When.StartsWith("app.", StringComparison.Ordinal), $"{t.Id}: a program's settings file only when the program is installed");
+                    break;
             }
         }
     }

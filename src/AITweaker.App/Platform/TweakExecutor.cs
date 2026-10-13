@@ -115,6 +115,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         DisplayRefreshAction a => DisplayOps.ApplyAsync(a, ctx),
         WallpaperAction a => WallpaperOps.ApplyAsync(a, ctx),
         NvidiaProfileAction a => NvidiaOps.ApplyAsync(a, ctx),
+        FileSettingAction a => FileSettingOps.ApplyAsync(a, ctx),
         _ => throw new NotSupportedException(action.GetType().Name),
     };
 
@@ -184,6 +185,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         "display" => DisplayOps.RevertAsync(r),
         "wallpaper" => WallpaperOps.RevertAsync(r),
         "nvidia" => NvidiaOps.RevertAsync(r),
+        "file" => FileSettingOps.RevertAsync(r),
         _ => Task.CompletedTask, // "info": irreversible (removed apps)
     };
 
@@ -239,6 +241,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         DirectXSettingAction a => DirectXOps.Check(a),
         DisplayRefreshAction => DisplayOps.Check(),
         WallpaperAction a => WallpaperOps.Check(a),
+        FileSettingAction a => FileSettingOps.Check(a),
         _ => null,
     };
 

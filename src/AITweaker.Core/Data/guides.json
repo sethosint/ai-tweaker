@@ -8,7 +8,7 @@
       "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, приватность данных.",
       "en": "Overlay off, no autostart, minimal animations and background activity, data privacy."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": ["apps.discord.startup", "apps.autostart.cleanup"],
     "sections": [
       {
         "title": { "ru": "Игровой оверлей", "en": "Game Overlay" },
@@ -231,6 +231,7 @@
       "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
       "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
+    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "privacy.nvidia-telemetry"],
     "sections": [
       {
         "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
@@ -478,7 +479,7 @@
       "ru": "Без автозапуска, видео-фонов и оверлеев; высокое качество без автоподстройки.",
       "en": "No autostart, video canvases or overlays; high quality without auto-adjust."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": ["apps.spotify.startup", "apps.autostart.cleanup"],
     "sections": [
       {
         "title": { "ru": "Качество и библиотека", "en": "Quality & library" },
@@ -609,7 +610,7 @@
       "ru": "Системные настройки дисплея и графики.",
       "en": "System display and graphics settings."
     },
-    "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations"],
+    "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations", "gaming.vrr-windowed"],
     "sections": [
       {
         "title": { "ru": "Дисплей", "en": "Display" },
