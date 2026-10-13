@@ -1202,6 +1202,27 @@
       },
       {
         "title": {
+          "ru": "Расширенные",
+          "en": "Advanced"
+        },
+        "path": "NVIDIA App → System → Advanced",
+        "settings": [
+          {
+            "name": "Debug Mode",
+            "value": "OFF",
+            "note": {
+              "ru": "Иначе снимается даже заводской разгон видеокарты — минус FPS до перезагрузки.",
+              "en": "Otherwise even the card's factory overclock is removed — fewer FPS until a restart."
+            }
+          },
+          {
+            "name": "Manage GPU Performance Counters",
+            "value": "Admin users only (recommended)"
+          }
+        ]
+      },
+      {
+        "title": {
           "ru": "Статистика",
           "en": "Statistics"
         },
