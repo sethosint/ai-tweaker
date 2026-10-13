@@ -57,6 +57,7 @@ public sealed class SystemProfile
             ["gpu.intel"] = Gpus.Any(g => g.Vendor == "Intel"),
             ["gpu.discrete"] = Gpus.Any(g => g.IsDiscrete),
             ["gpu.hybrid"] = Gpus.Any(g => g.IsDiscrete) && Gpus.Any(g => !g.IsDiscrete),
+            ["gpu.av1"] = Gpus.Any(g => g.EncodesAv1),
             ["gpu.vendor"] = PrimaryGpu?.Vendor,
             ["gpu.name"] = PrimaryGpu?.Name,
 
@@ -158,6 +159,15 @@ public sealed class GpuInfo
     public DateTime? DriverDate { get; set; }
     public long VramMb { get; set; }
     public bool IsDiscrete { get; set; }
+
+    /// <summary>Hardware AV1 encoder: NVIDIA RTX 40/50 (Ada, Blackwell), AMD RX 7000/9000, Intel Arc.</summary>
+    public bool EncodesAv1 => Vendor switch
+    {
+        "NVIDIA" => Regex.IsMatch(Name, @"RTX\s*(40|50)\d{2}|RTX\s*PRO|\bAda\b|Blackwell", RegexOptions.IgnoreCase),
+        "AMD" => Regex.IsMatch(Name, @"RX\s*(7|9)\d{3}", RegexOptions.IgnoreCase),
+        "Intel" => Name.Contains("Arc", StringComparison.OrdinalIgnoreCase),
+        _ => false,
+    };
 }
 
 public sealed class MemoryModule

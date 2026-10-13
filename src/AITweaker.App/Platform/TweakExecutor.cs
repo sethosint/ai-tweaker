@@ -93,7 +93,7 @@ public sealed class TweakExecutor(SystemProfile profile)
             AppLog.Ok(t.Id, $"done in {sw.ElapsedMilliseconds} ms");
             return new TweakResult(t.Id, true, null);
         }
-        return new TweakResult(t.Id, false, string.Join("; ", errors));
+        return new TweakResult(t.Id, false, string.Join("; ", errors.Distinct()));
     }
 
     private static Task ApplyActionAsync(TweakAction action, ExecContext ctx) => action switch

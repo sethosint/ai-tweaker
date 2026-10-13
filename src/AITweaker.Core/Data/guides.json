@@ -5,124 +5,384 @@
     "icon": "discord",
     "detect": "app.discord",
     "summary": {
-      "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, приватность данных.",
-      "en": "Overlay off, no autostart, minimal animations and background activity, data privacy."
+      "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, данные не используются для рекламы, уведомления только о главном.",
+      "en": "Overlay off, no autostart, minimal animations and background activity, data not used for ads, notifications only for what matters."
     },
-    "autoTweaks": ["apps.discord.startup", "apps.autostart.cleanup"],
+    "autoTweaks": [
+      "apps.discord.startup",
+      "apps.autostart.cleanup"
+    ],
     "sections": [
       {
-        "title": { "ru": "Игровой оверлей", "en": "Game Overlay" },
+        "title": {
+          "ru": "Игровой оверлей",
+          "en": "Game Overlay"
+        },
         "path": "User Settings → Game Overlay",
         "settings": [
-          { "name": "Enable Overlay", "value": "OFF" },
-          { "name": "Enable Legacy Overlay", "value": "OFF" },
-          { "name": "Enable overlay clickable regions", "value": "OFF" }
+          {
+            "name": "Enable Overlay",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable Legacy Overlay",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable overlay clickable regions",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Система", "en": "System" },
+        "title": {
+          "ru": "Система",
+          "en": "System"
+        },
         "path": "User Settings → System → General",
         "settings": [
-          { "name": "Automatically open Discord when your computer starts up", "value": "OFF" },
-          { "name": "Start Discord minimized", "value": "OFF" },
-          { "name": "Minimize Discord to System Tray", "value": "ON" },
-          { "name": "Enable Hardware Acceleration", "value": "ON", "note": { "ru": "Выключайте, только если видите артефакты или просадки FPS в играх.", "en": "Turn off only if you see glitches or FPS drops in games." } }
+          {
+            "name": "Automatically open Discord when your computer starts up",
+            "value": "OFF"
+          },
+          {
+            "name": "Start Discord minimized",
+            "value": "OFF"
+          },
+          {
+            "name": "Minimize Discord to System Tray",
+            "value": "ON"
+          },
+          {
+            "name": "Enable Hardware Acceleration",
+            "value": "ON",
+            "note": {
+              "ru": "Выключайте, только если видите артефакты или просадки FPS в играх.",
+              "en": "Turn off only if you see glitches or FPS drops in games."
+            }
+          }
         ]
       },
       {
-        "title": { "ru": "Анимации (Accessibility → Reduced Motion)", "en": "Animations (Accessibility → Reduced Motion)" },
+        "title": {
+          "ru": "Анимации (Accessibility → Reduced Motion)",
+          "en": "Animations (Accessibility → Reduced Motion)"
+        },
         "path": "User Settings → Accessibility → Reduced Motion",
         "settings": [
-          { "name": "Sync with computer setting", "value": "ON" },
-          { "name": "Play GIFs when Discord is focused", "value": "OFF" },
-          { "name": "Play animated emoji", "value": "OFF" },
-          { "name": "Play sticker animations", "value": "Never animate" }
+          {
+            "name": "Sync with computer setting",
+            "value": "ON"
+          },
+          {
+            "name": "Play GIFs when Discord is focused",
+            "value": "OFF"
+          },
+          {
+            "name": "Play animated emoji",
+            "value": "OFF"
+          },
+          {
+            "name": "Play sticker animations",
+            "value": "Never animate"
+          }
         ]
       },
       {
-        "title": { "ru": "Поле ввода и поиск", "en": "Chat box & search" },
+        "title": {
+          "ru": "Поле ввода и поиск",
+          "en": "Chat box & search"
+        },
         "path": "User Settings → Appearance → Chat Box / Search",
         "settings": [
-          { "name": "Preview emoji, mentions, and markdown syntax as you type", "value": "ON" },
-          { "name": "Automatically convert emoticons in your messages to emoji", "value": "OFF" },
-          { "name": "Show stickers in autocomplete results", "value": "OFF" },
-          { "name": "Show games in autocomplete results", "value": "OFF" },
-          { "name": "Show send message button", "value": "OFF" },
-          { "name": "By default, searching in DMs…", "value": "Searches only in the selected DM" }
+          {
+            "name": "Preview emoji, mentions, and markdown syntax as you type",
+            "value": "ON"
+          },
+          {
+            "name": "Automatically convert emoticons in your messages to emoji",
+            "value": "OFF"
+          },
+          {
+            "name": "Show stickers in autocomplete results",
+            "value": "OFF"
+          },
+          {
+            "name": "Show games in autocomplete results",
+            "value": "OFF"
+          },
+          {
+            "name": "Show send message button",
+            "value": "OFF"
+          },
+          {
+            "name": "By default, searching in DMs…",
+            "value": "Searches only in the selected DM"
+          }
         ]
       },
       {
-        "title": { "ru": "Голос — расширенные", "en": "Voice — advanced" },
+        "title": {
+          "ru": "Голос — расширенные",
+          "en": "Voice — advanced"
+        },
         "path": "User Settings → Voice & Video → Voice (Show Advanced Voice Settings)",
         "settings": [
-          { "name": "Automatic Gain Control", "value": "ON" },
-          { "name": "Advanced Voice Activity", "value": "ON" },
-          { "name": "Bypass System Audio Input Processing", "value": "ON" },
-          { "name": "No Audio Detected Warning", "value": "ON" },
-          { "name": "Switch Voice Channel Warning", "value": "ON" },
-          { "name": "Attenuation Strength", "value": "0%" },
-          { "name": "When I speak", "value": "OFF" },
-          { "name": "When others speak", "value": "OFF" },
-          { "name": "Quality Of Service", "value": "OFF", "note": { "ru": "Многие роутеры и провайдеры работают с этим флагом хуже — пинг в Discord нестабилен.", "en": "Many routers and ISPs misbehave with this flag — unstable Discord ping." } }
+          {
+            "name": "Automatic Gain Control",
+            "value": "ON"
+          },
+          {
+            "name": "Advanced Voice Activity",
+            "value": "ON"
+          },
+          {
+            "name": "Bypass System Audio Input Processing",
+            "value": "ON"
+          },
+          {
+            "name": "No Audio Detected Warning",
+            "value": "ON"
+          },
+          {
+            "name": "Switch Voice Channel Warning",
+            "value": "ON"
+          },
+          {
+            "name": "Attenuation Strength",
+            "value": "0%"
+          },
+          {
+            "name": "When I speak",
+            "value": "OFF"
+          },
+          {
+            "name": "When others speak",
+            "value": "OFF"
+          },
+          {
+            "name": "Quality Of Service",
+            "value": "OFF",
+            "note": {
+              "ru": "Многие роутеры и провайдеры работают с этим флагом хуже — пинг в Discord нестабилен.",
+              "en": "Many routers and ISPs misbehave with this flag — unstable Discord ping."
+            }
+          }
         ]
       },
       {
-        "title": { "ru": "Стриминг и звуки", "en": "Streaming & sounds" },
+        "title": {
+          "ru": "Стриминг и звуки",
+          "en": "Streaming & sounds"
+        },
         "path": "User Settings → Voice & Video → Streaming / Sounds",
         "settings": [
-          { "name": "Show Stream Previews", "value": "OFF" },
-          { "name": "Stream Attenuation", "value": "OFF" },
-          { "name": "Use our advanced technology to capture your screen", "value": "ON" },
-          { "name": "Deafen / Undeafen sounds", "value": "ON" }
+          {
+            "name": "Show Stream Previews",
+            "value": "OFF"
+          },
+          {
+            "name": "Stream Attenuation",
+            "value": "OFF"
+          },
+          {
+            "name": "Use our advanced technology to capture your screen",
+            "value": "ON"
+          },
+          {
+            "name": "Deafen / Undeafen sounds",
+            "value": "ON"
+          }
         ]
       },
       {
-        "title": { "ru": "Диагностика (Voice → Advanced)", "en": "Diagnostics (Voice → Advanced)" },
+        "title": {
+          "ru": "Диагностика (Voice → Advanced)",
+          "en": "Diagnostics (Voice → Advanced)"
+        },
         "path": "User Settings → Voice & Video → Advanced (Show Diagnostic Settings)",
         "settings": [
-          { "name": "Soundboard entrance sound", "value": "None" },
-          { "name": "Stream Info Overlay", "value": "OFF" },
-          { "name": "Diagnostic Audio Recording", "value": "OFF" },
-          { "name": "Debug Logging", "value": "OFF" }
+          {
+            "name": "Soundboard entrance sound",
+            "value": "None"
+          },
+          {
+            "name": "Stream Info Overlay",
+            "value": "OFF"
+          },
+          {
+            "name": "Diagnostic Audio Recording",
+            "value": "OFF"
+          },
+          {
+            "name": "Debug Logging",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Уведомления", "en": "Notifications" },
+        "title": {
+          "ru": "Уведомления",
+          "en": "Notifications"
+        },
         "path": "User Settings → Notifications → Overview / Sounds / Badges",
         "settings": [
-          { "name": "Enable Desktop Notifications", "value": "ON" },
-          { "name": "Enable Taskbar Flashing", "value": "ON" },
-          { "name": "Notify me when… (streaming, anniversaries, friends online, events, profile updates)", "value": "OFF" },
-          { "name": "Someone reacts to my messages", "value": "Never" },
-          { "name": "New Message / New Message in current channel", "value": "ON" },
-          { "name": "Enable Unread Message Badge", "value": "ON" }
+          {
+            "name": "Enable Desktop Notifications",
+            "value": "ON"
+          },
+          {
+            "name": "Enable Taskbar Flashing",
+            "value": "ON"
+          },
+          {
+            "name": "Notify me when… people I know start streaming in small servers",
+            "value": "OFF"
+          },
+          {
+            "name": "Notify me when… a friend and I reach a friendship anniversary",
+            "value": "OFF"
+          },
+          {
+            "name": "Notify me when… friends come online",
+            "value": "ON"
+          },
+          {
+            "name": "Notify me when… a server has an upcoming event",
+            "value": "OFF"
+          },
+          {
+            "name": "Notify me when… friends update their profile",
+            "value": "OFF"
+          },
+          {
+            "name": "Someone reacts to my messages",
+            "value": "Never"
+          },
+          {
+            "name": "Sounds → New Message",
+            "value": "ON"
+          },
+          {
+            "name": "Sounds → New Message in the channel I'm currently reading",
+            "value": "OFF"
+          },
+          {
+            "name": "Sounds → Incoming Ring",
+            "value": "ON"
+          },
+          {
+            "name": "Disable All Notification Sounds",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable Unread Message Badge",
+            "value": "ON"
+          }
         ]
       },
       {
-        "title": { "ru": "Почта", "en": "Email" },
+        "title": {
+          "ru": "Почта",
+          "en": "Email"
+        },
         "path": "User Settings → Notifications → Email",
         "settings": [
-          { "name": "Communication / Social / Announcements / Tip / Recommendations Emails", "value": "OFF" }
+          {
+            "name": "Communication / Social / Announcements and Update / Tip / Recommendations Emails",
+            "value": "OFF"
+          },
+          {
+            "name": "Unsubscribe from all marketing emails",
+            "value": "Unsubscribe"
+          }
         ]
       },
       {
-        "title": { "ru": "Уведомления — расширенные", "en": "Notifications — advanced" },
+        "title": {
+          "ru": "Уведомления — расширенные",
+          "en": "Notifications — advanced"
+        },
         "path": "User Settings → Notifications → Advanced",
         "settings": [
-          { "name": "Mobile Notification Delay", "value": "1 minute" },
-          { "name": "Allow playback and usage of /tts command", "value": "OFF" },
-          { "name": "Speak all messages out loud", "value": "Never" }
+          {
+            "name": "Mobile Notification Delay",
+            "value": "1 minute"
+          },
+          {
+            "name": "Allow playback and usage of /tts command",
+            "value": "OFF"
+          },
+          {
+            "name": "Speak all messages out loud",
+            "value": "Never"
+          }
         ]
       },
       {
-        "title": { "ru": "Данные и приватность", "en": "Data & privacy" },
+        "title": {
+          "ru": "Данные и приватность",
+          "en": "Data & privacy"
+        },
         "path": "User Settings → Data & Privacy → How Discord Uses My Data",
         "settings": [
-          { "name": "Use data to improve Discord", "value": "OFF" },
-          { "name": "Use data to personalize my Discord experience", "value": "OFF" },
-          { "name": "Use my Discord activity to personalize Sponsored Content", "value": "OFF" },
-          { "name": "Use third-party data to personalize Sponsored Content", "value": "OFF" },
-          { "name": "Allow my voice to be recorded in Clips", "value": "OFF" }
+          {
+            "name": "Use data to improve Discord",
+            "value": "OFF"
+          },
+          {
+            "name": "Use data to personalize my Discord experience",
+            "value": "OFF"
+          },
+          {
+            "name": "Use my Discord activity to personalize Sponsored Content",
+            "value": "OFF"
+          },
+          {
+            "name": "Use third-party data to personalize Sponsored Content",
+            "value": "OFF"
+          },
+          {
+            "name": "Allow my voice to be recorded in Clips",
+            "value": "OFF"
+          },
+          {
+            "name": "Registered Games",
+            "value": "по каждой игре / per game",
+            "note": {
+              "ru": "Там видно, какие игры Discord показывает другим, — лишние можно скрыть.",
+              "en": "Shows which games Discord shares with others — hide the ones you don't want shown."
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Профиль и шифрование голоса",
+          "en": "Profile and voice encryption"
+        },
+        "path": "User Settings → Data & Privacy → Profile Privacy / Voice End-to-end Encryption",
+        "settings": [
+          {
+            "name": "Share my full profile with",
+            "value": "Friends & All Servers"
+          },
+          {
+            "name": "Share when I update my profile",
+            "value": "ON"
+          },
+          {
+            "name": "Activity Privacy",
+            "value": "по серверам / per server",
+            "note": {
+              "ru": "Где показывать, во что вы играете.",
+              "en": "Where to show what you're playing."
+            }
+          },
+          {
+            "name": "Enable persistent verification codes",
+            "value": "OFF"
+          }
         ]
       }
     ]
@@ -404,70 +664,440 @@
     "icon": "obs",
     "detect": "app.obs",
     "summary": {
-      "ru": "Стрим NVENC H.264 6000 Кбит/с, запись NVENC HEVC CQP 18, вывод 1664×936 при 60 FPS.",
-      "en": "Stream NVENC H.264 at 6000 Kbps, record NVENC HEVC CQP 18, 1664×936 output at 60 FPS."
+      "ru": "Стрим NVENC H.264 CBR 6000 Кбит/с в 1664×936 при 60 FPS, запись NVENC AV1 (на RTX 20/30 — HEVC) CQP 18 в Hybrid MP4, Replay Buffer 30 с.",
+      "en": "Stream NVENC H.264 CBR 6000 Kbps at 1664×936 60 FPS, record NVENC AV1 (HEVC on RTX 20/30) CQP 18 in Hybrid MP4, 30 s Replay Buffer."
     },
     "sections": [
       {
-        "title": { "ru": "Общие", "en": "General" },
+        "title": {
+          "ru": "Общие",
+          "en": "General"
+        },
         "path": "Settings → General",
         "settings": [
-          { "name": "Open stats dialog on startup", "value": "OFF" },
-          { "name": "Hide OBS windows from screen capture", "value": "OFF" },
-          { "name": "Update Channel", "value": "Stable" },
-          { "name": "Automatically check for updates on startup", "value": "OFF" },
-          { "name": "Show confirmation dialogs (start/stop stream, stop recording)", "value": "OFF" },
-          { "name": "Automatically record when streaming", "value": "OFF" },
-          { "name": "Automatically start replay buffer when streaming", "value": "OFF" },
-          { "name": "Source Alignment Snapping", "value": "ON (sensitivity 10)" }
+          {
+            "name": "Open stats dialog on startup",
+            "value": "OFF"
+          },
+          {
+            "name": "Hide OBS windows from screen capture",
+            "value": "OFF"
+          },
+          {
+            "name": "Update Channel",
+            "value": "Stable"
+          },
+          {
+            "name": "Automatically check for updates on startup",
+            "value": "OFF"
+          },
+          {
+            "name": "Show confirmation dialogs (start/stop stream, stop recording)",
+            "value": "OFF"
+          },
+          {
+            "name": "Automatically record when streaming",
+            "value": "OFF"
+          },
+          {
+            "name": "Automatically start replay buffer when streaming",
+            "value": "OFF"
+          },
+          {
+            "name": "Source Alignment Snapping",
+            "value": "ON (sensitivity 10)"
+          }
         ]
       },
       {
-        "title": { "ru": "Вывод — стрим", "en": "Output — streaming" },
-        "path": "Settings → Output (Advanced) → Streaming",
+        "title": {
+          "ru": "Вывод — стрим",
+          "en": "Output — streaming"
+        },
+        "path": "Settings → Output → Output Mode: Advanced → Streaming",
         "settings": [
-          { "name": "Video Encoder", "value": "NVIDIA NVENC H.264" },
-          { "name": "Rescale Output", "value": "Disabled" },
-          { "name": "Rate Control", "value": "CBR" },
-          { "name": "Bitrate", "value": "6000 Kbps" },
-          { "name": "Keyframe Interval", "value": "2 s" },
-          { "name": "Preset", "value": "P6: Slower (Better Quality)" },
-          { "name": "Tuning", "value": "High Quality" },
-          { "name": "Multipass Mode", "value": "Two Passes (Quarter Resolution)" },
-          { "name": "Profile", "value": "high" },
-          { "name": "Look-ahead", "value": "OFF" },
-          { "name": "Adaptive Quantization", "value": "ON" },
-          { "name": "B-Frames", "value": "2" }
+          {
+            "name": "Audio Track",
+            "value": "1"
+          },
+          {
+            "name": "Audio Encoder",
+            "value": "FFmpeg AAC"
+          },
+          {
+            "name": "Twitch VOD Track",
+            "value": "OFF"
+          },
+          {
+            "name": "Video Encoder",
+            "value": "NVIDIA NVENC H.264"
+          },
+          {
+            "name": "Rescale Output",
+            "value": "Disabled"
+          },
+          {
+            "name": "Rate Control",
+            "value": "Constant Bitrate"
+          },
+          {
+            "name": "Bitrate",
+            "value": "6000 Kbps"
+          },
+          {
+            "name": "Keyframe Interval",
+            "value": "2 s"
+          },
+          {
+            "name": "Preset",
+            "value": "P6: Slower (Better Quality)"
+          },
+          {
+            "name": "Tuning",
+            "value": "High Quality"
+          },
+          {
+            "name": "Multipass Mode",
+            "value": "Two Passes (Quarter Resolution)"
+          },
+          {
+            "name": "Profile",
+            "value": "high"
+          },
+          {
+            "name": "Look-ahead",
+            "value": "OFF"
+          },
+          {
+            "name": "Adaptive Quantization",
+            "value": "ON"
+          },
+          {
+            "name": "B-Frames",
+            "value": "2"
+          },
+          {
+            "name": "Custom Encoder Options",
+            "value": "—"
+          }
         ]
       },
       {
-        "title": { "ru": "Вывод — запись", "en": "Output — recording" },
-        "path": "Settings → Output (Advanced) → Recording",
+        "title": {
+          "ru": "Вывод — запись",
+          "en": "Output — recording"
+        },
+        "path": "Settings → Output → Recording",
         "settings": [
-          { "name": "Type", "value": "Standard" },
-          { "name": "Video Encoder", "value": "NVIDIA NVENC HEVC" },
-          { "name": "Audio Encoder", "value": "FFmpeg AAC" },
-          { "name": "Audio Track", "value": "1" },
-          { "name": "Rate Control", "value": "Constant QP" },
-          { "name": "Constant QP", "value": "18" },
-          { "name": "Keyframe Interval", "value": "2 s" },
-          { "name": "Preset", "value": "P6: Slower (Better Quality)" },
-          { "name": "Tuning / Multipass", "value": "High Quality / Two Passes (Quarter Resolution)" },
-          { "name": "Profile", "value": "main" },
-          { "name": "Look-ahead / Adaptive Quantization", "value": "OFF / ON" },
-          { "name": "B-Frames", "value": "2" }
+          {
+            "name": "Type",
+            "value": "Standard"
+          },
+          {
+            "name": "Recording Path",
+            "value": "папка на SSD / a folder on an SSD"
+          },
+          {
+            "name": "Generate File Name without Space",
+            "value": "OFF"
+          },
+          {
+            "name": "Recording Format",
+            "value": "Hybrid MP4 (.mp4)",
+            "note": {
+              "ru": "Файл не бьётся, если OBS или игра вылетит, и сразу открывается в монтажке.",
+              "en": "The file survives an OBS or game crash and opens in editors right away."
+            }
+          },
+          {
+            "name": "Video Encoder",
+            "value": "NVIDIA NVENC AV1",
+            "note": {
+              "ru": "AV1 есть на RTX 40 и 50. На RTX 20/30 и GTX 16 — NVIDIA NVENC HEVC с теми же настройками.",
+              "en": "AV1 is on RTX 40 and 50. On RTX 20/30 and GTX 16 use NVIDIA NVENC HEVC with the same settings."
+            }
+          },
+          {
+            "name": "Audio Encoder",
+            "value": "FFmpeg AAC"
+          },
+          {
+            "name": "Audio Track",
+            "value": "1"
+          },
+          {
+            "name": "Rescale Output",
+            "value": "Disabled"
+          },
+          {
+            "name": "Custom Muxer Settings",
+            "value": "—"
+          },
+          {
+            "name": "Automatic File Splitting",
+            "value": "OFF"
+          },
+          {
+            "name": "Rate Control",
+            "value": "Constant QP"
+          },
+          {
+            "name": "Constant QP",
+            "value": "18"
+          },
+          {
+            "name": "Keyframe Interval",
+            "value": "2 s"
+          },
+          {
+            "name": "Preset",
+            "value": "P6: Slower (Better Quality)"
+          },
+          {
+            "name": "Tuning",
+            "value": "High Quality"
+          },
+          {
+            "name": "Multipass Mode",
+            "value": "Two Passes (Quarter Resolution)"
+          },
+          {
+            "name": "Profile",
+            "value": "main"
+          },
+          {
+            "name": "Look-ahead",
+            "value": "OFF"
+          },
+          {
+            "name": "Adaptive Quantization",
+            "value": "ON"
+          },
+          {
+            "name": "B-Frames",
+            "value": "2"
+          },
+          {
+            "name": "B-Frame as Reference",
+            "value": "Disabled"
+          }
+        ],
+        "note": {
+          "ru": "Запись идёт в разрешении вывода (1664×936). Нужна запись в 1080p — поставьте в Video → Output (Scaled) 1920×1080, а в Streaming → Rescale Output выберите Lanczos и 1664×936: стрим останется 936p.",
+          "en": "Recording uses the output resolution (1664×936). For 1080p recordings set Video → Output (Scaled) to 1920×1080 and in Streaming → Rescale Output pick Lanczos at 1664×936: the stream stays 936p."
+        }
+      },
+      {
+        "title": {
+          "ru": "Вывод — звук и повтор",
+          "en": "Output — audio and replay"
+        },
+        "path": "Settings → Output → Audio / Replay Buffer",
+        "settings": [
+          {
+            "name": "Track 1 → Audio Bitrate",
+            "value": "160"
+          },
+          {
+            "name": "Enable Replay Buffer",
+            "value": "ON"
+          },
+          {
+            "name": "Maximum Replay Time",
+            "value": "30 s"
+          },
+          {
+            "name": "Maximum Memory",
+            "value": "512 MB",
+            "note": {
+              "ru": "С CQP OBS не может посчитать объём сам — поэтому лимит памяти задаётся вручную. Повтор сохраняется горячей клавишей в Settings → Hotkeys → Save Replay.",
+              "en": "With CQP OBS can't estimate the size, so the memory limit is set by hand. Save a replay with Settings → Hotkeys → Save Replay."
+            }
+          }
         ]
       },
       {
-        "title": { "ru": "Видео", "en": "Video" },
+        "title": {
+          "ru": "Звук",
+          "en": "Audio"
+        },
+        "path": "Settings → Audio",
+        "settings": [
+          {
+            "name": "Sample Rate",
+            "value": "48 kHz"
+          },
+          {
+            "name": "Channels",
+            "value": "Stereo"
+          },
+          {
+            "name": "Desktop Audio",
+            "value": "Default"
+          },
+          {
+            "name": "Desktop Audio 2",
+            "value": "Disabled"
+          },
+          {
+            "name": "Mic/Auxiliary Audio",
+            "value": "Default"
+          },
+          {
+            "name": "Mic/Auxiliary Audio 2 / 3 / 4",
+            "value": "Disabled"
+          },
+          {
+            "name": "Meters → Decay Rate",
+            "value": "Fast"
+          },
+          {
+            "name": "Peak Meter Type",
+            "value": "Sample Peak"
+          },
+          {
+            "name": "Monitoring Device",
+            "value": "Default"
+          },
+          {
+            "name": "Disable Windows audio ducking",
+            "value": "ON",
+            "note": {
+              "ru": "Windows не приглушает игру, когда OBS или Discord захватывают звук.",
+              "en": "Windows doesn't turn the game down when OBS or Discord capture audio."
+            }
+          },
+          {
+            "name": "Low Latency Audio Buffering Mode",
+            "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Видео",
+          "en": "Video"
+        },
         "path": "Settings → Video",
         "settings": [
-          { "name": "Base (Canvas) Resolution", "value": "1920x1080" },
-          { "name": "Output (Scaled) Resolution", "value": "1664x936" },
-          { "name": "Downscale Filter", "value": "Lanczos (36 samples)" },
-          { "name": "Common FPS Values", "value": "60" }
+          {
+            "name": "Base (Canvas) Resolution",
+            "value": "1920x1080"
+          },
+          {
+            "name": "Output (Scaled) Resolution",
+            "value": "1664x936",
+            "note": {
+              "ru": "Для 6000 Кбит/с 936p60 выглядит чище 1080p60: битрейта хватает на меньшее число пикселей.",
+              "en": "At 6000 Kbps 936p60 looks cleaner than 1080p60: the bitrate covers fewer pixels."
+            }
+          },
+          {
+            "name": "Downscale Filter",
+            "value": "Lanczos (Sharpened scaling, 36 samples)"
+          },
+          {
+            "name": "Common FPS Values",
+            "value": "60"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Расширенные",
+          "en": "Advanced"
+        },
+        "path": "Settings → Advanced",
+        "settings": [
+          {
+            "name": "Process Priority",
+            "value": "Normal",
+            "note": {
+              "ru": "Если в статистике растёт «Пропущено кадров из-за задержки рендеринга» — запускайте OBS от имени администратора: Windows даст ему приоритет на видеокарте.",
+              "en": "If Stats shows frames missed due to rendering lag, run OBS as administrator: Windows then gives it GPU priority."
+            }
+          },
+          {
+            "name": "Show active outputs warning on exit",
+            "value": "ON"
+          },
+          {
+            "name": "Renderer",
+            "value": "Direct3D 11"
+          },
+          {
+            "name": "Color Format",
+            "value": "NV12 (8-bit, 4:2:0, 2 planes)"
+          },
+          {
+            "name": "Color Space / Color Range",
+            "value": "Rec. 709 / Limited"
+          },
+          {
+            "name": "SDR White Level / HDR Nominal Peak Level",
+            "value": "300 nits / 1000 nits"
+          },
+          {
+            "name": "Filename Formatting",
+            "value": "%CCYY-%MM-%DD %hh-%mm-%ss"
+          },
+          {
+            "name": "Overwrite if file exists",
+            "value": "OFF"
+          },
+          {
+            "name": "Automatically remux to mp4",
+            "value": "OFF",
+            "note": {
+              "ru": "Не нужно: Hybrid MP4 и так сразу MP4.",
+              "en": "Not needed: Hybrid MP4 is already MP4."
+            }
+          },
+          {
+            "name": "Replay Buffer Filename Prefix / Suffix",
+            "value": "Replay / —"
+          },
+          {
+            "name": "Stream Delay",
+            "value": "OFF"
+          },
+          {
+            "name": "Automatically Reconnect",
+            "value": "ON (Retry Delay 2 s, Maximum Retries 25)"
+          },
+          {
+            "name": "IP Family",
+            "value": "IPv4 Only"
+          },
+          {
+            "name": "Bind to IP",
+            "value": "Default"
+          },
+          {
+            "name": "Dynamically change bitrate to manage congestion",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable network optimizations",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable Browser Source Hardware Acceleration",
+            "value": "OFF",
+            "note": {
+              "ru": "Браузерные источники (алерты, чат) рисует процессор — видеокарта целиком у игры.",
+              "en": "Browser sources (alerts, chat) are drawn by the CPU — the GPU stays with the game."
+            }
+          },
+          {
+            "name": "Hotkey Focus Behavior",
+            "value": "Never disable hotkeys"
+          }
         ]
       }
+    ],
+    "autoTweaks": [
+      "apps.obs.settings"
     ]
   },
   {
@@ -476,60 +1106,210 @@
     "icon": "spotify",
     "detect": "app.spotify",
     "summary": {
-      "ru": "Без автозапуска, видео-фонов и оверлеев; высокое качество без автоподстройки.",
-      "en": "No autostart, video canvases or overlays; high quality without auto-adjust."
+      "ru": "Качество «Очень высокое» без автоподстройки, кроссфейд 5 с, нормализация, без автозапуска, видео-фонов и оверлеев, профиль скрыт.",
+      "en": "Very high quality without auto-adjust, 5 s crossfade, normalization, no autostart, video canvases or overlays, private profile."
     },
-    "autoTweaks": ["apps.spotify.startup", "apps.autostart.cleanup"],
+    "autoTweaks": [
+      "apps.spotify.startup",
+      "apps.spotify.quality",
+      "apps.autostart.cleanup"
+    ],
     "sections": [
       {
-        "title": { "ru": "Качество и библиотека", "en": "Quality & library" },
+        "title": {
+          "ru": "Качество и библиотека",
+          "en": "Quality and library"
+        },
         "path": "Settings → Audio quality / Your Library",
         "settings": [
-          { "name": "Streaming quality / Download", "value": "High / High" },
-          { "name": "Auto adjust quality", "value": "OFF" },
-          { "name": "Use compact library layout", "value": "OFF" },
-          { "name": "Show Local Files", "value": "ON" },
-          { "name": "Show songs from Downloads / Music Library", "value": "OFF" }
+          {
+            "name": "Streaming quality / Download",
+            "value": "Very high / Very high",
+            "note": {
+              "ru": "320 Кбит/с, нужен Premium.",
+              "en": "320 Kbps, needs Premium."
+            }
+          },
+          {
+            "name": "Auto adjust quality",
+            "value": "OFF"
+          },
+          {
+            "name": "Allow explicit content",
+            "value": "ON"
+          },
+          {
+            "name": "Autoplay",
+            "value": "ON"
+          },
+          {
+            "name": "Use compact library layout",
+            "value": "OFF"
+          },
+          {
+            "name": "Show Local Files",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Отображение и видео", "en": "Display & video" },
-        "path": "Settings → Display / Videos and Canvas",
+        "title": {
+          "ru": "Отображение и видео",
+          "en": "Display and video"
+        },
+        "path": "Settings → Display / Videos and Canvas / Zoom level",
         "settings": [
-          { "name": "Show the now-playing panel on click of play", "value": "OFF" },
-          { "name": "Show desktop overlay when using media keys", "value": "OFF" },
-          { "name": "See what your friends are playing", "value": "OFF" },
-          { "name": "Music videos / Canvas / Other videos", "value": "OFF" },
-          { "name": "Zoom level", "value": "100%" }
+          {
+            "name": "Show the now-playing panel on click of play",
+            "value": "OFF"
+          },
+          {
+            "name": "Open videos in an expanded playing view",
+            "value": "OFF"
+          },
+          {
+            "name": "Show announcements about new releases",
+            "value": "OFF"
+          },
+          {
+            "name": "Show desktop overlay when using media keys",
+            "value": "OFF",
+            "note": {
+              "ru": "Оверлей Spotify поверх полноэкранной игры может сбивать её в оконный режим.",
+              "en": "Spotify's overlay over a fullscreen game can knock it out of exclusive fullscreen."
+            }
+          },
+          {
+            "name": "See what your friends are playing",
+            "value": "OFF"
+          },
+          {
+            "name": "Music videos / Canvas / Other videos",
+            "value": "OFF"
+          },
+          {
+            "name": "Zoom level",
+            "value": "100%"
+          }
         ]
       },
       {
-        "title": { "ru": "Воспроизведение", "en": "Playback" },
+        "title": {
+          "ru": "Воспроизведение",
+          "en": "Playback"
+        },
         "path": "Settings → Playback",
         "settings": [
-          { "name": "Crossfade songs / Gapless", "value": "OFF" },
-          { "name": "Automix", "value": "ON" },
-          { "name": "Normalize volume / Mono audio", "value": "OFF" },
-          { "name": "Equalizer", "value": "OFF (Flat)" }
+          {
+            "name": "Crossfade songs",
+            "value": "ON (5 sec)"
+          },
+          {
+            "name": "Gapless",
+            "value": "OFF"
+          },
+          {
+            "name": "Automix",
+            "value": "ON"
+          },
+          {
+            "name": "Include Smart Shuffle in play modes",
+            "value": "OFF"
+          },
+          {
+            "name": "Normalize volume",
+            "value": "ON"
+          },
+          {
+            "name": "Volume level",
+            "value": "Loud",
+            "note": {
+              "ru": "«Громко» добавляет компрессию. Нужен чистый звук в наушниках — ставьте «Нормально».",
+              "en": "Loud adds compression. For the cleanest sound in headphones use Normal."
+            }
+          },
+          {
+            "name": "Mono audio",
+            "value": "OFF"
+          },
+          {
+            "name": "Equalizer",
+            "value": "ON — Bass booster"
+          },
+          {
+            "name": "Output → Device",
+            "value": "System Default"
+          },
+          {
+            "name": "Shuffle",
+            "value": "Standard"
+          }
         ]
       },
       {
-        "title": { "ru": "Запуск и совместимость", "en": "Startup & compatibility" },
-        "path": "Settings → Startup and window behaviour / Compatibility",
+        "title": {
+          "ru": "Запуск, хранилище и совместимость",
+          "en": "Startup, storage and compatibility"
+        },
+        "path": "Settings → Startup and window behaviour / Storage / Compatibility",
         "settings": [
-          { "name": "Open Spotify automatically after you log into the computer", "value": "No" },
-          { "name": "Close button should minimize the Spotify window", "value": "ON" },
-          { "name": "Proxy type", "value": "Autodetect settings" },
-          { "name": "Enable hardware acceleration", "value": "ON" }
+          {
+            "name": "Open Spotify automatically after you log into the computer",
+            "value": "No"
+          },
+          {
+            "name": "Close button should minimize the Spotify window",
+            "value": "ON"
+          },
+          {
+            "name": "Cache",
+            "value": "Clear cache",
+            "note": {
+              "ru": "Кэш разрастается до гигабайт — чистите раз в пару месяцев, музыка просто подгрузится заново.",
+              "en": "The cache grows to gigabytes — clear it every couple of months, music just loads again."
+            }
+          },
+          {
+            "name": "Proxy type",
+            "value": "Autodetect settings"
+          },
+          {
+            "name": "Enable hardware acceleration",
+            "value": "ON"
+          }
         ]
       },
       {
-        "title": { "ru": "Приватность", "en": "Privacy" },
-        "path": "Settings → Listening activity / Profile",
+        "title": {
+          "ru": "Приватность",
+          "en": "Privacy"
+        },
+        "path": "Settings → Listening activity and insights / What others can see on your profile",
         "settings": [
-          { "name": "Private session", "value": "OFF" },
-          { "name": "Listening activity", "value": "OFF" },
-          { "name": "Recently played artists / Followers / Playlists on profile", "value": "OFF" }
+          {
+            "name": "Private session",
+            "value": "OFF"
+          },
+          {
+            "name": "Listening activity",
+            "value": "OFF"
+          },
+          {
+            "name": "Recently played artists",
+            "value": "OFF"
+          },
+          {
+            "name": "Followers and following",
+            "value": "OFF"
+          },
+          {
+            "name": "Playlists appear on your profile",
+            "value": "OFF"
+          },
+          {
+            "name": "People can see the playlists you've added to your profile",
+            "value": "OFF"
+          }
         ]
       }
     ]

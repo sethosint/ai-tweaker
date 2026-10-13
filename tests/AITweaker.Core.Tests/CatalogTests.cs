@@ -145,14 +145,53 @@ public class CatalogTests
                     break;
                 case FileSettingAction f:
                     // per-user program settings: always under the user's profile, never a system path
-                    Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", f.Path);
-                    Assert.Contains(f.Format, new[] { "json", "prefs" });
+                    Assert.All(f.Path.Split('|'), p => Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", p));
+                    Assert.Contains(f.Format, new[] { "json", "prefs", "ini" });
+                    if (f.Format == "ini") Assert.All(f.Set.Keys, k => Assert.Matches(@"^[A-Za-z]+/[A-Za-z0-9]+$", k));
+                    Assert.Contains(f.IfRunning, new[] { "restart", "fail" });
                     Assert.NotEmpty(f.Set);
                     Assert.True(t.When is not null && t.When.StartsWith("app.", StringComparison.Ordinal), $"{t.Id}: a program's settings file only when the program is installed");
                     break;
             }
         }
     }
+
+    [Fact]
+    public void ObsSettingsUseRealObsKeys()
+    {
+        // ids and values checked against obs-studio's obs-nvenc plugin and settings dialog
+        var t = Catalog.Find("apps.obs.settings")!;
+        Assert.True(t.Confirm);
+        var files = t.Actions.Cast<FileSettingAction>().ToList();
+        // OBS may be live: never closed behind the user's back
+        Assert.All(files, f => Assert.Equal(("obs64", "fail"), (f.Process, f.IfRunning)));
+        var basic = files.First(f => f.Path.EndsWith("basic.ini") && f.When is null).Set;
+        Assert.Equal("obs_nvenc_h264_tex", basic["AdvOut/Encoder"].GetString());
+        Assert.Equal("hybrid_mp4", basic["AdvOut/RecFormat2"].GetString());
+        Assert.Equal("IPv4", basic["Output/IPFamily"].GetString());
+        Assert.Equal(512, basic["AdvOut/RecRBSize"].GetInt32());
+        Assert.Contains(files, f => f.When == "gpu.av1" && f.Set["AdvOut/RecEncoder"].GetString() == "obs_nvenc_av1_tex");
+        Assert.Contains(files, f => f.When == "!gpu.av1" && f.Set["AdvOut/RecEncoder"].GetString() == "obs_nvenc_hevc_tex");
+        foreach (var enc in files.Where(f => f.Path.EndsWith("Encoder.json")))
+        {
+            Assert.True(enc.Create);
+            Assert.Equal("p6", enc.Set["preset"].GetString());     // the new NVENC plugin's key is "preset", not "preset2"
+            Assert.Contains(enc.Set["rate_control"].GetString(), new[] { "CBR", "CQP" });
+            Assert.True(enc.Set["adaptive_quantization"].GetBoolean());
+        }
+    }
+
+    [Theory]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 4070 SUPER", true)]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 5070 Ti", true)]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 3080", false)]
+    [InlineData("NVIDIA", "NVIDIA GeForce GTX 1660 SUPER", false)]
+    [InlineData("AMD", "AMD Radeon RX 7800 XT", true)]
+    [InlineData("AMD", "AMD Radeon RX 6700 XT", false)]
+    [InlineData("Intel", "Intel(R) Arc(TM) B580 Graphics", true)]
+    [InlineData("Intel", "Intel(R) UHD Graphics 770", false)]
+    public void KnowsWhichGpusEncodeAv1(string vendor, string name, bool av1) =>
+        Assert.Equal(av1, new GpuInfo { Vendor = vendor, Name = name }.EncodesAv1);
 
     [Fact]
     public void AppsAreUniqueAndImportantOnesWarn()

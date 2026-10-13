@@ -38,6 +38,42 @@ public class SettingsFileTests
     }
 
     [Fact]
+    public void IniEditsKeysInTheirSectionAndRollsBack()
+    {
+        // OBS basic.ini: CRLF, keys spread over sections, one section missing
+        const string original = "[General]\r\nName=Untitled\r\n\r\n[Output]\r\nMode=Simple\r\n\r\n[AdvOut]\r\nEncoder=obs_x264\r\nRecRB=false\r\n";
+        var values = new Dictionary<string, string?>
+        {
+            ["Output/Mode"] = "\"Advanced\"",
+            ["AdvOut/RecRB"] = "true",
+            ["AdvOut/RecRBTime"] = "30",
+            ["Video/OutputCX"] = "1664",
+        };
+        var before = new Dictionary<string, string?>();
+        var edited = SettingsFile.Edit(original, "ini", values, before);
+
+        Assert.Equal("[General]\r\nName=Untitled\r\n\r\n[Output]\r\nMode=Advanced\r\n\r\n[AdvOut]\r\nEncoder=obs_x264\r\nRecRB=true\r\nRecRBTime=30\r\n\r\n[Video]\r\nOutputCX=1664\r\n", edited);
+        Assert.True(SettingsFile.Holds(edited, "ini", values.ToDictionary(kv => kv.Key, kv => kv.Value!)));
+        Assert.True(SettingsFile.Holds("[AdvOut]\nRecRB=True\n", "ini", new Dictionary<string, string> { ["AdvOut/RecRB"] = "true" }));
+        Assert.False(SettingsFile.Holds(original, "ini", new Dictionary<string, string> { ["Output/Mode"] = "\"Advanced\"" }));
+        Assert.Equal("\"Simple\"", before["Output/Mode"]);
+        Assert.Null(before["Video/OutputCX"]);
+
+        var restored = SettingsFile.Edit(edited, "ini", before, []);
+        Assert.Equal(SettingsFile.Read(original, "ini", values.Keys), SettingsFile.Read(restored, "ini", values.Keys));
+        Assert.Contains("Mode=Simple", restored);
+        Assert.DoesNotContain("RecRBTime", restored);
+    }
+
+    [Fact]
+    public void IniDoesNotConfuseSameKeyInAnotherSection()
+    {
+        const string original = "[SimpleOutput]\nRecRB=false\n[AdvOut]\nRecRB=false\n";
+        var edited = SettingsFile.Edit(original, "ini", new Dictionary<string, string?> { ["AdvOut/RecRB"] = "true" }, []);
+        Assert.Equal("[SimpleOutput]\nRecRB=false\n[AdvOut]\nRecRB=true\n", edited);
+    }
+
+    [Fact]
     public void EmptyFileIsAnEmptyObject()
     {
         var edited = SettingsFile.Edit("", "json", new Dictionary<string, string?> { ["A"] = "1" }, []);

@@ -201,19 +201,29 @@ public sealed class DisplayRefreshAction : TweakAction
 }
 
 /// <summary>
-/// Settings inside a program's own settings file: JSON (Discord's settings.json) or key=value lines (Spotify's prefs).
-/// A missing file means the program isn't installed or set up yet: nothing to do.
+/// Settings inside a program's own settings file: JSON (Discord's settings.json), key=value lines (Spotify's prefs)
+/// or INI (OBS's basic.ini). A missing file means the program isn't installed or set up yet: nothing to do.
 /// </summary>
 public sealed class FileSettingAction : TweakAction
 {
-    /// <summary>Environment variables such as %APPDATA% are expanded.</summary>
+    /// <summary>
+    /// Environment variables such as %APPDATA% are expanded; {obs-profile} is OBS's active profile folder;
+    /// "a|b" means the first of them that exists (OBS 31+ user.ini, older global.ini).
+    /// </summary>
     public required string Path { get; init; }
-    /// <summary>json | prefs</summary>
+    /// <summary>json | prefs | ini</summary>
     public string Format { get; init; } = "json";
-    /// <summary>Key → value. For prefs files the JSON literal is written as is (strings keep their quotes, like Spotify's).</summary>
+    /// <summary>
+    /// Key → value. For prefs files the JSON literal is written as is (strings keep their quotes, like Spotify's);
+    /// INI keys are "Section/Key" and strings are written without quotes.
+    /// </summary>
     public required Dictionary<string, JsonElement> Set { get; init; }
     /// <summary>A program that rewrites the file when it exits: it is closed first and started again afterwards.</summary>
     public string? Process { get; init; }
+    /// <summary>restart (close the program and start it again) | fail (leave it alone: it may be streaming or recording).</summary>
+    public string IfRunning { get; init; } = "restart";
+    /// <summary>Create the file when its folder exists but the program hasn't written it yet (OBS writes encoder settings lazily).</summary>
+    public bool Create { get; init; }
 
     public override string Describe() => $"file {Path}: " + string.Join(", ", Set.Select(kv => $"{kv.Key}={kv.Value.GetRawText()}"));
 }
