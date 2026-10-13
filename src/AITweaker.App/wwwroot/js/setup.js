@@ -142,6 +142,7 @@
     b.classList.toggle("on", !!S.gameMode);
     $(".gm-state", b).textContent = S.gameMode ? t("gm.on") : t("gm.off");
     if (S.view === "tune" && Views.tune) Views.tune();
+    if (S.view === "dashboard" && App.refreshSteps) App.refreshSteps();
   };
 
   App.gmRefresh = async () => {

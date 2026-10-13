@@ -5,7 +5,6 @@
   let shownScore = 0;
 
   const planItems = () => (S.plan ? S.plan.items : []);
-  const todo = () => planItems().filter((i) => i.recommended && S.status[i.id] !== "applied" && S.byId[i.id]).map((i) => i.id);
 
   function scoreOf(cats) {
     const rec = planItems().filter((i) => i.recommended && (!cats || cats.includes((S.byId[i.id] || {}).category)));
@@ -21,6 +20,42 @@
   const shortCpu = (n) => (n || "").replace(/\(R\)|\(TM\)|CPU|Processor|\d+-Core|@.*$/gi, "").replace(/\s+/g, " ").trim();
   const shortGpu = (n) => (n || "").replace(/NVIDIA |GeForce |AMD |Radeon\(TM\) |\(R\)|\(TM\)/g, "").trim();
 
+  // ------------------------------------------------------------------ the four steps: automatic → by hand → apps → Game Mode
+
+  function steps() {
+    const auto = S.plan ? [...S.selected].filter((id) => S.status[id] !== "applied").length : 0;
+    const man = S.scan ? App.manualLeft() : { left: 0, total: 0 };
+    const appsPending = S.guides ? new Set(S.guides.filter((g) => g.installed).flatMap((g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "applied" && S.status[id] !== "n/a"))).size : null;
+    const step = (n, id, state, done, btn) => html`<div class="step ${done ? "done" : ""}" data-step="${id}">
+      <span class="step-n">${done ? icon("check") : n}</span>
+      <div><b>${t("step." + id)}</b><span>${state}</span></div>
+      <button class="btn sm ${done ? "ghost" : "primary"}" data-go-step="${id}">${btn}</button></div>`;
+    return [
+      step(1, "auto", auto ? t("step.autoN").replace("{n}", auto) : t("step.autoDone"), S.scan && !auto, auto ? t("tune.go") : t("man.openTab")),
+      step(2, "manual", man.left ? t("step.manualN").replace("{n}", man.left).replace("{m}", man.total) : t("man.allDone"), S.scan && !man.left, t("man.openTab")),
+      step(3, "apps", appsPending === null ? "…" : appsPending ? t("step.appsN").replace("{n}", appsPending) : t("step.appsDone"), appsPending === 0, t("man.openTab")),
+      step(4, "game", S.gameMode ? t("step.gameOn") : t("step.gameOff"), !!S.gameMode, S.gameMode ? t("gm.stop") : t("gm.start")),
+    ].join("");
+  }
+
+  function bindSteps() {
+    $$("[data-go-step]").forEach((b) => (b.onclick = () => {
+      const id = b.dataset.goStep;
+      if (id === "auto") { if (S.plan && [...S.selected].some((x) => S.status[x] !== "applied")) App.gameSetup(); else go("tune"); }
+      else if (id === "manual") go("manual");
+      else if (id === "apps") go("apps");
+      else App.gameMode();
+    }));
+  }
+
+  function refreshSteps() {
+    const box = $("#dashSteps");
+    if (!box || S.view !== "dashboard") return;
+    box.innerHTML = steps();
+    bindSteps();
+  }
+  (window.App ||= {}).refreshSteps = refreshSteps;
+
   // ------------------------------------------------------------------ render
 
   function render() {
@@ -31,7 +66,8 @@
     const fresh = p && p.os.installDate && Date.now() - new Date(p.os.installDate).getTime() < 3 * 864e5 && sc < 50;
     const C = 2 * Math.PI * 64;
     const open = ins.filter((i) => ticketState(i) !== "resolved" && i.severity !== "info").length;
-    const left = todo();
+    // the same set the Game setup button applies: everything selected there that isn't applied yet
+    const left = S.plan ? [...S.selected].filter((id) => S.status[id] !== "applied") : [];
     // the whole machine, not one part: a laptop or a tower, whichever this PC is
     const heroKind = p && p.machine && p.machine.isLaptop ? "laptop" : "tower";
 
@@ -56,12 +92,14 @@
             <div class="subs">${Object.entries(GROUPS).map(([k, cats]) => { const v2 = scoreOf(cats); return `<div class="sub"><span class="k">${t("h." + k)}</span><span class="bar"><i style="width:0" data-w="${v2}"></i></span><span class="p">${S.scan ? v2 : "—"}%</span></div>`; }).join("")}</div>
           </div>
           <div class="hero-actions">
-            ${left.length ? `<button class="btn hazard" id="dashApply" ${S.busy ? "disabled" : ""}><span>${t("dash.applyBest")} · ${left.length}</span></button>` : `<button class="btn done" id="dashApply" disabled>${icon("check")}${t("dash.allSet")}</button>`}
+            ${left.length ? `<button class="btn hazard" id="dashApply" ${S.busy ? "disabled" : ""}><span>${t("tune.go")} · ${left.length}</span></button>` : `<button class="btn done" id="dashApply" disabled>${icon("check")}${t("dash.allSet")}</button>`}
             <button class="btn ghost" id="dashTune">${t("dash.tune")}${icon("arrow")}</button>
           </div>
           <div class="hero-actions"><button class="btn sm ghost" id="dashScan">${icon("refresh")}${t("h.scan")}</button><span class="meta">${S.scan ? `${t("h.lastScan")} ${fmtTime(p.scannedAt)}` : t("h.never")}</span></div>
         </div>
       </section>
+
+      <div class="steps" id="dashSteps">${steps()}</div>
 
       ${fresh ? `<div class="callout ok" style="margin-bottom:22px;display:flex;gap:12px;align-items:center">${t("h.fresh")}<button class="btn sm primary" style="margin-left:auto" id="freshTune">${t("dash.tune")}</button></div>` : ""}
 
@@ -111,7 +149,10 @@
 
     $("#dashScan").onclick = () => App.scan();
     $("#dashTune").onclick = () => go("tune");
-    $("#dashApply").onclick = () => App.apply(todo());
+    $("#dashApply").onclick = () => App.gameSetup();
+    bindSteps();
+    if (S.scan && !S.guides) call("guides.list", {}, { silent: true }).then((g) => { S.guides = g; refreshSteps(); }).catch(() => {});
+    if (S.scan && !S.bios) call("bios.list", {}, { silent: true }).then((b) => { S.bios = b; refreshSteps(); }).catch(() => {});
     if ($("#freshTune")) $("#freshTune").onclick = () => go("tune");
     $("#exportReport").onclick = async () => { const path = await call("report.export"); toast(t("toast.report") + ": " + path, "ok"); };
     $("#logFilters").onclick = (e) => {
