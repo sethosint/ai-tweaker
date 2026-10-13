@@ -94,7 +94,7 @@
     "category": "power",
     "level": 3,
     "when": "system.desktop && !cpu.x3dMultiCcd",
-    "name": { "ru": "Агрессивный турбобуст процессора", "en": "Aggressive CPU boost" },
+    "name": { "ru": "Processor boost mode: Aggressive", "en": "Processor boost mode: Aggressive" },
     "description": {
       "ru": "Процессор уходит в турбочастоты сразу при нагрузке, без плавного разгона.",
       "en": "The CPU jumps to boost clocks immediately under load instead of ramping up."

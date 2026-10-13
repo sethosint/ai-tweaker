@@ -62,7 +62,7 @@
     "id": "security.defender.low-impact",
     "category": "security",
     "level": 1,
-    "name": { "ru": "Защитник: проверки не мешают играм", "en": "Defender: scans stay out of your games" },
+    "name": { "ru": "Defender: сканы с низким приоритетом", "en": "Defender: low-priority scans" },
     "description": {
       "ru": "Защита в реальном времени остаётся включённой. Плановые проверки идут с низким приоритетом, занимают не больше 20% процессора (вместо 50%) и запускаются, только когда ПК простаивает. Если стоит другой антивирус, пункт ничего не меняет.",
       "en": "Real-time protection stays on. Scheduled scans run at low priority, take at most 20% of the CPU (instead of 50%) and only start while the PC is idle. With another antivirus installed this changes nothing."

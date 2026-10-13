@@ -81,7 +81,7 @@
           <div class="hero-tag r b"><span class="k">${t("sn.ping")}</span><span class="v" id="tgPing">—</span></div>
         </div>
         <div class="hero-info">
-          <span class="kicker">SEC 01 · OPS</span>
+          <span class="kicker">SEC 01 · OVERVIEW</span>
           <h1>${t("dash.title")}</h1>
           <div class="rig">${p ? esc(`${shortCpu(p.cpu.name)} · ${p.gpus.map((g) => shortGpu(g.name)).join(" + ")} · ${p.memory.totalGb} GB`) : t("scanFirst")}</div>
           <div class="hero-score">

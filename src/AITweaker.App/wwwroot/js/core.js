@@ -164,7 +164,7 @@
     ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OPS", tune: "GAME SETUP", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APP SETTINGS", manual: "BY HAND", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
   const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.

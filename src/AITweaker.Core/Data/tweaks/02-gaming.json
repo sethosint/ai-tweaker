@@ -33,7 +33,7 @@
     "category": "gaming",
     "level": 1,
     "when": "gpu.nvidia",
-    "name": { "ru": "NVIDIA: минимальная задержка", "en": "NVIDIA: lowest latency" },
+    "name": { "ru": "NVIDIA: Low Latency Mode и Prefer max performance", "en": "NVIDIA: Low Latency Mode and Prefer max performance" },
     "description": {
       "ru": "Глобальные настройки графики NVIDIA (то же, что NVIDIA App → «Графика» → «Глобальные настройки»): режим низкой задержки «Вкл.», предпочтительная частота обновления «Наивысшая доступная», а на ПК — режим питания «Максимальная производительность». Значения, которые были до этого, сохраняются и возвращаются при откате. Нужен драйвер NVIDIA; NVIDIA Profile Inspector скачивается с GitHub автора.",
       "en": "NVIDIA global graphics settings (the same as NVIDIA App → Graphics → Global settings): Low Latency Mode On, preferred refresh rate Highest available and, on desktops, Power management Prefer maximum performance. The previous values are saved and restored on rollback. Needs the NVIDIA driver; NVIDIA Profile Inspector is downloaded from its author's GitHub."
@@ -123,7 +123,7 @@
     "id": "gaming.mmcss",
     "category": "gaming",
     "level": 0,
-    "name": { "ru": "Приоритет игр в планировщике мультимедиа", "en": "Game priority in the multimedia scheduler" },
+    "name": { "ru": "MMCSS: профиль «Games» (по замерам почти без эффекта)", "en": "MMCSS 'Games' profile (barely any measured effect)" },
     "description": {
       "ru": "Старый популярный твик планировщика мультимедиа (MMCSS). Замеры (djdallmann) показали, что игры не регистрируются в задаче «Games», поэтому её параметры почти ни на что не влияют. Снятие сетевого ограничения (NetworkThrottlingIndex) убрано: по замерам оно повышало задержку сетевого драйвера. Оставлен только для ручного применения.",
       "en": "An old, popular multimedia scheduler (MMCSS) tweak. Measurements (djdallmann) found games don't register with the 'Games' task, so its values hardly matter. Lifting the network throttle (NetworkThrottlingIndex) was removed: measured, it raised network driver latency. Kept for manual use only."
@@ -140,7 +140,7 @@
     "id": "gaming.priority-separation",
     "category": "gaming",
     "level": 3,
-    "name": { "ru": "Короткие кванты CPU для активного окна", "en": "Short CPU quanta for the foreground app" },
+    "name": { "ru": "Win32PrioritySeparation: короткие кванты для игры", "en": "Win32PrioritySeparation: short quanta for the game" },
     "description": {
       "ru": "Win32PrioritySeparation = 0x26: короткие переменные кванты с 3-кратным бустом активного окна. Игра чаще получает процессор, ввод обрабатывается быстрее.",
       "en": "Win32PrioritySeparation = 0x26: short variable quanta with a 3× foreground boost. The game gets the CPU more often and input is processed sooner."
@@ -155,7 +155,7 @@
     "level": 2,
     "when": "os.win11",
     "reboot": true,
-    "name": { "ru": "Глобальное разрешение таймера", "en": "Global timer resolution" },
+    "name": { "ru": "Глобальный таймер (GlobalTimerResolutionRequests)", "en": "Global timer (GlobalTimerResolutionRequests)" },
     "description": {
       "ru": "Начиная с Windows 11 игры в фоне теряют точный таймер. Параметр возвращает глобальное поведение — стабильнее время кадра в играх и лимитерах FPS.",
       "en": "Since Windows 11 background games lose the precise timer. This restores global behavior — steadier frame times in games and FPS limiters."
@@ -185,7 +185,7 @@
     "level": 2,
     "when": "!system.vm",
     "reboot": true,
-    "name": { "ru": "Не форсировать HPET как источник времени", "en": "Don't force HPET as the clock source" },
+    "name": { "ru": "HPET не форсируется (useplatformclock)", "en": "HPET not forced (useplatformclock)" },
     "description": {
       "ru": "Удаляет параметр useplatformclock, если его включили «оптимизаторы»: принудительный HPET увеличивает задержку и снижает FPS.",
       "en": "Removes useplatformclock if an 'optimizer' set it: forcing HPET increases latency and lowers FPS."
@@ -200,7 +200,7 @@
     "level": 3,
     "when": "system.desktop && !system.vm",
     "reboot": true,
-    "name": { "ru": "Отключить динамический тик ядра", "en": "Disable dynamic kernel tick" },
+    "name": { "ru": "Отключить dynamic tick", "en": "Disable dynamic tick" },
     "description": {
       "ru": "Ядро не пропускает тики таймера ради экономии энергии — меньше джиттер прерываний. Только для ПК (на ноутбуке сократит время работы от батареи).",
       "en": "The kernel stops skipping timer ticks to save power — less interrupt jitter. Desktops only (it would cost battery life on laptops)."
