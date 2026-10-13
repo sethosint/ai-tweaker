@@ -160,13 +160,18 @@ public class CatalogTests
     }
 
     [Fact]
-    public void GuidesReferenceExistingImagesAndTweaks()
+    public void GuidesAreCompleteAndReferenceExistingTweaks()
     {
-        var root = Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides");
+        Assert.Equal(Catalog.Guides.Count, Catalog.Guides.Select(g => g.Id).Distinct().Count());
         foreach (var g in Catalog.Guides)
         {
-            foreach (var s in g.Sections.Where(s => s.Image is not null))
-                Assert.True(File.Exists(Path.Combine(root, s.Image!)), $"missing guide image {s.Image}");
+            Assert.NotNull(g.Summary);
+            Assert.NotEmpty(g.Sections);
+            foreach (var s in g.Sections)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(s.Path), $"{g.Id}: section without a path");
+                Assert.NotEmpty(s.Settings);
+            }
             foreach (var id in g.AutoTweaks)
                 Assert.NotNull(Catalog.Find(id));
         }

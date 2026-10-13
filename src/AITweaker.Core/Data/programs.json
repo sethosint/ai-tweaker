@@ -10,6 +10,7 @@
 
   { "id": "steam", "name": "Steam", "group": "gaming", "winget": "Valve.Steam", "detect": "Steam", "recommended": true },
   { "id": "epic", "name": "Epic Games Launcher", "group": "gaming", "winget": "EpicGames.EpicGamesLauncher", "detect": "Epic Games Launcher", "recommended": true },
+  { "id": "battlenet", "name": "Battle.net", "group": "gaming", "winget": "Blizzard.BattleNet", "detect": "Battle.net", "note": { "ru": "Call of Duty, Overwatch 2, Diablo, WoW.", "en": "Call of Duty, Overwatch 2, Diablo, WoW." } },
   { "id": "ea", "name": "EA app", "group": "gaming", "winget": "ElectronicArts.EADesktop", "detect": "EA app", "recommended": true, "note": { "ru": "Нужен для EA SPORTS FC и других игр EA.", "en": "Required for EA SPORTS FC and other EA games." } },
 
   { "id": "spotify", "name": "Spotify", "group": "media", "winget": "Spotify.Spotify", "detect": "Spotify", "user": true, "recommended": true, "note": { "ru": "Ставится от имени пользователя — установщик Spotify не работает с правами администратора.", "en": "Installed as the regular user — Spotify's installer refuses to run as administrator." } },
@@ -18,6 +19,7 @@
   { "id": "vlc", "name": "VLC", "group": "media", "winget": "VideoLAN.VLC", "detect": "VLC media player" },
   { "id": "capcut", "name": "CapCut", "group": "media", "winget": "ByteDance.CapCut", "detect": "CapCut" },
 
+  { "id": "lightshot", "name": "Lightshot", "group": "tools", "winget": "Skillbrains.Lightshot", "detect": "Lightshot", "recommended": true, "note": { "ru": "Скриншот выделенной области по Print Screen. AI Tweaker сам отдаст ему клавишу PrtSc.", "en": "A screenshot of a selected area on Print Screen. AI Tweaker hands the PrtSc key to it." } },
   { "id": "7zip", "name": "7-Zip", "group": "tools", "winget": "7zip.7zip", "detect": "7-Zip", "recommended": true },
   { "id": "everything", "name": "Everything", "group": "tools", "winget": "voidtools.Everything", "detect": "Everything", "note": { "ru": "Мгновенный поиск файлов по имени.", "en": "Instant file search by name." } },
   { "id": "notepadpp", "name": "Notepad++", "group": "tools", "winget": "Notepad++.Notepad++", "detect": "Notepad++" },

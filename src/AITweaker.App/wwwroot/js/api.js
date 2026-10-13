@@ -64,7 +64,7 @@
     security: { secureBoot: true, tpm: true, vbsRunning: true, hvciRunning: true, hypervisorPresent: true },
     problemDevices: [],
     hasBluetooth: true, hasPrinter: false,
-    apps: ["steam", "discord", "chrome", "edge", "obs", "spotify", "nvidiaApp", "exitlag", "epic", "store", "onedrive"],
+    apps: ["steam", "discord", "chrome", "edge", "obs", "spotify", "nvidiaApp", "exitlag", "epic", "store", "onedrive", "lightshot", "ayugram"],
     systemDriveFreePercent: 41,
   };
   const facts = {

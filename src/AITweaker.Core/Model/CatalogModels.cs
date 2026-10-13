@@ -40,7 +40,6 @@ public sealed class GuideSection
     public required LocalizedText Title { get; init; }
     /// <summary>Settings path inside the app, e.g. "User Settings → Game Overlay".</summary>
     public string Path { get; init; } = "";
-    public string? Image { get; init; }
     public List<GuideSetting> Settings { get; init; } = [];
     public LocalizedText? Note { get; init; }
 }
@@ -53,8 +52,6 @@ public sealed class AppGuide
     /// <summary>Fact that tells whether the app is installed, e.g. <c>app.discord</c>.</summary>
     public string? Detect { get; init; }
     public string? When { get; init; }
-    /// <summary>"master" = recreated from the setup master's screenshots, "ai" = AI Tweaker's own recommendation.</summary>
-    public string Source { get; init; } = "master";
     public LocalizedText? Summary { get; init; }
     public List<GuideSection> Sections { get; init; } = [];
     /// <summary>Catalog tweak ids that automate part of this guide.</summary>

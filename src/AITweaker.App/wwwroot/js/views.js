@@ -283,6 +283,47 @@
 
   // ------------------------------------------------------------------ [06] app guides
 
+  // Each program's settings window, drawn by AI Tweaker from the guide itself in the program's own colours.
+  const SKIN = {
+    discord: { bg: "#313338", side: "#2b2d31", ink: "#f2f3f5", muted: "#b5bac1", accent: "#5865f2", on: "#23a55a" },
+    steam: { bg: "#1f2229", side: "#171a21", ink: "#dcdedf", muted: "#8b929a", accent: "#1a9fff" },
+    "nvidia-app": { bg: "#1c1c1c", side: "#121212", ink: "#eeeeee", muted: "#9a9a9a", accent: "#76b900" },
+    "amd-software": { bg: "#1b1c1e", side: "#111214", ink: "#eeeeee", muted: "#9b9b9b", accent: "#e3262d" },
+    obs: { bg: "#272a33", side: "#1f2128", ink: "#e6e6e6", muted: "#9aa0ad", accent: "#476be6" },
+    spotify: { bg: "#121212", side: "#000000", ink: "#ffffff", muted: "#b3b3b3", accent: "#1ed760" },
+    epic: { bg: "#18181c", side: "#101014", ink: "#f5f5f5", muted: "#a0a0a6", accent: "#26bbff" },
+    exitlag: { bg: "#141821", side: "#0d1017", ink: "#eef1f6", muted: "#8d96a8", accent: "#ff6a13" },
+    "nvidia-control-panel": { bg: "#f3f3f3", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#76b900", light: true },
+    "windows-graphics": { bg: "#272727", side: "#202020", ink: "#ffffff", muted: "#a9a9a9", accent: "#4cc2ff" },
+    openshell: { bg: "#f0f0f0", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#0067c0", light: true },
+    startallback: { bg: "#f9f9f9", side: "#f0f0f0", ink: "#1b1b1b", muted: "#616161", accent: "#0067c0", light: true },
+    cru: { bg: "#f0f0f0", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#0067c0", light: true },
+    chrome: { bg: "#202124", side: "#292a2d", ink: "#e8eaed", muted: "#9aa0a6", accent: "#8ab4f8" },
+    lightshot: { bg: "#f6f5f8", side: "#ffffff", ink: "#202020", muted: "#666666", accent: "#8b3ff0", light: true },
+    telegram: { bg: "#17212b", side: "#0e1621", ink: "#f5f5f5", muted: "#7f91a4", accent: "#2ea6ff" },
+    ea: { bg: "#1d1d2b", side: "#12121c", ink: "#f2f2f7", muted: "#9b9bb0", accent: "#ff4747" },
+    battlenet: { bg: "#16181d", side: "#0e0f12", ink: "#f0f2f5", muted: "#8d94a0", accent: "#148eff" },
+  };
+  const skinOf = (id) => SKIN[id] || { bg: "#1e1f22", side: "#151618", ink: "#eeeeee", muted: "#9a9a9a", accent: "var(--accent)" };
+  const crumbs = (path) => path.split("→").map((x) => x.replace(/\s*\([^)]*\)/g, "").trim()).filter(Boolean);
+  const isToggle = (v) => v === "ON" || v === "OFF";
+
+  function mockWindow(g, si) {
+    const sk = skinOf(g.id), sec = g.sections[si], cr = crumbs(sec.path);
+    const side = [...new Set(g.sections.map((s) => crumbs(s.path).slice(-1)[0] || L(s.title)))];
+    const here = cr.slice(-1)[0] || L(sec.title);
+    return html`<div class="mock ${sk.light ? "light" : ""}" style="--mock-bg:${sk.bg};--mock-side:${sk.side};--mock-ink:${sk.ink};--mock-muted:${sk.muted};--mock-accent:${sk.accent};--mock-on:${sk.on || sk.accent}">
+      <div class="mock-top"><span class="mock-logo">${esc(g.name.slice(0, 1))}</span><span>${esc(g.name)}</span><span class="wc"><i>—</i><i>☐</i><i>✕</i></span></div>
+      <div class="mock-body">
+        <div class="mock-side">${side.map((x) => `<div class="${x === here ? "on" : ""}">${esc(x)}</div>`).join("")}</div>
+        <div class="mock-main">
+          ${cr.length > 1 ? `<div class="mock-crumb">${cr.slice(0, -1).map(esc).join(" › ")}</div>` : ""}
+          <h4>${esc(here)}</h4>
+          ${sec.settings.map((st, i) => { const v = String(st.value); return `<div class="mock-row" style="animation-delay:${60 + i * 45}ms"><span class="mn">${esc(st.name)}</span>${isToggle(v) ? `<span class="mock-tog ${v === "ON" ? "on" : ""}"></span>` : `<span class="mv" title="${esc(v)}">${esc(v)}</span>`}</div>`; }).join("")}
+        </div>
+      </div></div>`;
+  }
+
   V.apps = async (opts = {}) => {
     const v = $("#v-apps");
     if (needScan(v)) return;
@@ -292,9 +333,9 @@
       v.innerHTML = html`
         <div class="page-h"><div><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div></div>
         <div class="cards">${S.guides.map((x) => html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
-          <div class="cn"><span class="app-ico">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
+          <div class="cn"><span class="app-ico" style="--app-c:${skinOf(x.id).accent}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
-          <div class="cf"><span class="chip ${x.installed ? "ok" : ""}">${x.installed ? t("apps.installed") : t("apps.notInstalled")}</span><span class="chip ${x.source === "master" ? "accent" : "info"}">${x.source === "master" ? t("apps.master") : t("apps.ai")}</span><span class="chip">${x.sections.reduce((a, s) => a + s.settings.length, 0)} ${t("apps.settingsN")}</span></div>
+          <div class="cf"><span class="chip ${x.installed ? "ok" : ""}">${x.installed ? t("apps.installed") : t("apps.notInstalled")}</span><span class="chip">${x.sections.reduce((a, s) => a + s.settings.length, 0)} ${t("apps.settingsN")}</span>${(x.autoTweaks || []).length ? `<span class="chip info">${t("apps.hasAuto")}</span>` : ""}</div>
         </div>`).join("")}</div>`;
       v.querySelectorAll("[data-g]").forEach((c) => (c.onclick = () => V.apps({ guide: c.dataset.g })));
       return;
@@ -303,17 +344,14 @@
     v.innerHTML = html`
       <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
         <div class="actions"><button class="btn ghost sm" id="gBack">${t("apps.back")}</button>${auto.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${auto.length})</button>` : ""}</div></div>
-      ${g.sections.map((s) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
-        <div class="gs-l"><h3>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
+      ${g.sections.map((s, si) => html`<div class="guide-sec">
+        <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
           ${s.settings.map((st) => { const vv = String(st.value); const cls = vv === "ON" ? "on" : vv === "OFF" ? "off" : ""; return html`<div class="setting"><div><div class="sn">${esc(st.name)}</div>${st.note ? `<div class="snote">${esc(L(st.note))}</div>` : ""}</div><span class="val ${cls}" title="${esc(vv)}">${esc(vv)}</span></div>`; }).join("")}
           ${s.note ? `<div class="note-box">${esc(L(s.note))}</div>` : ""}</div>
-        ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" title="${t("apps.zoom")}" loading="lazy"></div>` : ""}
+        <div class="gs-r">${mockWindow(g, si)}</div>
       </div>`).join("")}`;
     $("#gBack").onclick = () => V.apps();
     if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(auto);
-    v.querySelectorAll(".gs-r img").forEach((img) => (img.onclick = () => {
-      const ov = document.createElement("div"); ov.className = "overlay lightbox"; ov.innerHTML = `<img src="${img.src}">`; ov.onclick = () => ov.remove(); document.body.append(ov);
-    }));
   };
 
   // ------------------------------------------------------------------ [07] BIOS

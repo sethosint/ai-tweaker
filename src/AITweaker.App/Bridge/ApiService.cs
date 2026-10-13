@@ -326,7 +326,6 @@ public sealed class ApiService
                 g.Id,
                 g.Name,
                 g.Icon,
-                g.Source,
                 g.Summary,
                 g.Sections,
                 g.AutoTweaks,
