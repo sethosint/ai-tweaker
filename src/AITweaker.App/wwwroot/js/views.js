@@ -383,6 +383,7 @@
   // ------------------------------------------------------------------ [09] image (own AI Tweaker image + USB)
 
   const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
+  const rein = { source: "dl", mode: "clean" };
   const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
   const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
@@ -399,6 +400,7 @@
     const src = usb.source === "built" && usb.built ? usb.built.folder : usb.iso;
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("image.title")}</h1><p>${t("image.desc")}</p></div></div>
+      ${reinstallPanel()}
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h">${t("ib.title")}</div><div class="panel-b steps">
           <div class="callout">${t("ib.desc")}</div>
@@ -521,7 +523,60 @@
     v.querySelectorAll("[data-b]").forEach((i) => (i.onchange = () => (o[i.dataset.b] = i.checked)));
     $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
     $("#usbGo").onclick = () => createUsb(src);
+    v.querySelectorAll("input[name=reinsrc]").forEach((r) => (r.onchange = () => { rein.source = r.value; V.image(); }));
+    v.querySelectorAll("input[name=reinmode]").forEach((r) => (r.onchange = () => { rein.mode = r.value; V.image(); }));
+    $("#reinGo").onclick = startReinstall;
+    $("#reinUsb").onclick = () => $(".rein-usb-anchor").scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // ------------------------------------------------------------------ reinstall without a USB stick
+
+  function reinstallPanel() {
+    if (rein.source === "built" && !usb.built) rein.source = "dl";
+    if (rein.source === "iso" && !usb.iso) rein.source = "dl";
+    const opt = (name, value, label, desc, on, dis) => `<label class="rein-opt ${on ? "on" : ""} ${dis ? "dis" : ""}"><input type="radio" name="${name}" value="${value}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span><b>${label}</b>${desc ? `<span>${desc}</span>` : ""}</span></label>`;
+    return html`<div class="panel rein" style="margin-bottom:30px">
+      <div class="panel-h">${t("rein.title")}<span class="right"><button class="btn sm ghost" id="reinUsb">${t("rein.usbBtn")}${icon("arrow")}</button></span></div>
+      <div class="panel-b">
+        <div class="td" style="color:var(--muted);margin-bottom:16px;max-width:900px">${t("rein.desc")}</div>
+        <div class="grid cols-2" style="gap:22px">
+          <div><div class="rein-k">${t("rein.src")}</div><div class="rein-list">
+            ${opt("reinsrc", "dl", t("rein.srcDl").replace("{lang}", esc(usb.lang)), t("rein.srcDlD"), rein.source === "dl")}
+            ${opt("reinsrc", "built", t("rein.srcBuilt"), usb.built ? esc(usb.built.folder) : t("rein.srcBuiltNo"), rein.source === "built", !usb.built)}
+            ${opt("reinsrc", "iso", t("rein.srcIso"), usb.iso ? esc(usb.iso) : t("rein.srcIsoNo"), rein.source === "iso", !usb.iso)}
+          </div></div>
+          <div><div class="rein-k">${t("rein.mode")}</div><div class="rein-list">
+            ${["clean", "dataonly", "upgrade"].map((m) => opt("reinmode", m, t("rein.m." + m), t("rein.m." + m + "D"), rein.mode === m)).join("")}
+          </div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px">
+          <button class="btn hazard" id="reinGo"><span>${t("rein.start")}</span></button>
+          <span class="td" style="color:var(--muted);max-width:720px">${t("rein.note")}</span>
+        </div>
+      </div></div>
+      <div class="rein-usb-anchor"></div>`;
+  }
+
+  async function startReinstall() {
+    const clean = rein.mode === "clean";
+    let typed = "";
+    const res = await modal({
+      title: t("rein.confirmT"), hazard: true,
+      body: html`<div class="confirm-title">${t("rein.m." + rein.mode)}</div><div>${t(clean ? "rein.confirmClean" : "rein.confirm")}</div>
+        ${clean ? `<div>${t("rein.typeYes")}</div><input class="input" id="reinTyped" autocomplete="off">` : ""}`,
+      buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("rein.start"), value: true, cls: clean ? "danger" : "primary" }],
+      onOpen: (ov) => { const i = $("#reinTyped", ov); if (i) { i.focus(); ov.querySelector("[data-i='1']").addEventListener("click", () => (typed = i.value), { capture: true }); } },
+    });
+    if (res !== true) return;
+    if (clean && typed.trim().toUpperCase() !== t("rein.yes").toUpperCase()) { toast(t("rein.notTyped"), "warn"); return; }
+    const b = busy(t("rein.busy"));
+    const off = [API.on("reinstall.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : { fido: 0.03, mount: 0.88, check: 0.92, setup: 0.97 }[p.step] || 0.5, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : ""))),
+      API.on("usb.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : 0.03, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : "")))];
+    let r = null;
+    try { r = await call("reinstall.start", { source: rein.source, iso: usb.iso, mode: rein.mode, language: usb.lang }); } catch { /* toast */ } finally { off.forEach((f) => f()); b.done(); }
+    if (!r) return;
+    await modal({ title: t("rein.startedT"), body: html`<div>${t("rein.started")}</div><div class="callout">${t("rein.after")}</div><div class="tid">${esc(r.setup)} ${esc(r.arguments)}</div>`, buttons: [{ label: t("ok"), cls: "primary" }] });
+  }
 
   async function createUsb(src) {
     const d = usb.disks.find((x) => x.number === usb.disk);

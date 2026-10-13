@@ -389,6 +389,17 @@ label.field { display: grid; gap: 7px; font: 600 10.5px/1.2 var(--font-head); le
 .nv-vers .new b { color: var(--accent); }
 .nv-vers .arrow { display: grid; place-items: center; color: var(--muted); }
 
+.rein-k { font: 600 10.5px/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.rein-list { display: grid; gap: 8px; }
+.rein-opt { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 14px; border-radius: var(--r); background: var(--surface); cursor: pointer; transition: box-shadow .2s, background .15s; }
+.rein-opt:hover { background: var(--surface-2); }
+.rein-opt.on { box-shadow: inset 0 0 0 1.5px var(--accent), 0 10px 30px -18px var(--glow); }
+.rein-opt.dis { opacity: .5; cursor: not-allowed; }
+.rein-opt input { accent-color: var(--accent); margin: 3px 0 0; }
+.rein-opt b { display: block; font-weight: 600; font-size: 13px; }
+.rein-opt span span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; word-break: break-word; }
+.rein-usb-anchor { scroll-margin-top: 20px; }
+
 /* 3D next to a section (drivers, BIOS, tools, image) */
 .hw-side { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; align-items: center; }
 .hw-side > [data-hw] { height: 140px; }

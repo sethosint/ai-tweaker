@@ -161,6 +161,12 @@
       { category: "network", name: profile.network[0].description, vendor: "ethernet", status: "ok", links: [{ title: "ASUS Support", url: "https://www.asus.com/support/download-center/" }] },
     ],
     "drivers.rescan": async () => { await sleep(900); return { exitCode: 0 }; },
+    "reinstall.start": async ({ source }) => {
+      if (source === "dl") { emit("usb.progress", { step: "fido", value: 0 }); await sleep(500); for (let i = 0; i <= 20; i++) { emit("usb.progress", { step: "iso", value: i / 20 }); await sleep(70); } }
+      for (const s of ["mount", "check", "setup"]) { emit("reinstall.progress", { step: s, value: 0 }); await sleep(450); }
+      log("warn", "reinstall", "starting Windows Setup (clean) from E:\\");
+      return { setup: "E:\\setup.exe", arguments: "/auto clean /eula accept /dynamicupdate disable /compat ignorewarning /telemetry disable", imageBuild: 26200 };
+    },
     "nvidia.check": async () => { await sleep(700); return { gpu: "NVIDIA GeForce RTX 5070 Ti", installed: "576.88", installedDate: "2026-03-02T00:00:00", updateAvailable: true, error: null,
       latest: { version: "591.44", name: "GeForce Game Ready Driver", releaseDate: "Tue Sep 22, 2026", url: "https://us.download.nvidia.com/Windows/591.44/591.44-desktop-win10-win11-64bit-international-dch-whql.exe", size: "912.4 MB", detailsUrl: "https://www.nvidia.com/en-us/drivers/" } }; },
     "nvidia.install": async () => {

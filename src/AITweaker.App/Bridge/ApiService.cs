@@ -97,6 +97,9 @@ public sealed class ApiService
         "usb.copyTweaker" => RufusTool.CopyTweakerToSticks(),
         "usb.pickIso" => await _onUi(PickIso),
         "usb.downloadIso" => await Exclusive(() => UsbCreator.DownloadIsoAsync(Str(p, "language") ?? "Russian", (s, v) => _emit("usb.progress", new { step = s, value = v }), NewLongTask())),
+        "reinstall.start" => await Exclusive(async () => await LocalReinstall.StartAsync(await ProfileAsync(),
+            Str(p, "source") switch { "built" => ImageBuilder.OutputFolder, "iso" => Str(p, "iso"), _ => null },
+            Str(p, "mode") ?? "clean", Str(p, "language") ?? "Russian", (s, v) => _emit("reinstall.progress", new { step = s, value = v }), NewLongTask())),
         "usb.preview" => UnattendGenerator.Generate(Unattend(p)),
         "usb.create" => await Exclusive(async () =>
         {
