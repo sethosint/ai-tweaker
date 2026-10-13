@@ -37,7 +37,13 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Extreme", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+  const mockSnap = { cpuIdlePercent: 3.4, dpcPercent: 0.38, interruptPercent: 0.21, dpcPerSec: 1480, interruptsPerSec: 9200, contextSwitchesPerSec: 14800, processes: 214, threads: 3120, services: 126, startupItems: 11,
+    ramUsedGb: 6.84, timerMs: 15.625, sleepAvgMs: 1.62, sleepP99Ms: 2.94, routerPingMs: 2.4, routerJitterMs: 1.9, pingMs: 14.2, jitterMs: 2.6, lossPercent: 0, bootSeconds: 31.4 };
+  const mock = { bench: [
+      { id: "b1", at: "2026-10-12T19:02:00", kind: "system", label: "before", frames: null, system: mockSnap },
+      { id: "g1", at: "2026-10-12T19:10:00", kind: "game", label: "manual", system: null, frames: { app: "cs2.exe", frames: 14820, seconds: 60, avgFps: 247.0, low1Fps: 148.3, low01Fps: 96.1, avgFrameMs: 4.05, p99FrameMs: 6.74, stuttersPerMin: 3.4, latencyMs: 11.2, pcLatencyMs: null, gpuBusyPercent: 68.2, bound: "cpu" } },
+      { id: "b2", at: "2026-10-12T19:48:00", kind: "system", label: "after", frames: null, system: { ...mockSnap, cpuIdlePercent: 1.1, dpcPercent: 0.22, interruptPercent: 0.12, dpcPerSec: 690, interruptsPerSec: 5100, contextSwitchesPerSec: 8300, processes: 131, threads: 1890, services: 84, startupItems: 4, ramUsedGb: 3.92, timerMs: 0.5, sleepAvgMs: 1.04, sleepP99Ms: 1.21, routerPingMs: 1.8, routerJitterMs: 0.6, pingMs: 13.9, jitterMs: 1.1, bootSeconds: 18.7 } },
+    ], applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Extreme", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
     services: [
       ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
       ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
@@ -297,6 +303,36 @@
     },
     "net.flushdns": async () => ({ exitCode: 0 }),
     "net.reset": async () => { await sleep(700); mock.rebootPending = true; log("warn", "network", "demo: Winsock/TCP-IP reset skipped"); return true; },
+    "bench.list": async () => {
+      // demo copy of BenchCompare.Summarize: first vs newest, a flat 1% noise floor
+      const SYS = Object.keys(mockSnap), FR = ["avgFps", "low1Fps", "low01Fps", "p99FrameMs", "stuttersPerMin", "latencyMs", "pcLatencyMs"];
+      const higher = new Set(["avgFps", "low1Fps", "low01Fps"]);
+      const rows = (keys, b, a) => keys.filter((k) => b[k] != null || (a && a[k] != null)).map((k) => {
+        const before = b[k], after = a ? a[k] : null, delta = before != null && after != null ? +(after - before).toFixed(2) : null;
+        const better = delta == null || delta === 0 || k === "timerMs" || Math.abs(delta) < Math.abs(before) * 0.01 ? null : (delta < 0) !== higher.has(k);
+        return { key: k, before, after, delta, deltaPercent: delta != null && before ? +((delta / Math.abs(before)) * 100).toFixed(1) : null, better };
+      });
+      const sys = mock.bench.filter((e) => e.kind === "system");
+      const system = sys.length ? { title: "system", before: sys[0], after: sys.length > 1 ? sys[sys.length - 1] : null, rows: rows(SYS, sys[0].system, sys.length > 1 ? sys[sys.length - 1].system : null) } : null;
+      const byApp = new Map();
+      for (const e of mock.bench.filter((x) => x.kind === "game")) byApp.set(e.frames.app.toLowerCase(), [...(byApp.get(e.frames.app.toLowerCase()) || []), e]);
+      const games = [...byApp.values()].map((l) => ({ title: l[0].frames.app, before: l[0], after: l.length > 1 ? l[l.length - 1] : null, rows: rows(FR, l[0].frames, l.length > 1 ? l[l.length - 1].frames : null) })).reverse();
+      return { entries: mock.bench, presentMon: byApp.size > 0, system, games };
+    },
+    "bench.system": async ({ label }) => {
+      for (const [step, v] of [["counters", 10], ["counters", 40], ["network", 62], ["timer", 78], ["boot", 92]]) { emit("bench.progress", { step, value: v }); await sleep(260); }
+      const prev = mock.bench.filter((e) => e.kind === "system").pop();
+      const k = prev ? 0.8 : 1;
+      const e = { id: "b" + Date.now(), at: new Date().toISOString(), kind: "system", label, frames: null, system: { ...mockSnap, cpuIdlePercent: +(mockSnap.cpuIdlePercent * k).toFixed(1), services: Math.round(mockSnap.services * k), dpcPercent: +(mockSnap.dpcPercent * k).toFixed(2) } };
+      mock.bench.push(e); return e;
+    },
+    "bench.capture": async ({ seconds }) => {
+      for (let i = 0; i <= 10; i++) { emit("bench.progress", { step: i < 3 ? "waiting" : "recording", value: 35 + i * 6 }); await sleep(200); }
+      const e = { id: "g" + Date.now(), at: new Date().toISOString(), kind: "game", label: "manual", system: null, frames: { app: "cs2.exe", frames: seconds * 268, seconds, avgFps: 268.4, low1Fps: 171.2, low01Fps: 118.6, avgFrameMs: 3.73, p99FrameMs: 5.84, stuttersPerMin: 1.2, latencyMs: 9.8, pcLatencyMs: null, gpuBusyPercent: 71.5, bound: "cpu" } };
+      mock.bench.push(e); return e;
+    },
+    "bench.remove": async ({ id }) => { mock.bench = mock.bench.filter((e) => e.id !== id); return true; },
+    "bench.clear": async () => { mock.bench = []; return true; },
     "startup.list": async () => mock.startup,
     "startup.cleanup": async () => { const list = mock.startup.filter((e) => e.enabled && e.suggest === "off"); list.forEach((e) => (e.enabled = false)); log("ok", "startup", `${list.length} startup entries switched off`); return list.length; },
     "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },

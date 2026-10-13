@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Text.Json;
 using AITweaker.App.Platform;
 using AITweaker.Core.Ai;
+using AITweaker.Core.Bench;
 using AITweaker.Core.Bios;
 using AITweaker.Core.Catalog;
 using AITweaker.Core.Conditions;
@@ -113,7 +114,7 @@ public sealed class ApiService
         "report.export" => await ExportReportAsync(),
         "shell.open" => Do(() => ProcessRunner.OpenUrl(Str(p, "url") ?? "")),
         "shell.reveal" => Do(() => ProcessRunner.Reveal(Str(p, "path") ?? "")),
-        "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, _ => AppPaths.Logs })),
+        "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, "bench" => AppPaths.Bench, _ => AppPaths.Logs })),
         "window.theme" => Do(() => ThemeChanged?.Invoke(Str(p, "theme") ?? "day")),
         "system.theme" => SystemThemeReader.Read(),
         "net.test" => await Exclusive(() => NetworkTest.RunAsync(Targets(p), Int(p, "count") ?? 30, (h, i, n) => _emit("net.progress", new { host = h, i, n }), NewLongTask())),
@@ -126,6 +127,14 @@ public sealed class ApiService
         "services.run" => await ServiceManager.StartAsync(Str(p, "name") ?? "", Bool(p, "start") ?? true),
         "services.restore" => await ServiceManager.RestoreAsync(Str(p, "name") ?? ""),
         "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); SettingsStore.MarkRebootPending(); return true; }),
+        "bench.list" => BenchList(),
+        "bench.system" => await Exclusive(async () => BenchStore.Add("system", Str(p, "label") ?? "manual",
+            await SystemBench.RunAsync((s, v) => _emit("bench.progress", new { step = s, value = v }), NewLongTask()), null)),
+        "bench.capture" => await Exclusive(async () => BenchStore.Add("game", Str(p, "label") ?? "manual", null,
+            await PresentMonTool.CaptureAsync(Math.Clamp(Int(p, "seconds") ?? 60, 10, 600), Math.Clamp(Int(p, "delay") ?? 10, 0, 60),
+                (s, v) => _emit("bench.progress", new { step = s, value = v }), NewLongTask()))),
+        "bench.remove" => Do(() => BenchStore.Remove(Str(p, "id") ?? "")),
+        "bench.clear" => Do(BenchStore.Clear),
         "startup.list" => StartupManager.List(),
         "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
         "startup.cleanup" => StartupManager.DisableUnneeded(),
@@ -391,6 +400,13 @@ public sealed class ApiService
                 .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, source = Source(x), x.Store, silent = x.Silent is not null || (x.Installer ?? "").Contains(".msi"), installed = installed.GetValueOrDefault(x.Id) }),
             extensions = _catalog.Extensions.Select(e => new { e.Id, e.Name, e.ExtensionId, e.MinVersion, e.Note, e.StoreUrl }),
         };
+    }
+
+    private static object BenchList()
+    {
+        var entries = BenchStore.List();
+        var (system, games) = BenchCompare.Summarize(entries);
+        return new { entries, presentMon = PresentMonTool.Ready, system, games };
     }
 
     /// <summary>The maker whose BIOS and tools this PC has, and the exact model to look up on its site.</summary>

@@ -121,6 +121,8 @@
     }
     const res = await askQuestions(qs, apps, { total: ids.length });
     if (!res) return;
+    // the very first optimization measures the system first, so there is a "before" to compare with
+    if (App.benchBefore) await App.benchBefore();
     if (res.remove.length) {
       const b = busy(t("busy.appx"));
       let n = 0;
@@ -132,6 +134,7 @@
     const games = await App.loadGames();
     if (games.games.length) { try { await call("games.all", {}, { silent: true }); await App.loadGames(true); } catch { /* the tweaks still run */ } }
     await App.apply(ids.filter((id) => !res.kept.has(id)), { restorePoint: opts.restorePoint ?? S.init.settings.createRestorePoint, preconfirmed: res.off });
+    toast(t("bench.afterToast"), "info", 9000);
   };
 
   // ------------------------------------------------------------------ Game Mode (temporary)
