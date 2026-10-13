@@ -300,15 +300,15 @@
     "games.list": async () => {
       await sleep(300);
       mock.games ||= [
-        { name: "Counter-Strike 2", exe: "D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe", source: "steam", added: false, priority: false, gpu: false },
-        { name: "Dota 2", exe: "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe", source: "steam", added: false, priority: true, gpu: false },
-        { name: "Fortnite", exe: "C:\\Program Files\\Epic Games\\Fortnite\\FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping.exe", source: "epic", added: false, priority: false, gpu: false },
-        { name: "Valorant", exe: "C:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe", source: "manual", added: true, priority: false, gpu: false },
+        { name: "Counter-Strike 2", exe: "D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe", source: "steam", added: false, priority: false, gpu: false, qos: false },
+        { name: "Dota 2", exe: "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe", source: "steam", added: false, priority: true, gpu: false, qos: true },
+        { name: "Fortnite", exe: "C:\\Program Files\\Epic Games\\Fortnite\\FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping.exe", source: "epic", added: false, priority: false, gpu: false, qos: false },
+        { name: "Valorant", exe: "C:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe", source: "manual", added: true, priority: false, gpu: false, qos: false },
       ];
       return { twoGpus: profile.gpus.length >= 2, games: mock.games };
     },
-    "games.set": async (p) => { const g = mock.games.find((x) => x.exe === p.exe); if ("priority" in p) g.priority = p.priority; if ("gpu" in p) g.gpu = p.gpu; return true; },
-    "games.all": async () => { await sleep(300); mock.games.forEach((g) => { g.priority = true; if (profile.gpus.length >= 2) g.gpu = true; }); return mock.games.length; },
+    "games.set": async (p) => { const g = mock.games.find((x) => x.exe === p.exe); if ("priority" in p) g.priority = p.priority; if ("gpu" in p) g.gpu = p.gpu; if ("qos" in p) g.qos = p.qos; return true; },
+    "games.all": async () => { await sleep(300); mock.games.forEach((g) => { g.qos = true; if (profile.gpus.length >= 2) g.gpu = true; }); return mock.games.length; },
     "games.add": async () => { toast("demo: file picker", "warn"); return false; },
     "games.remove": async (p) => { mock.games = mock.games.filter((x) => x.exe !== p.exe); return true; },
     "gamemode.state": async () => mock.game || {

@@ -128,7 +128,7 @@
       try { await call("appx.remove", { names: res.remove }); } catch { /* toast */ } finally { off(); b.done(); }
       S.appx = null;
     }
-    // Every game found gets high CPU priority (and the discrete GPU where there are two) — nothing to ask about.
+    // Every game found gets network priority (and the discrete GPU where there are two) — nothing to ask about.
     const games = await App.loadGames();
     if (games.games.length) { try { await call("games.all", {}, { silent: true }); await App.loadGames(true); } catch { /* the tweaks still run */ } }
     await App.apply(ids.filter((id) => !res.kept.has(id)), { restorePoint: opts.restorePoint ?? S.init.settings.createRestorePoint, preconfirmed: res.off });
@@ -206,14 +206,14 @@
   App.gamesPanel = () => {
     const g = S.games;
     if (!g) return `<div class="games"><div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t("games.loading")}</span></div></div></div>`;
-    const sw = (on, exe, key) => `<button class="gp-sw" data-sw="${key}" data-exe="${esc(exe)}" aria-pressed="${on}"><span class="switch ${on ? "on" : ""}"></span>${t("games." + key)}</button>`;
-    const pending = g.games.filter((x) => !x.priority || (g.twoGpus && !x.gpu)).length;
+    const sw = (on, exe, key) => `<button class="gp-sw ${key === "priority" ? "opt" : ""}" data-sw="${key}" data-exe="${esc(exe)}" aria-pressed="${on}" title="${t("games." + key + "T")}"><span class="switch ${on ? "on" : ""}"></span>${t("games." + key)}</button>`;
+    const pending = g.games.filter((x) => !x.qos || (g.twoGpus && !x.gpu)).length;
     return html`<div class="games">
       <div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t(g.twoGpus ? "games.descGpu" : "games.desc").replace("{n}", g.games.length)}</span></div>
         <div class="actions"><button class="btn ghost sm" id="gpAdd">${t("games.add")}</button>${g.games.length ? `<button class="btn ${pending ? "primary" : "ghost"} sm" id="gpAll" ${pending ? "" : "disabled"}>${pending ? t("games.all") : t("games.allDone")}</button>` : ""}</div></div>
       ${g.games.length ? `<div class="gp-list">${g.games.map((x) => html`<div class="gp-row">
         <div class="gp-n"><b>${esc(x.name)}</b><span class="chip">${t("games.src." + x.source)}</span><small title="${esc(x.exe)}">${esc(x.exe)}</small></div>
-        <div class="gp-ctl">${sw(x.priority, x.exe, "priority")}${g.twoGpus ? sw(x.gpu, x.exe, "gpu") : ""}${x.added ? `<button class="icon-btn sm" data-rm="${esc(x.exe)}" title="${t("games.remove")}">${icon("x")}</button>` : ""}</div>
+        <div class="gp-ctl">${sw(x.qos, x.exe, "qos")}${g.twoGpus ? sw(x.gpu, x.exe, "gpu") : ""}${sw(x.priority, x.exe, "priority")}${x.added ? `<button class="icon-btn sm" data-rm="${esc(x.exe)}" title="${t("games.remove")}">${icon("x")}</button>` : ""}</div>
       </div>`).join("")}</div>` : `<div class="gp-empty">${t("games.none")}</div>`}
     </div>`;
   };

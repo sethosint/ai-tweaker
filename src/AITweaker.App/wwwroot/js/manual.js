@@ -20,16 +20,18 @@
         f["gpu.amd"] ? { id: "amdapp", go: () => go("apps", { guide: "amd-software" }) } : null,
         { id: "vrr" },
       ] },
-      { id: "games", icon: "gamepad", items: [{ id: "reflex" }, { id: "cap" }, { id: "ingame" }, { id: "overlays", go: () => go("apps", { guide: "discord" }) }] },
+      { id: "games", icon: "gamepad", items: [{ id: "reflex" }, { id: "cap" }, { id: "ingame" }, { id: "gamebar" }, { id: "overlays", go: () => go("apps", { guide: "discord" }) }] },
       { id: "windows", icon: "settings", items: [
         { id: "dnd", url: "ms-settings:notifications" },
         { id: "update", url: "ms-settings:windowsupdate" },
+        { id: "audio", url: "ms-settings:sound" },
         { id: "defender", url: "windowsdefender://threatsettings" },
       ] },
       { id: "hardware", icon: "monitor", items: [
         { id: "monitor", go: () => go("tools") },
         { id: "mouse" },
         f["net.wifiOnly"] ? { id: "cable" } : null,
+        { id: "router", url: "https://www.waveform.com/tools/bufferbloat" },
       ] },
     ].map((s) => ({ ...s, items: s.items.filter(Boolean) })).filter((s) => s.items.length || s.id === "bios");
   };

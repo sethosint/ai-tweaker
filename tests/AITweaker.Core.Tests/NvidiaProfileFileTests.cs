@@ -62,6 +62,7 @@ public class NvidiaProfileFileTests
         {
             [0x1057EB71] = "PREFERRED_PSTATE", [0x007BA09E] = "PRERENDERLIMIT", [0x0005F543] = "ULL CPL state",
             [0x10835000] = "ULL enabled", [0x0064B541] = "REFRESH_RATE_OVERRIDE", [0x00CE2691] = "QUALITY_ENHANCEMENTS",
+            [0x00AC8497] = "PS_SHADERDISKCACHE_MAX_SIZE",
         };
         var actions = TweakCatalog.LoadEmbedded().Tweaks.SelectMany(t => t.Actions).OfType<NvidiaProfileAction>().ToList();
         Assert.NotEmpty(actions);

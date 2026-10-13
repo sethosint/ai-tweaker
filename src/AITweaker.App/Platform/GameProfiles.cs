@@ -6,13 +6,14 @@ using Microsoft.Win32;
 namespace AITweaker.App.Platform;
 
 /// <summary>
-/// Per-game settings Windows keeps by executable: high CPU priority (Image File Execution Options → PerfOptions)
-/// and the high-performance GPU on PCs with two graphics adapters (Settings → Display → Graphics).
+/// Per-game settings Windows keeps by executable: network priority (a QoS policy tagging the game's packets DSCP 46,
+/// which routers and Wi-Fi that honour QoS send first), the high-performance GPU on PCs with two graphics adapters
+/// (Settings → Display → Graphics) and, only if the user wants it, high CPU priority (Image File Execution Options).
 /// Games are found in the Steam and Epic libraries; any other .exe can be added by hand.
 /// </summary>
 public static partial class GameProfiles
 {
-    public sealed record Game(string Name, string Exe, string Source, bool Added, bool Priority, bool Gpu);
+    public sealed record Game(string Name, string Exe, string Source, bool Added, bool Priority, bool Gpu, bool Qos = false);
 
     private const string Ifeo = @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
     private const string GpuPrefs = @"HKCU\Software\Microsoft\DirectX\UserGpuPreferences";
@@ -20,6 +21,7 @@ public static partial class GameProfiles
     private const int HighPriority = 3;
 
     private static string AddedFile => Path.Combine(AppPaths.Data, "games.json");
+    private static string QosFile => Path.Combine(AppPaths.Data, "games-qos.json");
 
     /// <summary>Tools, launchers and installers that ship next to the game and must not get its settings.</summary>
     [GeneratedRegex(@"(?i)(unins|setup|install|redist|vc_?redist|dxsetup|directx|crash|report|launcher|helper|update|easyanticheat|eac_|battleye|be_?service|cef|webhelper|dotnet|prereq|bootstrap|server|editor|benchmark|config|settings|7z|uploader|overlay)")]
@@ -33,7 +35,7 @@ public static partial class GameProfiles
         var games = Detect().Concat(LoadAdded().Select(e => new Game(Path.GetFileNameWithoutExtension(e), e, "manual", true, false, false)))
             .Where(g => File.Exists(g.Exe))
             .GroupBy(g => g.Exe, StringComparer.OrdinalIgnoreCase).Select(g => g.First())
-            .Select(g => g with { Priority = HasPriority(g.Exe), Gpu = HasGpu(g.Exe) })
+            .Select(g => g with { Priority = HasPriority(g.Exe), Gpu = HasGpu(g.Exe), Qos = LoadQos().Contains(g.Exe, StringComparer.OrdinalIgnoreCase) })
             .OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
         return new { twoGpus = TwoGpus(profile), games };
@@ -42,7 +44,7 @@ public static partial class GameProfiles
     /// <summary>Two graphics adapters (integrated + discrete): only then does the GPU choice mean anything.</summary>
     public static bool TwoGpus(SystemProfile profile) => profile.Gpus.Count >= 2;
 
-    public static bool Set(string exe, bool? priority, bool? gpu)
+    public static async Task<bool> SetAsync(string exe, bool? priority, bool? gpu, bool? qos)
     {
         if (!File.Exists(exe) || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("not a program: " + exe);
         var perf = $@"{Ifeo}\{Path.GetFileName(exe)}\PerfOptions";
@@ -50,21 +52,48 @@ public static partial class GameProfiles
         if (priority == false && HasPriority(exe)) RegistryHelper.DeleteValue(perf, "CpuPriorityClass");
         if (gpu == true) RegistryHelper.Write(GpuPrefs, exe, HighGpu, RegistryValueKind.String);
         if (gpu == false && HasGpu(exe)) RegistryHelper.DeleteValue(GpuPrefs, exe);
-        AppLog.Ok("games", $"{Path.GetFileName(exe)}: priority {Show(priority)}, GPU {Show(gpu)}");
+        if (qos is { } q) await SetQosAsync([exe], q);
+        AppLog.Ok("games", $"{Path.GetFileName(exe)}: priority {Show(priority)}, GPU {Show(gpu)}, QoS {Show(qos)}");
         return true;
     }
 
-    /// <summary>Every game found gets high priority, and the discrete GPU where there are two.</summary>
-    public static int SetAll(SystemProfile profile)
+    /// <summary>Every game found gets network priority, and the discrete GPU where there are two. CPU priority stays the user's call.</summary>
+    public static async Task<int> SetAllAsync(SystemProfile profile)
     {
         bool gpu = TwoGpus(profile);
-        int n = 0;
-        foreach (var g in Detect().Concat(LoadAdded().Select(e => new Game("", e, "manual", true, false, false))).Where(g => File.Exists(g.Exe)))
+        var exes = Detect().Select(g => g.Exe).Concat(LoadAdded()).Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (gpu) foreach (var e in exes) RegistryHelper.Write(GpuPrefs, e, HighGpu, RegistryValueKind.String);
+        await SetQosAsync(exes, true);
+        AppLog.Ok("games", $"{exes.Count} games: QoS on{(gpu ? ", high-performance GPU" : "")}");
+        return exes.Count;
+    }
+
+    /// <summary>
+    /// One QoS policy per game (New-NetQosPolicy, DSCP 46 "Expedited Forwarding"). Windows only tags packets on PCs
+    /// outside a domain when "Do not use NLA" is set. It only helps where the router or Wi-Fi honours DSCP; it never hurts.
+    /// </summary>
+    private static async Task SetQosAsync(IReadOnlyCollection<string> exes, bool on)
+    {
+        if (exes.Count == 0) return;
+        var lines = new List<string>();
+        if (on) lines.Add(@"New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\QoS' -Force | Out-Null; Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\QoS' -Name 'Do not use NLA' -Value '1' -Type String");
+        foreach (var exe in exes)
         {
-            Set(g.Exe, true, gpu ? true : null);
-            n++;
+            var name = ProcessRunner.PsQuote("AITweaker " + Path.GetFileName(exe));
+            lines.Add($"Remove-NetQosPolicy -Name {name} -Confirm:$false -ErrorAction SilentlyContinue");
+            if (on) lines.Add($"New-NetQosPolicy -Name {name} -AppPathNameMatchCondition {ProcessRunner.PsQuote(Path.GetFileName(exe))} -DSCPAction 46 -NetworkProfile All -ErrorAction Stop | Out-Null");
         }
-        return n;
+        var r = await ProcessRunner.PowerShellAsync(string.Join("\n", lines), TimeSpan.FromMinutes(2));
+        if (!r.Success) throw new InvalidOperationException("QoS: " + (r.Error.Length > 0 ? r.Error : r.Output).Trim());
+        var set = LoadQos().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in exes) { if (on) set.Add(e); else set.Remove(e); }
+        File.WriteAllText(QosFile, JsonSerializer.Serialize(set.ToList()));
+    }
+
+    private static List<string> LoadQos()
+    {
+        try { return File.Exists(QosFile) ? JsonSerializer.Deserialize<List<string>>(File.ReadAllText(QosFile)) ?? [] : []; }
+        catch (Exception ex) when (ex is IOException or JsonException) { return []; }
     }
 
     public static bool Add(string exe)
@@ -77,12 +106,12 @@ public static partial class GameProfiles
     }
 
     /// <summary>Forgets a game added by hand and takes its settings back off.</summary>
-    public static bool Remove(string exe)
+    public static async Task<bool> RemoveAsync(string exe)
     {
         var list = LoadAdded();
         list.RemoveAll(e => e.Equals(exe, StringComparison.OrdinalIgnoreCase));
         File.WriteAllText(AddedFile, JsonSerializer.Serialize(list));
-        if (File.Exists(exe)) Set(exe, false, false);
+        if (File.Exists(exe)) await SetAsync(exe, false, false, false);
         return true;
     }
 

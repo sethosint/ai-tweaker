@@ -171,21 +171,16 @@
   {
     "id": "system.svchost-split",
     "category": "system",
-    "level": 3,
+    "level": 0,
     "when": "ram.gb >= 16",
     "reboot": true,
     "name": { "ru": "Меньше процессов svchost", "en": "Fewer svchost processes" },
     "description": {
-      "ru": "Порог разделения служб поднимается до объёма ОЗУ: службы группируются в меньшее число процессов svchost — меньше переключений контекста и расход памяти.",
-      "en": "Raises the service split threshold to your RAM size: services are grouped into fewer svchost processes — less context switching and memory overhead."
+      "ru": "Службы группируются в меньшее число процессов svchost. Это лишь чуть меньше процессов в Диспетчере задач: прироста FPS или снижения задержки нет, а сбой одной службы может уронить соседние. Только вручную.",
+      "en": "Services are grouped into fewer svchost processes. That only means a few fewer processes in Task Manager: no FPS or latency gain, and one failing service can take its neighbours down. Manual only."
     },
     "actions": [
-      {
-        "type": "powershell",
-        "script": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value ([int]([Math]::Min($kb, 2147483647)))",
-        "undo": "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value 3670016",
-        "check": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); $v = (Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control').SvcHostSplitThresholdInKB; if ($v -ge [Math]::Min($kb, 2147483647)) { '1' } else { '0' }"
-      }
+      { "type": "powershell", "script": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value ([int]([Math]::Min($kb, 2147483647)))", "undo": "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name SvcHostSplitThresholdInKB -Type DWord -Value 3670016", "check": "$kb = [int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1KB); $v = (Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control').SvcHostSplitThresholdInKB; if ($v -ge [Math]::Min($kb, 2147483647)) { '1' } else { '0' }" }
     ]
   },
   {
@@ -578,6 +573,24 @@
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsStore", "name": "AutoDownload", "kind": "dword", "value": 2 }
+    ]
+  },
+  {
+    "id": "system.fth.off",
+    "category": "system",
+    "level": 2,
+    "reboot": true,
+    "name": { "ru": "Отключить Fault Tolerant Heap", "en": "Disable the Fault Tolerant Heap" },
+    "description": {
+      "ru": "Если программа несколько раз падала, Windows молча включает для неё «страховку» кучи памяти, которая замедляет её навсегда. Игры падают часто — и потом тихо работают медленнее. Отключение описано в документации Microsoft.",
+      "en": "Once a program has crashed a few times, Windows silently turns on heap 'insurance' for it, which slows it down for good. Games crash a lot — and then quietly run slower. Turning it off is documented by Microsoft."
+    },
+    "why": {
+      "ru": "Рекомендация PC-Tuning; механизм описан Microsoft.",
+      "en": "Recommended by PC-Tuning; the mechanism is documented by Microsoft."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\FTH", "name": "Enabled", "kind": "dword", "value": 0 }
     ]
   }
 ]

@@ -231,7 +231,7 @@
       "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
       "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
-    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "privacy.nvidia-telemetry"],
+    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "gaming.nvidia-shader-cache", "privacy.nvidia-telemetry"],
     "sections": [
       {
         "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
@@ -243,7 +243,7 @@
           { "name": "Vertical Sync", "value": "Off", "note": { "ru": "С G-SYNC: On + ограничение FPS ниже частоты экрана.", "en": "With G-SYNC: On + an FPS cap below the refresh rate." } },
           { "name": "Max Frame Rate", "value": "Off", "note": { "ru": "С G-SYNC — частота экрана минус 3 (например 177 для 180 Гц).", "en": "With G-SYNC — refresh rate minus 3 (e.g. 177 for 180 Hz)." } },
           { "name": "Background Application Max Frame Rate", "value": "Off" },
-          { "name": "Shader Cache Size", "value": "Driver Default" },
+          { "name": "Shader Cache Size", "value": "Unlimited", "note": { "ru": "AI Tweaker выставляет сам.", "en": "AI Tweaker sets it itself." } },
           { "name": "Threaded Optimization", "value": "Auto" },
           { "name": "Image Scaling", "value": "Off" }
         ],

@@ -122,15 +122,14 @@
   {
     "id": "gaming.mmcss",
     "category": "gaming",
-    "level": 2,
+    "level": 0,
     "name": { "ru": "Приоритет игр в планировщике мультимедиа", "en": "Game priority in the multimedia scheduler" },
     "description": {
-      "ru": "MMCSS резервирует меньше CPU для фоновых задач (10% вместо 20%), снимает ограничение сетевых пакетов и даёт играм высокий приоритет GPU и ввода-вывода.",
-      "en": "MMCSS reserves less CPU for background tasks (10% instead of 20%), lifts network packet throttling and gives games high GPU and I/O priority."
+      "ru": "Старый популярный твик планировщика мультимедиа (MMCSS). Замеры (djdallmann) показали, что игры не регистрируются в задаче «Games», поэтому её параметры почти ни на что не влияют. Снятие сетевого ограничения (NetworkThrottlingIndex) убрано: по замерам оно повышало задержку сетевого драйвера. Оставлен только для ручного применения.",
+      "en": "An old, popular multimedia scheduler (MMCSS) tweak. Measurements (djdallmann) found games don't register with the 'Games' task, so its values hardly matter. Lifting the network throttle (NetworkThrottlingIndex) was removed: measured, it raised network driver latency. Kept for manual use only."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "SystemResponsiveness", "kind": "dword", "value": 10 },
-      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "NetworkThrottlingIndex", "kind": "dword", "value": 4294967295 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "GPU Priority", "kind": "dword", "value": 8 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Priority", "kind": "dword", "value": 6 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Scheduling Category", "kind": "string", "value": "High" },
@@ -268,6 +267,24 @@
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "UseNexusForGameBarEnabled", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "ShowStartupPanel", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "DisabledHotkeys", "kind": "string", "value": "G" }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-shader-cache",
+    "category": "gaming",
+    "level": 2,
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: кэш шейдеров без ограничения", "en": "NVIDIA: unlimited shader cache" },
+    "description": {
+      "ru": "Размер кэша шейдеров → «Без ограничений» (как в NVIDIA App). Большие игры перестают вытеснять уже скомпилированные шейдеры и снова статтерить при их пересборке. Кэш может занять десятки гигабайт на системном диске.",
+      "en": "Shader cache size → Unlimited (as in NVIDIA App). Big games stop evicting shaders they already compiled and stuttering again while rebuilding them. The cache can take tens of gigabytes on the system drive."
+    },
+    "why": {
+      "ru": "Рекомендация PC-Tuning; ID параметра — из официального заголовка NVAPI.",
+      "en": "Recommended by PC-Tuning; the setting ID is from NVIDIA's official NVAPI header."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x00AC8497", "name": "Shader disk cache maximum size", "value": 4294967295, "default": 16384 }] }
     ]
   }
 ]

@@ -187,5 +187,34 @@
       { "type": "powercfg", "alias": "Sleep after", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "29f6c1db-86da-48c5-9fdb-f2b67b1f44da", "ac": 0 },
       { "type": "powercfg", "alias": "Turn off display after", "subgroup": "7516b95f-f776-4464-8c53-06167f40cc99", "setting": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e", "ac": 900 }
     ]
+  },
+  {
+    "id": "power.sata-lpm.off",
+    "category": "power",
+    "level": 2,
+    "when": "disk.hdd || (disk.systemSsd && !disk.systemNvme)",
+    "name": { "ru": "SATA-диски без энергосбережения связи", "en": "SATA drives without link power saving" },
+    "description": {
+      "ru": "Связь с SATA SSD и HDD не засыпает (режим «Активный» вместо HIPM/DIPM), поэтому подгрузка уровней и текстур не ждёт её пробуждения. Скрытая настройка схемы питания, описана Microsoft.",
+      "en": "The link to SATA SSDs and HDDs never sleeps (Active instead of HIPM/DIPM), so loading levels and textures doesn't wait for it to wake. A hidden power plan setting documented by Microsoft."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "AHCI Link Power Management - HIPM/DIPM", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "0b2d69d7-a2a1-449c-9680-f91c70521c60", "ac": 0 },
+      { "type": "powercfg", "alias": "AHCI Link Power Management - HIPM/DIPM (battery)", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "0b2d69d7-a2a1-449c-9680-f91c70521c60", "dc": 0, "when": "system.desktop" }
+    ]
+  },
+  {
+    "id": "power.usb3-lpm.off",
+    "category": "power",
+    "level": 2,
+    "name": { "ru": "USB 3 без энергосбережения связи", "en": "USB 3 without link power saving" },
+    "description": {
+      "ru": "Порты USB 3 не уходят в режимы сна U1/U2. Важно для VR-шлемов, USB-звуковых карт, карт захвата и хабов: без этого бывают щелчки, обрывы и задержки после простоя. Мыши и клавиатуры на USB 2 это не затрагивает.",
+      "en": "USB 3 ports don't drop into U1/U2 sleep states. Matters for VR headsets, USB audio interfaces, capture cards and hubs: otherwise there can be clicks, dropouts and delays after idling. USB 2 mice and keyboards aren't affected."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "USB 3 Link Power Management", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "d4e98f31-5ffe-4ce1-be31-1b38b384c009", "ac": 0 },
+      { "type": "powercfg", "alias": "USB 3 Link Power Management (battery)", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "d4e98f31-5ffe-4ce1-be31-1b38b384c009", "dc": 0, "when": "system.desktop" }
+    ]
   }
 ]

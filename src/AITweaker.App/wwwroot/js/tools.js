@@ -1,6 +1,6 @@
 /* Tools — network quality, memory, display mode (stretched resolutions), startup apps, cleanup. */
 (function () {
-  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "shader-directx", "crash-dumps"]), freed: null, displays: null, dev: null, res: null, hz: null, dns: null, dnsBench: null, dnsPick: null };
+  const st = { net: null, custom: "", startup: null, clean: null, cleanSel: new Set(["temp-user", "temp-windows", "crash-dumps"]), freed: null, displays: null, dev: null, res: null, hz: null, dns: null, dnsBench: null, dnsPick: null };
   const DNS = [["auto", ""], ["cloudflare", "1.1.1.1"], ["google", "8.8.8.8"], ["quad9", "9.9.9.9"]];
   const gcd = (a, b) => (b ? gcd(b, a % b) : a);
   function aspect(w, h) {

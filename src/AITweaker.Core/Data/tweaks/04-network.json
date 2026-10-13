@@ -15,15 +15,14 @@
   {
     "id": "network.nagle.off",
     "category": "network",
-    "level": 2,
+    "level": 0,
     "name": { "ru": "Отключить алгоритм Нейгла", "en": "Disable Nagle's algorithm" },
     "description": {
-      "ru": "TCP-пакеты отправляются сразу, а не копятся для «экономии». Помогает играм и программам, работающим по TCP (MMO, некоторые шутеры, голосовые чаты).",
-      "en": "TCP packets go out immediately instead of being batched. Helps games and apps that use TCP (MMOs, some shooters, voice chat)."
+      "ru": "TCP-подтверждения отправляются сразу. Помогает только играм, которые работают по TCP (World of Warcraft, часть MMO); большинство игр используют UDP, и им это не даёт ничего. Microsoft советует оставлять по умолчанию, поэтому — только вручную.",
+      "en": "TCP acknowledgements are sent immediately. Only helps games that run over TCP (World of Warcraft, some MMOs); most games use UDP and get nothing from it. Microsoft advises keeping the default, so it's manual only."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TcpAckFrequency", "kind": "dword", "value": 1, "onlyIfKeyExists": true },
-      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TCPNoDelay", "kind": "dword", "value": 1, "onlyIfKeyExists": true },
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\*", "name": "TcpDelAckTicks", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
     ]
   },
@@ -34,27 +33,11 @@
     "when": "!system.vm",
     "name": { "ru": "Без энергосбережения сетевой карты", "en": "No NIC power saving" },
     "description": {
-      "ru": "Отключает Energy Efficient Ethernet, Green Ethernet и режимы сна адаптера, из-за которых бывают скачки пинга и обрывы. Применяется только к параметрам, которые есть у вашего драйвера.",
-      "en": "Disables Energy Efficient Ethernet, Green Ethernet and adapter sleep modes that cause ping spikes and drops. Only touches properties your driver actually exposes."
+      "ru": "Отключает Energy Efficient Ethernet, Green Ethernet, объединение DMA (Intel прямо пишет, что оно может повышать задержку сети) и режимы сна адаптера, из-за которых бывают скачки пинга и обрывы. Применяется только к параметрам, которые есть у вашего драйвера.",
+      "en": "Turns off Energy Efficient Ethernet, Green Ethernet, DMA coalescing (Intel itself says it may increase network latency) and the adapter's sleep modes that cause ping spikes and drops. Only touches the properties your driver actually has."
     },
     "actions": [
-      {
-        "type": "nic",
-        "target": "ethernet",
-        "keywords": {
-          "*EEE": "0",
-          "EEE": "0",
-          "AdvancedEEE": "0",
-          "EEELinkAdvertisement": "0",
-          "EnableGreenEthernet": "0",
-          "GreenEthernet": "0",
-          "PowerSavingMode": "0",
-          "*SelectiveSuspend": "0",
-          "ULPMode": "0",
-          "AutoDisableGigabit": "0",
-          "*DeviceSleepOnDisconnect": "0"
-        }
-      }
+      { "type": "nic", "target": "ethernet", "keywords": { "*EEE": "0", "EEE": "0", "AdvancedEEE": "0", "EEELinkAdvertisement": "0", "EnableGreenEthernet": "0", "GreenEthernet": "0", "PowerSavingMode": "0", "*SelectiveSuspend": "0", "ULPMode": "0", "AutoDisableGigabit": "0", "*DeviceSleepOnDisconnect": "0", "DMACoalescing": "0", "SipsEnabled": "0", "ReduceSpeedOnPowerDown": "0" } }
     ]
   },
   {

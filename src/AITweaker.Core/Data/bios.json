@@ -173,5 +173,6 @@
       "asrock": "Advanced → CPU Configuration → SVM Mode / Intel Virtualization Technology",
       "other": "CPU Configuration → SVM / VT-x"
     }
-  }
+  },
+  { "id": "vendor-software", "priority": "low", "value": "Disabled", "title": { "ru": "Автоустановка программ платы из BIOS", "en": "Board software auto-install from the BIOS" }, "detail": { "ru": "Платы ASUS, MSI, Gigabyte и ASRock после каждой переустановки Windows сами ставят Armoury Crate, MSI Center и т. п. — это фоновые службы и автозагрузка, которые не нужны для игр.", "en": "ASUS, MSI, Gigabyte and ASRock boards install Armoury Crate, MSI Center and the like after every Windows reinstall — background services and startup entries games don't need." }, "paths": { "asus": "Tool → ASUS Armoury Crate → Download & Install ARMOURY CRATE app", "asrock": "Tool → Auto Driver Installer", "other": "Tool / Advanced → Armoury Crate / MSI Driver Utility Installer / GIGABYTE Utilities Downloader / Auto Driver Installer" } }
 ]
