@@ -862,8 +862,8 @@
     "detect": "app.nvidiaApp",
     "when": "gpu.nvidia",
     "summary": {
-      "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
-      "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
+      "ru": "Все глобальные настройки графики на минимальную задержку, G-SYNC Compatible по DisplayPort, полный диапазон RGB, без автооптимизации, фоторежима, RTX Video и телеметрии.",
+      "en": "All global graphics settings for the lowest latency, G-SYNC Compatible over DisplayPort, full-range RGB, no automatic optimization, photo mode, RTX Video or telemetry."
     },
     "autoTweaks": [
       "gaming.nvidia-3d",
@@ -1076,28 +1076,127 @@
         "path": "NVIDIA App → System → Displays",
         "settings": [
           {
-            "name": "Refresh rate",
-            "value": "Maximum"
-          },
-          {
-            "name": "Enable G-SYNC, G-SYNC Compatible",
-            "value": "ON",
+            "name": "G-SYNC",
+            "value": "ON — G-SYNC Compatible",
             "note": {
-              "ru": "Если монитор поддерживает (FreeSync/G-SYNC).",
-              "en": "If the monitor supports it (FreeSync/G-SYNC)."
+              "ru": "У NVIDIA G-SYNC Compatible работает по DisplayPort (по HDMI — только HDMI 2.1). Если монитор подключён по HDMI 2.0, G-SYNC тут будет Off, а частота ниже максимальной: ASUS VG279QM, например, даёт 280 Гц только по DP, по HDMI — 240 Гц. У ноутбука ищите DisplayPort или USB-C с DP, идущий от видеокарты.",
+              "en": "NVIDIA runs G-SYNC Compatible over DisplayPort (over HDMI only with HDMI 2.1). On an HDMI 2.0 connection G-SYNC shows Off and the refresh rate stays below the maximum: an ASUS VG279QM does 280 Hz only over DP, 240 Hz over HDMI. On a laptop use DisplayPort or a USB-C port with DP wired to the GPU."
             }
           },
           {
-            "name": "G-SYNC mode",
-            "value": "Full screen"
+            "name": "Surround",
+            "value": "Not enabled"
           },
           {
-            "name": "Output dynamic range",
-            "value": "Full"
+            "name": "Resolution",
+            "value": "родное или ваше растянутое / native or your stretched",
+            "note": {
+              "ru": "Например, 1720×1080 для CS2 — растягивается видеокартой, см. «Масштабирование».",
+              "en": "E.g. 1720×1080 for CS2 — stretched by the GPU, see Scaling."
+            }
           },
           {
-            "name": "Output color depth",
-            "value": "Highest available"
+            "name": "Refresh Rate",
+            "value": "Maximum"
+          },
+          {
+            "name": "Orientation",
+            "value": "Landscape"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Масштабирование",
+          "en": "Scaling"
+        },
+        "path": "NVIDIA App → System → Displays → Scaling",
+        "settings": [
+          {
+            "name": "Mode",
+            "value": "Full-screen",
+            "note": {
+              "ru": "Растянутое разрешение заполняет экран без чёрных полос.",
+              "en": "A stretched resolution fills the screen without black bars."
+            }
+          },
+          {
+            "name": "Scaling Device",
+            "value": "GPU",
+            "note": {
+              "ru": "Масштабирует видеокарта — без задержки скейлера монитора.",
+              "en": "The GPU does the scaling — no monitor scaler lag."
+            }
+          },
+          {
+            "name": "Override the scaling mode set by games and programs",
+            "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Цвет",
+          "en": "Color"
+        },
+        "path": "NVIDIA App → System → Displays → Color",
+        "settings": [
+          {
+            "name": "Output Color Settings",
+            "value": "NVIDIA"
+          },
+          {
+            "name": "Output Color Format",
+            "value": "RGB"
+          },
+          {
+            "name": "Output Color Depth",
+            "value": "8 bpc",
+            "note": {
+              "ru": "Или максимум, который даёт подключение.",
+              "en": "Or the highest the connection allows."
+            }
+          },
+          {
+            "name": "Desktop Color Depth",
+            "value": "Highest (32-bit)"
+          },
+          {
+            "name": "Output Dynamic Range",
+            "value": "Full",
+            "note": {
+              "ru": "По HDMI драйвер часто ставит Limited — картинка становится блёклой. Ставьте Full.",
+              "en": "Over HDMI the driver often picks Limited and the picture looks washed out. Set Full."
+            }
+          },
+          {
+            "name": "Color Accuracy Mode",
+            "value": "Accurate"
+          },
+          {
+            "name": "Override to reference mode",
+            "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Видео",
+          "en": "Video"
+        },
+        "path": "NVIDIA App → System → Video → RTX Video Enhancements",
+        "settings": [
+          {
+            "name": "Super Resolution",
+            "value": "Off",
+            "note": {
+              "ru": "Апскейл видео в браузере грузит видеокарту — в фоне во время игры это минус FPS.",
+              "en": "Upscaling browser video loads the GPU — minus FPS when it runs in the background during a game."
+            }
+          },
+          {
+            "name": "HDR",
+            "value": "Disabled"
           }
         ]
       },
