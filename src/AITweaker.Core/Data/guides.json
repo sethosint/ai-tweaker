@@ -475,6 +475,14 @@
         "path": "Steam → Settings → Interface",
         "settings": [
           {
+            "name": "Client Beta Participation",
+            "value": "No beta chosen",
+            "note": {
+              "ru": "Стабильный клиент: бета-версии иногда ломают оверлей и загрузки.",
+              "en": "The stable client: betas sometimes break the overlay and downloads."
+            }
+          },
+          {
             "name": "Start Up Location",
             "value": "Library"
           },
@@ -560,6 +568,14 @@
         },
         "path": "Steam → Settings → Downloads",
         "settings": [
+          {
+            "name": "Download region",
+            "value": "ближайший регион / nearest region",
+            "note": {
+              "ru": "Ставьте свою страну или ближайшую соседнюю — максимальная скорость загрузки.",
+              "en": "Pick your country or the nearest neighbour — fastest downloads."
+            }
+          },
           {
             "name": "Limit download speed",
             "value": "OFF"
