@@ -23,6 +23,7 @@
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*" LogicalName="web/%(RecursiveDir)%(Filename)%(Extension)" />
     <EmbeddedResource Include="Assets\Wallpapers\*.jpg" LogicalName="AITweaker.Wallpapers.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets\playbook.png" LogicalName="AITweaker.Playbook.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />

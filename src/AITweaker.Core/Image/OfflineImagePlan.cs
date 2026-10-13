@@ -38,7 +38,7 @@ public sealed class OfflineImageOptions
     public bool CleanupComponents { get; set; } = true;
     /// <summary>Download the latest cumulative update for the image's Windows version and integrate it.</summary>
     public bool IntegrateUpdates { get; set; } = true;
-    /// <summary>Bake the AI Tweaker look (category "look") into the default user profile, regardless of <see cref="MaxLevel"/>.</summary>
+    /// <summary>Bake the AI Tweaker look (category "look", level 1+) into the default user profile, regardless of <see cref="MaxLevel"/>.</summary>
     public bool ApplyLook { get; set; } = true;
 }
 
@@ -81,7 +81,7 @@ public sealed class OfflineImagePlan
         foreach (var t in catalog.Tweaks)
         {
             bool wanted = explicitIds is not null ? explicitIds.Contains(t.Id)
-                : t.Category == "look" ? options.ApplyLook
+                : t.Category == "look" ? options.ApplyLook && t.Level >= 1 // level 0 = optional alternatives (e.g. wallpaper art)
                 : t.Level >= 1 && t.Level <= options.MaxLevel && !t.Confirm;
             if (!wanted) continue;
 
@@ -174,7 +174,7 @@ public sealed class OfflineImagePlan
     }
 
     /// <summary>The wallpaper file is copied into the image; new accounts and the lock screen point at it.</summary>
-    private static IEnumerable<OfflineRegistryOp> Wallpaper(WallpaperAction w, string id)
+    internal static IEnumerable<OfflineRegistryOp> Wallpaper(WallpaperAction w, string id)
     {
         if (w.Target == "lock")
         {
@@ -187,6 +187,10 @@ public sealed class OfflineImagePlan
         yield return new(OfflineHive.DefaultUser, @"Control Panel\Desktop", "WallPaper", RegistryValueKind2.String, w.File, false, id);
         yield return new(OfflineHive.DefaultUser, @"Control Panel\Desktop", "WallpaperStyle", RegistryValueKind2.String, "10", false, id);
         yield return new(OfflineHive.DefaultUser, @"Control Panel\Desktop", "TileWallpaper", RegistryValueKind2.String, "0", false, id);
+        // 1 = solid colour, 0 = picture (and no Windows Spotlight on the desktop)
+        yield return new(OfflineHive.DefaultUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers", "BackgroundType", RegistryValueKind2.Dword, w.SolidBlack ? "1" : "0", false, id);
+        if (w.SolidBlack)
+            yield return new(OfflineHive.DefaultUser, @"Control Panel\Colors", "Background", RegistryValueKind2.String, LookAssets.BlackRgb, false, id);
     }
 
     /// <summary>DWORD as signed decimal, binary as base64, multi-string as a JSON array, the rest verbatim.</summary>

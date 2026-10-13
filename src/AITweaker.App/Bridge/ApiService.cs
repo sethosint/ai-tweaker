@@ -28,6 +28,8 @@ public sealed class ApiService
 
     public Action<string>? ThemeChanged { get; set; }
 
+    private NvidiaDriverStatus? _nvidia;
+
     public ApiService(Func<Func<object?>, Task<object?>> onUi, Action<string, object?> emit)
     {
         _engine = new RecommendationEngine(_catalog);
@@ -48,22 +50,56 @@ public sealed class ApiService
         "restore.create" => await Exclusive(() => RestorePoint.CreateAsync("AI Tweaker — manual restore point")),
         "restore.open" => Do(RestorePoint.OpenSystemRestore),
         "appx.list" => await AppxListAsync(),
+        "appx.restore" => await Exclusive(() => Platform.Actions.AppxOps.RestoreAsync(Str(p, "name") ?? "",
+            _catalog.Apps.FirstOrDefault(a => a.Package.Equals(Str(p, "name"), StringComparison.OrdinalIgnoreCase))?.StoreId, NewLongTask())),
         "appx.remove" => await Exclusive(() => Platform.Actions.AppxOps.RemoveAsync(Ids(p, "names") ?? [], n => _emit("appx.progress", n))),
         "drivers.list" => DriverCenter.Build(await ProfileAsync()),
         "drivers.rescan" => await DriverCenter.RescanAsync(),
+        "nvidia.check" => _nvidia = await NvidiaTools.CheckAsync(await ProfileAsync()),
+        "nvidia.install" => await Exclusive(async () =>
+        {
+            var offer = (_nvidia ??= await NvidiaTools.CheckAsync(await ProfileAsync())).Latest
+                ?? throw new InvalidOperationException(_nvidia.Error ?? "No driver found for this card");
+            var r = await NvidiaTools.InstallAsync(offer, Bool(p, "hdAudio") ?? true, Bool(p, "physX") ?? true, Bool(p, "clean") ?? true,
+                (step, v) => _emit("nvidia.progress", new { step, value = v }), NewLongTask());
+            _profile = null; // the new driver version shows up on the next scan
+            _nvidia = null;
+            return r;
+        }),
         "guides.list" => await GuidesAsync(),
+        "programs.list" => await Task.Run(Programs),
+        "features.list" => await FeaturesAsync(),
+        "display.modes" => DisplayModes.List(),
+        "display.set" => DisplayModes.Set(Str(p, "device") ?? "", Int(p, "width") ?? 0, Int(p, "height") ?? 0, Int(p, "hz") ?? 0, 15),
+        "display.keep" => DisplayModes.Keep(Str(p, "device") ?? ""),
+        "display.revert" => DisplayModes.Revert(Str(p, "device") ?? ""),
+        "programs.install" => await Exclusive(async () =>
+        {
+            var summary = await ProgramInstaller.InstallAsync(_catalog, Ids(p) ?? [], (i, n, name) => _emit("install.progress", new { i, n, name }), NewLongTask());
+            if (summary.RebootRequired) SettingsStore.MarkRebootPending();
+            _profile = null; // newly installed apps (e.g. Open-Shell) unlock their tweaks on the next scan
+            return summary;
+        }),
+        "programs.uninstall" => await Exclusive(() => ProgramInstaller.UninstallAsync(_catalog, Str(p, "id") ?? "", NewLongTask())),
+        "programs.repairWinget" => await ProgramInstaller.RepairWingetAsync(),
         "bios.list" => await BiosAsync(),
         "bios.reboot" => await RebootAsync(firmware: true),
         "system.reboot" => await RebootAsync(firmware: false),
         "image.preview" => ImagePreview(p),
         "image.build" => await Exclusive(() => ImageBuilder.BuildAsync(Str(p, "iso") ?? "", OfflineImagePlan.Build(_catalog, ImageOptions(p)), (s, v) => _emit("image.progress", new { step = s, value = v }), NewLongTask())),
+        "image.ame" => await AmeExport.ExportAsync(_catalog, SettingsStore.Current.Language),
         "image.existing" => File.Exists(Path.Combine(ImageBuilder.OutputFolder, "sources", "install.wim")) ? ImageBuilder.OutputFolder : null,
         "system.logoff" => await LogoffAsync(),
         "system.rebootPending" => SettingsStore.RebootPending,
         "firstrun.done" => Do(() => { SettingsStore.Current.FirstRunDone = true; SettingsStore.Save(); }),
         "usb.list" => await UsbCreator.ListAsync(),
+        "usb.rufus" => await RufusTool.OpenAsync(Str(p, "iso"), SettingsStore.Current.Language),
+        "usb.copyTweaker" => RufusTool.CopyTweakerToSticks(),
         "usb.pickIso" => await _onUi(PickIso),
         "usb.downloadIso" => await Exclusive(() => UsbCreator.DownloadIsoAsync(Str(p, "language") ?? "Russian", (s, v) => _emit("usb.progress", new { step = s, value = v }), NewLongTask())),
+        "reinstall.start" => await Exclusive(async () => await LocalReinstall.StartAsync(await ProfileAsync(),
+            Str(p, "source") switch { "built" => ImageBuilder.OutputFolder, "iso" => Str(p, "iso"), _ => null },
+            Str(p, "mode") ?? "clean", Str(p, "language") ?? "Russian", (s, v) => _emit("reinstall.progress", new { step = s, value = v }), NewLongTask())),
         "usb.preview" => UnattendGenerator.Generate(Unattend(p)),
         "usb.create" => await Exclusive(async () =>
         {
@@ -75,11 +111,19 @@ public sealed class ApiService
         "settings.set" => SetSettings(p),
         "report.export" => await ExportReportAsync(),
         "shell.open" => Do(() => ProcessRunner.OpenUrl(Str(p, "url") ?? "")),
+        "shell.reveal" => Do(() => ProcessRunner.Reveal(Str(p, "path") ?? "")),
         "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, _ => AppPaths.Logs })),
         "window.theme" => Do(() => ThemeChanged?.Invoke(Str(p, "theme") ?? "day")),
         "system.theme" => SystemThemeReader.Read(),
         "net.test" => await Exclusive(() => NetworkTest.RunAsync(Targets(p), Int(p, "count") ?? 30, (h, i, n) => _emit("net.progress", new { host = h, i, n }), NewLongTask())),
         "net.flushdns" => await NetworkTest.FlushDnsAsync(),
+        "net.dns" => await NetworkTest.GetDnsAsync(),
+        "net.dnsSet" => await Exclusive(async () => { await NetworkTest.SetDnsAsync(Str(p, "preset") ?? "auto"); return true; }),
+        "net.dnsBench" => await NetworkTest.BenchmarkDnsAsync(),
+        "services.list" => await Task.Run(() => ServiceManager.List(_catalog)),
+        "services.setStart" => await ServiceManager.SetStartAsync(Str(p, "name") ?? "", Str(p, "start") ?? ""),
+        "services.run" => await ServiceManager.StartAsync(Str(p, "name") ?? "", Bool(p, "start") ?? true),
+        "services.restore" => await ServiceManager.RestoreAsync(Str(p, "name") ?? ""),
         "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); SettingsStore.MarkRebootPending(); return true; }),
         "startup.list" => StartupManager.List(),
         "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
@@ -106,6 +150,7 @@ public sealed class ApiService
                 language = s.Language,
                 theme = s.Theme,
                 accent = s.Accent,
+                showAdvisor = s.ShowAdvisor,
                 profile = s.Profile,
                 model = s.ClaudeModel,
                 hasKey = SettingsStore.GetClaudeKey() is not null,
@@ -255,7 +300,10 @@ public sealed class ApiService
             a.KeepReason,
             a.StoreId,
             installed = byName.ContainsKey(a.Package),
-        }).Where(a => a.installed).ToList();
+        }).ToList();
+        // removed earlier (by AI Tweaker or anything else): offered for reinstall
+        var removed = known.Where(a => !a.installed && (a.StoreId is not null || a.Package is "Microsoft.WindowsStore")).ToList();
+        known = known.Where(a => a.installed).ToList();
 
         var catalogNames = _catalog.Apps.Select(a => a.Package).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var others = installed
@@ -268,7 +316,7 @@ public sealed class ApiService
             .Select(p => new { name = p.Name, version = p.Version })
             .OrderBy(p => p.name)
             .ToList();
-        return new { packages = known, others };
+        return new { packages = known, removed, others };
     }
 
     private async Task<object> GuidesAsync()
@@ -281,13 +329,41 @@ public sealed class ApiService
                 g.Id,
                 g.Name,
                 g.Icon,
-                g.Source,
                 g.Summary,
                 g.Sections,
                 g.AutoTweaks,
                 installed = g.Detect is null || ConditionEvaluator.Evaluate(g.Detect, facts),
             })
             .OrderByDescending(g => g.installed);
+    }
+
+    /// <summary>"Do you use this?" questions with a guess from the hardware scan and the tweaks that apply on this PC.</summary>
+    private async Task<object> FeaturesAsync()
+    {
+        var facts = (await ProfileAsync()).ToFacts();
+        return _catalog.Features
+            .Select(f => new
+            {
+                f.Id,
+                f.Name,
+                used = f.KeepByDefault || (f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts)),
+                tweaks = f.Tweaks.Where(id => _catalog.Find(id) is { } t && ConditionEvaluator.Evaluate(t.When, facts)).ToList(),
+            })
+            .Where(f => f.tweaks.Count > 0);
+    }
+
+    private object Programs()
+    {
+        var installed = ProgramInstaller.Installed(_catalog);
+        var facts = _profile?.ToFacts();
+        return new
+        {
+            winget = ProgramInstaller.FindWinget() is not null,
+            programs = _catalog.Programs
+                .Where(x => facts is null || ConditionEvaluator.Evaluate(x.When, facts))
+                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, installed = installed.GetValueOrDefault(x.Id) }),
+            extensions = _catalog.Extensions.Select(e => new { e.Id, e.Name, e.ExtensionId, e.MinVersion, e.Note, e.StoreUrl }),
+        };
     }
 
     private async Task<object> BiosAsync()
@@ -418,7 +494,8 @@ public sealed class ApiService
         var s = SettingsStore.Current;
         if (Str(p, "language") is { } lang) s.Language = lang == "en" ? "en" : "ru";
         if (Str(p, "theme") is { } theme) s.Theme = theme is "night" or "day" ? theme : "auto";
-        if (Str(p, "accent") is { } accent) s.Accent = accent == "industrial" ? "industrial" : "system";
+        if (Str(p, "accent") is { } accent) s.Accent = accent is "mono" or "system" ? accent : "industrial";
+        if (Bool(p, "showAdvisor") is { } adv) s.ShowAdvisor = adv;
         if (Str(p, "profile") is { } prof && Enum.TryParse<TuneProfile>(prof, true, out _)) s.Profile = prof;
         if (Str(p, "model") is { } model && ClaudeAdvisor.Models.Contains(model)) s.ClaudeModel = model;
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;

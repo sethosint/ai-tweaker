@@ -9,8 +9,10 @@ public sealed class AppSettings
     public string Language { get; set; } = "ru";
     /// <summary>auto (follow Windows) | day | night</summary>
     public string Theme { get; set; } = "auto";
-    /// <summary>system (Windows accent color) | industrial (safety orange / amber)</summary>
-    public string Accent { get; set; } = "system";
+    /// <summary>industrial (signal orange) | system (Windows accent color) | mono (monochrome)</summary>
+    public string Accent { get; set; } = "industrial";
+    /// <summary>Show the optional Advisor tab (needs the user's own paid Claude API key).</summary>
+    public bool ShowAdvisor { get; set; }
     public string Profile { get; set; } = "Performance";
     public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;
     /// <summary>API key encrypted with DPAPI (current user), base64.</summary>

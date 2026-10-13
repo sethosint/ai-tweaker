@@ -260,5 +260,131 @@
         "script": "Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue; $w = Get-Command winget -ErrorAction SilentlyContinue; if ($w) { winget uninstall --id Microsoft.OneDrive -e --silent --accept-source-agreements | Out-Null }; foreach ($p in @(\"$env:SystemRoot\\System32\\OneDriveSetup.exe\", \"$env:SystemRoot\\SysWOW64\\OneDriveSetup.exe\")) { if (Test-Path $p) { Start-Process $p '/uninstall' -Wait } }"
       }
     ]
+  },
+  {
+    "id": "system.hyperv.off",
+    "category": "system",
+    "level": 4,
+    "confirm": true,
+    "reboot": true,
+    "when": "!system.vm",
+    "confirmText": { "ru": "Перестанут работать WSL 2, Docker Desktop, эмуляторы Android на Hyper-V, «Песочница Windows» и виртуальные машины Hyper-V. Вместе с гипервизором выключится и изоляция ядра (VBS). Если игре или античиту понадобится VBS — откат в один клик.", "en": "WSL 2, Docker Desktop, Hyper-V-based Android emulators, Windows Sandbox and Hyper-V virtual machines stop working. Core isolation (VBS) goes off with the hypervisor. If a game or anti-cheat needs VBS, roll back in one click." },
+    "name": { "ru": "Отключить Hyper-V и виртуализацию Windows", "en": "Turn off Hyper-V and Windows virtualization" },
+    "description": { "ru": "Выключает компоненты Hyper-V, «Платформа виртуальной машины», «Платформа гипервизора Windows», «Песочница» и запуск гипервизора при загрузке. Гипервизор больше не стоит между игрой и железом — меньше задержка и выше FPS, особенно на старых CPU.", "en": "Turns off the Hyper-V, Virtual Machine Platform, Windows Hypervisor Platform and Sandbox features and the hypervisor at boot. Nothing sits between games and the hardware — lower latency and higher FPS, especially on older CPUs." },
+    "actions": [
+      { "type": "powershell", "script": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; $names = 'Microsoft-Hyper-V-All','VirtualMachinePlatform','HypervisorPlatform','Containers-DisposableClientVM'; $on = @(); foreach ($n in $names) { $f = Get-WindowsOptionalFeature -Online -FeatureName $n -ErrorAction SilentlyContinue; if ($f -and $f.State -eq 'Enabled') { Disable-WindowsOptionalFeature -Online -FeatureName $n -NoRestart -WarningAction SilentlyContinue | Out-Null; $on += $n } }; if ($on.Count -gt 0) { Set-Content -Path $file -Value $on -Encoding UTF8 }", "undo": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; if (Test-Path $file) { foreach ($n in Get-Content $file) { if ($n) { Enable-WindowsOptionalFeature -Online -FeatureName $n -All -NoRestart -WarningAction SilentlyContinue | Out-Null } }; Remove-Item $file }" },
+      { "type": "bcd", "element": "hypervisorlaunchtype", "value": "off" }
+    ]
+  },
+  {
+    "id": "system.remote.off",
+    "category": "system",
+    "level": 2,
+    "confirm": true,
+    "confirmText": { "ru": "К этому компьютеру нельзя будет подключиться через «Удалённый рабочий стол» и «Удалённого помощника» Windows. AnyDesk, TeamViewer и Parsec продолжат работать.", "en": "This PC won't accept Remote Desktop or Windows Remote Assistance connections. AnyDesk, TeamViewer and Parsec keep working." },
+    "name": { "ru": "Запретить удалённый рабочий стол и удалённую помощь", "en": "Block Remote Desktop and Remote Assistance" },
+    "description": { "ru": "Закрывает входящие подключения RDP и «Удалённого помощника» — меньше открытых дверей в систему.", "en": "Closes incoming RDP and Remote Assistance connections — fewer open doors into the system." },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server", "name": "fDenyTSConnections", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Remote Assistance", "name": "fAllowToGetHelp", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "system.biometrics.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "when": "!system.laptop",
+    "confirmText": { "ru": "Перестанет работать вход по лицу и отпечатку пальца (Windows Hello). Вход по PIN-коду и паролю останется.", "en": "Face and fingerprint sign-in (Windows Hello) stops working. PIN and password sign-in stay." },
+    "name": { "ru": "Отключить биометрию Windows Hello", "en": "Turn off Windows Hello biometrics" },
+    "description": { "ru": "Останавливает службу биометрии — на настольном ПК без сканеров она просто висит в памяти.", "en": "Stops the biometrics service — on a desktop without readers it just sits in memory." },
+    "actions": [
+      { "type": "service", "name": "WbioSrvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.smartcard.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": { "ru": "Перестанут работать смарт-карты и USB-токены: электронная подпись (ЭЦП), Рутокен, JaCarta, банк-клиенты, вход по смарт-карте. Если подписываете документы или ходите в госуслуги с токеном — не отключайте.", "en": "Smart cards and USB tokens stop working: digital signatures, Rutoken, JaCarta, bank clients, smart-card sign-in. If you sign documents with a token, keep this." },
+    "name": { "ru": "Отключить смарт-карты и токены", "en": "Turn off smart cards and tokens" },
+    "description": { "ru": "Останавливает службы смарт-карт, если вы ими не пользуетесь.", "en": "Stops the smart card services if you don't use them." },
+    "actions": [
+      { "type": "service", "name": "SCardSvr", "startup": "disabled" },
+      { "type": "service", "name": "ScDeviceEnum", "startup": "disabled" },
+      { "type": "service", "name": "SCPolicySvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.phone.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": { "ru": "Перестанут работать звонки с компьютера через «Связь с телефоном».", "en": "Calls from the PC through Phone Link stop working." },
+    "name": { "ru": "Отключить телефонную службу", "en": "Turn off the phone service" },
+    "description": { "ru": "Служба телефонии нужна только для звонков через «Связь с телефоном».", "en": "The telephony service is only needed for calls through Phone Link." },
+    "actions": [
+      { "type": "service", "name": "PhoneSvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.hotspot.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "confirmText": { "ru": "Нельзя будет раздавать интернет с компьютера по Wi-Fi («Мобильный хот-спот»).", "en": "You won't be able to share the PC's internet over Wi-Fi (Mobile hotspot)." },
+    "name": { "ru": "Отключить мобильный хот-спот", "en": "Turn off Mobile hotspot" },
+    "description": { "ru": "Служба раздачи интернета с ПК; большинству не нужна.", "en": "The internet-sharing service; most people don't need it." },
+    "actions": [
+      { "type": "service", "name": "icssvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.scanner.off",
+    "category": "system",
+    "level": 0,
+    "confirm": true,
+    "confirmText": { "ru": "Перестанут работать сканеры и старые камеры, которые подключаются через WIA («Факсы и сканирование», приложение «Сканер»).", "en": "Scanners and old cameras that use WIA (Fax and Scan, the Scan app) stop working." },
+    "name": { "ru": "Отключить службу сканеров (WIA)", "en": "Turn off the scanner service (WIA)" },
+    "description": { "ru": "Служба получения изображений нужна только сканерам и некоторым старым камерам.", "en": "The image acquisition service is only needed by scanners and some old cameras." },
+    "actions": [
+      { "type": "service", "name": "stisvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.sensors.off",
+    "category": "system",
+    "level": 3,
+    "when": "!system.laptop",
+    "name": { "ru": "Отключить службы датчиков", "en": "Turn off sensor services" },
+    "description": { "ru": "Автоповорот, датчик освещённости и движения есть у планшетов и ноутбуков — на настольном ПК эти службы не нужны.", "en": "Auto-rotation, light and motion sensors exist on tablets and laptops — a desktop doesn't need these services." },
+    "actions": [
+      { "type": "service", "name": "SensorService", "startup": "disabled" },
+      { "type": "service", "name": "SensrSvc", "startup": "disabled" },
+      { "type": "service", "name": "SensorDataService", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.insider.off",
+    "category": "system",
+    "level": 2,
+    "name": { "ru": "Отключить службу программы предварительной оценки", "en": "Turn off the Insider service" },
+    "description": { "ru": "Нужна только участникам Windows Insider с тестовыми сборками.", "en": "Only needed by Windows Insider members on test builds." },
+    "actions": [
+      { "type": "service", "name": "wisvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.wallet.off",
+    "category": "system",
+    "level": 2,
+    "when": "!system.laptop",
+    "name": { "ru": "Отключить кошелёк и NFC", "en": "Turn off Wallet and NFC" },
+    "description": { "ru": "Платежи и NFC на настольном ПК не используются.", "en": "Payments and NFC aren't used on a desktop." },
+    "actions": [
+      { "type": "service", "name": "WalletService", "startup": "disabled" },
+      { "type": "service", "name": "SEMgrSvc", "startup": "disabled" }
+    ]
   }
 ]

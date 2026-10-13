@@ -33,11 +33,23 @@
 
   // ------------------------------------------------------------------ simulator
 
-  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [] };
+  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [], features: [] };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "system", profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null };
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+    services: [
+      ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
+      ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
+      ["DiagTrack", "Функциональные возможности для подключённых пользователей и телеметрия", "Сбор и отправка данных телеметрии Microsoft.", "stopped", "disabled", false, ["privacy.telemetry.services"]],
+      ["Dnscache", "DNS-клиент", "Кэширует имена DNS и регистрирует полное имя компьютера.", "running", "auto", true],
+      ["Spooler", "Диспетчер печати", "Ставит задания печати в очередь и обеспечивает работу с принтером.", "running", "auto", false, ["system.print-spooler.off"]],
+      ["SysMain", "SysMain", "Поддерживает и улучшает производительность системы со временем.", "running", "auto", false, ["system.sysmain.off"]],
+      ["WSearch", "Windows Search", "Индексирование содержимого, кэширование свойств и результаты поиска.", "running", "delayed", false, ["system.search-indexer.off"]],
+      ["XblAuthManager", "Диспетчер проверки подлинности Xbox Live", "Проверка подлинности и авторизация для Xbox Live.", "stopped", "manual", false, ["system.xbox-services.off"]],
+      ["wuauserv", "Центр обновления Windows", "Обнаружение, загрузка и установка обновлений Windows и программ.", "running", "manual", false],
+      ["WinDefend", "Служба антивирусной программы Microsoft Defender", "Защищает от вредоносных программ.", "running", "auto", true],
+    ].map(([name, displayName, description, state, start, essential, tweaks]) => ({ name, displayName, description, state, start, essential, changed: false, tweaks: tweaks || [] })) };
 
   const profile = {
     os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
@@ -52,7 +64,7 @@
     security: { secureBoot: true, tpm: true, vbsRunning: true, hvciRunning: true, hypervisorPresent: true },
     problemDevices: [],
     hasBluetooth: true, hasPrinter: false,
-    apps: ["steam", "discord", "chrome", "edge", "obs", "spotify", "nvidiaApp", "exitlag", "epic", "store", "onedrive"],
+    apps: ["steam", "discord", "chrome", "edge", "obs", "spotify", "nvidiaApp", "exitlag", "epic", "store", "onedrive", "lightshot", "ayugram"],
     systemDriveFreePercent: 41,
   };
   const facts = {
@@ -131,9 +143,10 @@
     "restore.create": async () => { await sleep(800); log("ok", "restore", "restore point created"); return true; },
     "appx.list": async () => {
       await sleep(600);
-      const installed = new Set(D.apps.map((a) => a.package).filter((_, i) => i % 7 !== 3));
+      const installed = new Set(D.apps.map((a) => a.package).filter((n, i) => i % 7 !== 3 && !mock.removedApps.has(n)));
       return {
         packages: D.apps.filter((a) => installed.has(a.package)).map((a) => ({ ...a, installed: true, keep: a.keepWhen ? evalWhen(a.keepWhen) : false })),
+        removed: D.apps.filter((a) => mock.removedApps.has(a.package)).map((a) => ({ ...a, installed: false })),
         others: [{ name: "SpotifyAB.SpotifyMusic", version: "1.2.60" }, { name: "5319275A.WhatsAppDesktop", version: "2.2540" }, { name: "Microsoft.MinecraftUWP", version: "1.21" }],
       };
     },
@@ -148,6 +161,21 @@
       { category: "network", name: profile.network[0].description, vendor: "ethernet", status: "ok", links: [{ title: "ASUS Support", url: "https://www.asus.com/support/download-center/" }] },
     ],
     "drivers.rescan": async () => { await sleep(900); return { exitCode: 0 }; },
+    "reinstall.start": async ({ source }) => {
+      if (source === "dl") { emit("usb.progress", { step: "fido", value: 0 }); await sleep(500); for (let i = 0; i <= 20; i++) { emit("usb.progress", { step: "iso", value: i / 20 }); await sleep(70); } }
+      for (const s of ["mount", "check", "setup"]) { emit("reinstall.progress", { step: s, value: 0 }); await sleep(450); }
+      log("warn", "reinstall", "starting Windows Setup (clean) from E:\\");
+      return { setup: "E:\\setup.exe", arguments: "/auto clean /eula accept /dynamicupdate disable /compat ignorewarning /telemetry disable", imageBuild: 26200 };
+    },
+    "nvidia.check": async () => { await sleep(700); return { gpu: "NVIDIA GeForce RTX 5070 Ti", installed: "576.88", installedDate: "2026-03-02T00:00:00", updateAvailable: true, error: null,
+      latest: { version: "591.44", name: "GeForce Game Ready Driver", releaseDate: "Tue Sep 22, 2026", url: "https://us.download.nvidia.com/Windows/591.44/591.44-desktop-win10-win11-64bit-international-dch-whql.exe", size: "912.4 MB", detailsUrl: "https://www.nvidia.com/en-us/drivers/" } }; },
+    "nvidia.install": async () => {
+      for (let i = 0; i <= 20; i++) { emit("nvidia.progress", { step: "download", value: i / 20 }); await sleep(90); }
+      emit("nvidia.progress", { step: "extract", value: 0 }); await sleep(700);
+      emit("nvidia.progress", { step: "install", value: 0 }); await sleep(1400);
+      log("ok", "nvidia", "driver 591.44 installed (driver + HD Audio + PhysX)");
+      return { ok: true, exitCode: 0, version: "591.44", minimal: true, error: null };
+    },
     "guides.list": async () => D.guides.filter((g) => evalWhen(g.when)).map((g) => ({ ...g, installed: !g.detect || evalWhen(g.detect) })).sort((a, b) => b.installed - a.installed),
     "bios.list": async () => ({
       board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate, vendor: "asus" },
@@ -157,9 +185,57 @@
     }),
     "bios.reboot": async () => { log("warn", "system", "demo: reboot into BIOS skipped"); return true; },
     "system.reboot": async () => { log("warn", "system", "demo: reboot skipped"); return true; },
+    "programs.list": async () => {
+      await sleep(250);
+      return {
+        winget: true,
+        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, installed: mock.installed.has(p.id) })),
+        extensions: D.extensions.map((e) => ({ ...e, storeUrl: "https://chromewebstore.google.com/detail/" + e.extensionId })),
+      };
+    },
+    "programs.install": async ({ ids }) => {
+      const results = [];
+      for (let i = 0; i < ids.length; i++) {
+        const p = D.programs.find((x) => x.id === ids[i]);
+        emit("install.progress", { i: i + 1, n: ids.length, name: p.name });
+        log("info", "install", `installing ${p.name}${p.winget ? " (" + p.winget + ")" : ""}…`);
+        await sleep(450);
+        mock.installed.add(p.id);
+        log("ok", "install", `${p.name}: installed`);
+        results.push({ id: p.id, name: p.name, ok: true, method: p.winget ? "winget" : "download", error: null });
+      }
+      if (ids.includes("openshell")) facts["app.openShell"] = true;
+      return { results, rebootRequired: false };
+    },
+    "programs.repairWinget": async () => { await sleep(600); return true; },
+    "display.modes": async () => {
+      const modes = [];
+      for (const [w, h] of [[2560, 1440], [1920, 1080], [1680, 1050], [1600, 900], [1440, 1080], [1280, 1024], [1280, 960], [1280, 720]])
+        for (const hz of w === 2560 ? [180, 144, 120, 60] : [144, 120, 60]) modes.push({ width: w, height: h, hz });
+      return [{ device: "\\\\.\\DISPLAY1", name: "ASUS VG27AQ3A", current: { width: 2560, height: 1440, hz: 60 }, modes }];
+    },
+    "image.ame": async () => { await sleep(700); return { path: "C:\\Users\\demo\\Desktop\\AI Tweaker.apbx", protected: true, options: 16, files: 28 }; },
+    "shell.reveal": async () => true,
+    "usb.rufus": async () => { await sleep(900); return { path: "C:\\ProgramData\\AITweaker\\Tools\\Rufus\\rufus.exe", downloaded: true }; },
+    "usb.copyTweaker": async () => { await sleep(400); return ["E:"]; },
+    "net.dns": async () => ({ current: mock.dns || "auto", adapters: [{ alias: "Ethernet", servers: ["192.168.1.1"], preset: mock.dns || "auto" }] }),
+    "net.dnsSet": async (p) => { await sleep(500); mock.dns = p.preset; return true; },
+    "net.dnsBench": async () => { await sleep(1500); return { cloudflare: 9, google: 14, quad9: 21, current: 32 }; },
+    "services.list": async () => { await sleep(300); return mock.services; },
+    "services.setStart": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.start = p.start; s.changed = true; if (p.start === "disabled") s.state = "stopped"; return true; },
+    "services.run": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.state = p.start ? "running" : "stopped"; return true; },
+    "services.restore": async (p) => { const s = mock.services.find((x) => x.name === p.name); s.start = "manual"; s.changed = false; return true; },
+    "appx.restore": async (p) => { await sleep(900); mock.removedApps.delete(p.name); return { ok: true, method: "store" }; },
+    "programs.uninstall": async (p) => { await sleep(900); mock.installed.delete(p.id); const pr = D.programs.find((x) => x.id === p.id); return { id: p.id, name: pr.name, ok: true, method: "winget" }; },
+    "display.set": async () => true,
+    "display.keep": async () => true,
+    "display.revert": async () => true,
+    "features.list": async () => D.features
+      .map((f) => ({ id: f.id, name: f.name, used: !!f.keepByDefault || (f.usedWhen ? evalWhen(f.usedWhen) : false), tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
+      .filter((f) => f.tweaks.length),
     "image.preview": async ({ options }) => {
       const o = options || {};
-      const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look") || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));
+      const pick = D.tweaks.filter((t) => (o.look !== false && t.category === "look" && t.level >= 1) || (t.category !== "look" && t.level >= 1 && t.level <= (o.level || 2) && !t.confirm));
       const baked = pick.filter((t) => t.offline);
       const apps = o.removeApps === false ? [] : D.apps.filter((a) => (a.recommended && !a.important && !a.keepWhen) || (o.extraApps || []).includes(a.package)).map((a) => a.package);
       return {

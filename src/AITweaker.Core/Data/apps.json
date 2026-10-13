@@ -2,18 +2,19 @@
   { "package": "Microsoft.BingNews", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFHVFW", "name": { "ru": "Новости (Microsoft Start)", "en": "News (Microsoft Start)" } },
   { "package": "Microsoft.BingWeather", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFJ3Q2", "name": { "ru": "Погода", "en": "Weather" } },
   { "package": "Microsoft.BingSearch", "group": "bloat", "recommended": true, "name": { "ru": "Поиск Bing", "en": "Bing Search" } },
-  { "package": "Microsoft.GetHelp", "group": "bloat", "recommended": true, "name": { "ru": "Техническая поддержка", "en": "Get Help" } },
+  { "package": "Microsoft.GetHelp", "group": "bloat", "recommended": true, "storeId": "9PKDZBMV1H3T", "name": { "ru": "Техническая поддержка", "en": "Get Help" } },
   { "package": "Microsoft.Getstarted", "group": "bloat", "recommended": true, "name": { "ru": "Советы", "en": "Tips" } },
-  { "package": "Microsoft.MicrosoftOfficeHub", "group": "bloat", "recommended": true, "name": { "ru": "Microsoft 365 (Office Hub)", "en": "Microsoft 365 (Office Hub)" } },
+  { "package": "Microsoft.MicrosoftOfficeHub", "group": "bloat", "recommended": true, "storeId": "9WZDNCRD29V9", "name": { "ru": "Microsoft 365 (Office Hub)", "en": "Microsoft 365 (Office Hub)" } },
   { "package": "Microsoft.MicrosoftSolitaireCollection", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFHWD2", "name": { "ru": "Solitaire Collection", "en": "Solitaire Collection" } },
   { "package": "Microsoft.People", "group": "bloat", "recommended": true, "name": { "ru": "Люди", "en": "People" } },
-  { "package": "Microsoft.PowerAutomateDesktop", "group": "bloat", "recommended": true, "name": { "ru": "Power Automate", "en": "Power Automate" } },
+  { "package": "Microsoft.PowerAutomateDesktop", "group": "bloat", "recommended": true, "storeId": "9NFTCH6J7FHV", "name": { "ru": "Power Automate", "en": "Power Automate" } },
   { "package": "Microsoft.Todos", "group": "bloat", "recommended": true, "storeId": "9NBLGGH5R558", "name": { "ru": "Microsoft To Do", "en": "Microsoft To Do" } },
-  { "package": "Microsoft.WindowsFeedbackHub", "group": "bloat", "recommended": true, "name": { "ru": "Центр отзывов", "en": "Feedback Hub" } },
-  { "package": "Microsoft.WindowsMaps", "group": "bloat", "recommended": true, "name": { "ru": "Карты", "en": "Maps" } },
-  { "package": "Microsoft.ZuneVideo", "group": "bloat", "recommended": true, "name": { "ru": "Кино и ТВ", "en": "Movies & TV" } },
+  { "package": "Microsoft.WindowsFeedbackHub", "group": "bloat", "recommended": true, "storeId": "9NBLGGH4R32N", "name": { "ru": "Центр отзывов", "en": "Feedback Hub" } },
+  { "package": "Microsoft.WindowsMaps", "group": "bloat", "recommended": true, "storeId": "9WZDNCRDTBVB", "name": { "ru": "Карты", "en": "Maps" } },
+  { "package": "Microsoft.ZuneVideo", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFJ3P2", "name": { "ru": "Кино и ТВ", "en": "Movies & TV" } },
   { "package": "Clipchamp.Clipchamp", "group": "bloat", "recommended": true, "storeId": "9P1J8S7CCWWT", "name": { "ru": "Clipchamp (видеоредактор)", "en": "Clipchamp (video editor)" } },
-  { "package": "MicrosoftCorporationII.MicrosoftFamily", "group": "bloat", "recommended": true, "name": { "ru": "Семья Microsoft", "en": "Microsoft Family" } },
+  { "package": "7EE7776C.LinkedInforWindows", "group": "bloat", "recommended": true, "storeId": "9WZDNCRFJ4Q7", "name": { "ru": "LinkedIn", "en": "LinkedIn" } },
+  { "package": "MicrosoftCorporationII.MicrosoftFamily", "group": "bloat", "recommended": true, "storeId": "9PDJDJS743XF", "name": { "ru": "Семья Microsoft", "en": "Microsoft Family" } },
   { "package": "Microsoft.549981C3F5F10", "group": "bloat", "recommended": true, "name": { "ru": "Cortana", "en": "Cortana" } },
   { "package": "Microsoft.Windows.DevHome", "group": "bloat", "recommended": true, "name": { "ru": "Dev Home", "en": "Dev Home" } },
   { "package": "Microsoft.MixedReality.Portal", "group": "bloat", "recommended": true, "name": { "ru": "Портал смешанной реальности", "en": "Mixed Reality Portal" } },
@@ -43,7 +44,7 @@
     "warning": { "ru": "Нужен для показа телефона в меню «Пуск» и в Проводнике.", "en": "Needed to show your phone in Start and Explorer." }
   },
   {
-    "package": "MicrosoftCorporationII.QuickAssist", "group": "communication", "recommended": false, "important": true,
+    "package": "MicrosoftCorporationII.QuickAssist", "group": "communication", "recommended": false, "important": true, "storeId": "9P7BP5VNWKX5",
     "name": { "ru": "Быстрая помощь", "en": "Quick Assist" },
     "warning": { "ru": "Через неё друзья или поддержка подключаются к вашему ПК для помощи.", "en": "Friends or support use it to connect to your PC and help." }
   },
@@ -63,7 +64,7 @@
   { "package": "Microsoft.XboxGameOverlay", "group": "xbox", "recommended": true, "name": { "ru": "Xbox Game Overlay (устаревший)", "en": "Xbox Game Overlay (legacy)" } },
   { "package": "Microsoft.XboxSpeechToTextOverlay", "group": "xbox", "recommended": true, "name": { "ru": "Xbox Speech To Text", "en": "Xbox Speech To Text" } },
   {
-    "package": "Microsoft.XboxIdentityProvider", "group": "xbox", "recommended": false, "important": true,
+    "package": "Microsoft.XboxIdentityProvider", "group": "xbox", "recommended": false, "important": true, "storeId": "9WZDNCRD1HKW",
     "name": { "ru": "Xbox Identity Provider", "en": "Xbox Identity Provider" },
     "warning": { "ru": "Нужен для входа в Xbox в играх (Minecraft, Forza, Halo, Sea of Thieves...).", "en": "Required for Xbox sign-in inside games (Minecraft, Forza, Halo, Sea of Thieves...)." }
   },
@@ -85,9 +86,9 @@
   },
 
   { "package": "Microsoft.ZuneMusic", "group": "media", "recommended": false, "important": true, "storeId": "9WZDNCRFJ3PT", "name": { "ru": "Медиаплеер", "en": "Media Player" }, "warning": { "ru": "Это стандартный плеер для музыки и видео.", "en": "This is the default music and video player." } },
-  { "package": "Microsoft.WindowsSoundRecorder", "group": "media", "recommended": false, "name": { "ru": "Звукозапись", "en": "Sound Recorder" } },
-  { "package": "Microsoft.WindowsAlarms", "group": "media", "recommended": false, "name": { "ru": "Часы и будильник", "en": "Clock & Alarms" } },
-  { "package": "Microsoft.WindowsCamera", "group": "media", "recommended": false, "name": { "ru": "Камера", "en": "Camera" } },
-  { "package": "Microsoft.MicrosoftStickyNotes", "group": "media", "recommended": false, "name": { "ru": "Записки", "en": "Sticky Notes" } },
-  { "package": "Microsoft.Windows.Photos", "group": "media", "recommended": false, "important": true, "name": { "ru": "Фотографии", "en": "Photos" }, "warning": { "ru": "Стандартный просмотрщик изображений.", "en": "The default image viewer." } }
+  { "package": "Microsoft.WindowsSoundRecorder", "group": "media", "recommended": false, "storeId": "9WZDNCRFHWKN", "name": { "ru": "Звукозапись", "en": "Sound Recorder" } },
+  { "package": "Microsoft.WindowsAlarms", "group": "media", "recommended": false, "storeId": "9WZDNCRFJ3PR", "name": { "ru": "Часы и будильник", "en": "Clock & Alarms" } },
+  { "package": "Microsoft.WindowsCamera", "group": "media", "recommended": false, "storeId": "9WZDNCRFJBBG", "name": { "ru": "Камера", "en": "Camera" } },
+  { "package": "Microsoft.MicrosoftStickyNotes", "group": "media", "recommended": false, "storeId": "9NBLGGH4QGHW", "name": { "ru": "Записки", "en": "Sticky Notes" } },
+  { "package": "Microsoft.Windows.Photos", "group": "media", "recommended": false, "important": true, "storeId": "9WZDNCRFJBH4", "name": { "ru": "Фотографии", "en": "Photos" }, "warning": { "ru": "Стандартный просмотрщик изображений.", "en": "The default image viewer." } }
 ]

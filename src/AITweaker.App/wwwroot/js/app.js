@@ -1,6 +1,6 @@
 /* Bootstrap and cross-view actions (scan, apply, revert). */
 (function () {
-  const App = (window.App = {});
+  const App = (window.App ||= {});
 
   App.refreshStatus = async () => {
     S.status = await call("tweaks.status", {}, { silent: true }).catch(() => S.status);
@@ -36,21 +36,25 @@
   /** Applies tweaks after asking about every important one; shows a summary, or the restart window when needed. */
   App.apply = async (ids, opts = {}) => {
     if (S.busy || !ids.length) return;
-    const accepted = await confirmImportant(ids);
+    // Features the user already said "no" to in the questionnaire are not asked about a second time.
+    const pre = opts.preconfirmed || new Set();
+    const accepted = [...ids.filter((id) => pre.has(id)), ...(await confirmImportant(ids.filter((id) => !pre.has(id))))];
     if (!accepted.length) return;
-    const b = busy(t("busy.apply"));
-    const off = API.on("apply.progress", (p) => b.progress(p.i / p.n, `${p.i}/${p.n} · ${p.id}`));
+    const v = applyVeil(t("busy.apply"), accepted.length);
+    const off = API.on("apply.progress", (p) => v.step(p.i, p.n, p.id));
     let summary;
     try {
       summary = await call("tweaks.apply", { ids: accepted, restorePoint: opts.restorePoint ?? S.init.settings.createRestorePoint, profile: S.profileName });
-    } catch { return; } finally { off(); b.done(); }
+    } catch { off(); await v.finish(null); return; }
+    off();
+    await v.finish(summary.results);
     await App.refreshStatus();
     accepted.forEach((id) => S.selected.delete(id));
     go(S.view);
     const ok = summary.results.filter((r) => r.ok), bad = summary.results.filter((r) => !r.ok);
-    const body = html`<div class="metrics" style="grid-template-columns:repeat(2,1fr);border:1px solid var(--line)">
+    const body = html`<div class="metrics">
         <div class="metric ok"><div class="k">${t("done.applied")}</div><div class="v">${ok.length}</div></div>
-        <div class="metric ${bad.length ? "crit" : ""}" style="border-right:0"><div class="k">${t("done.failed")}</div><div class="v">${bad.length}</div></div></div>
+        <div class="metric ${bad.length ? "crit" : ""}"><div class="k">${t("done.failed")}</div><div class="v">${bad.length}</div></div></div>
       ${bad.length ? `<div class="pre">${bad.map((r) => `${esc(r.id)}: ${esc(r.error || "")}`).join("\n")}</div>` : ""}`;
     if (summary.rebootRequired || summary.logoffRequired) await App.restartPrompt(summary.rebootRequired ? "reboot" : "logoff", body);
     else await modal({ title: t("done.title"), body, buttons: [{ label: t("ok"), value: false, cls: "primary" }] });
@@ -70,7 +74,7 @@
       hazard: true,
       body: html`${body}
         <div class="restart-box">
-          <div class="rs-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="rs-track"/><circle cx="60" cy="60" r="52" class="rs-arc" id="rsArc"/></svg><div class="rs-n" id="rsN">${total || "⟳"}</div></div>
+          <div class="rs-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="rs-track"/><circle cx="60" cy="60" r="52" class="rs-arc" id="rsArc"/></svg><div class="rs-n" id="rsN">${total || "—"}</div></div>
           <div class="rs-t"><b>${kind === "reboot" ? t("done.reboot") : t("done.logoff")}</b>
             <div>${total ? `${verb} ${t("rs.in")} <b id="rsLeft">${total}</b> ${t("rs.sec")}.` : t("rs.manual")}</div>
             <div class="td" style="color:var(--muted)">${t("rs.save")}</div></div>
@@ -110,7 +114,7 @@
     try {
       res = await call("tweaks.revert", { ids });
       const bad = res.filter((r) => !r.ok);
-      toast(`${res.length - bad.length}/${res.length} ↺`, bad.length ? "warn" : "ok");
+      toast(`${t("reverted")}: ${res.length - bad.length}/${res.length}`, bad.length ? "warn" : "ok");
     } catch { /* toast */ } finally { b.done(); }
     await App.refreshStatus();
     go(S.view);
@@ -134,7 +138,7 @@
     }
     S.lang = S.init.settings.language || "ru";
     S.themeMode = S.init.settings.theme || "auto";
-    S.accentMode = S.init.settings.accent || "system";
+    S.accentMode = S.init.settings.accent || "industrial";
     if (S.init.system) S.system = S.init.system;
     S.profileName = S.init.settings.profile || "Performance";
     S.rebootPending = !!S.init.rebootPending;
@@ -158,10 +162,10 @@
     const go1 = await modal({
       title: t("fr.title"),
       wide: true,
-      body: html`<div class="fr-hero"><img src="img/aitweaker-dark.webp" alt=""><div>
-          <div class="tt" style="font:700 17px/1.3 var(--font-head);letter-spacing:.08em">${t("fr.hello")}</div>
+      body: html`<div class="fr-hero"><img src="img/aitweaker-graphite.webp" alt=""><div>
+          <div class="confirm-title">${t("fr.hello")}</div>
           <div style="color:var(--ink-2);margin-top:6px">${t("fr.desc")}</div>
-          ${img ? `<div class="chip ok" style="margin-top:10px">✓ ${t("fr.fromImage")} · Windows 11 ${esc(img.windows || "")} ${esc(img.build || "")}</div>` : ""}</div></div>
+          ${img ? `<div class="chip ok" style="margin-top:10px">${icon("check")}${t("fr.fromImage")} · Windows 11 ${esc(img.windows || "")} ${esc(img.build || "")}</div>` : ""}</div></div>
         <ol class="fr-steps">
           <li><b>${t("fr.s1")}</b><span>${esc(S.scan ? `${S.scan.profile.cpu.name} · ${(S.scan.profile.gpus[0] || {}).name || ""}` : "")}</span></li>
           <li><b>${t("fr.s2")}</b><span>${t("fr.s2d")}</span></li>
@@ -169,17 +173,19 @@
           <li><b>${t("fr.s4")}</b><span>${t("fr.s4d")}</span></li>
         </ol>
         <label class="field">${t("fr.profile")}<select class="input" id="frProf">${["Balanced", "Performance", "Extreme"].map((p) => `<option value="${p}" ${p === prof.v ? "selected" : ""}>${t("prof." + p)}${p === "Performance" ? " — " + t("fr.rec") : ""}</option>`).join("")}</select></label>`,
-      buttons: [{ label: t("fr.later"), value: "later", cls: "ghost" }, { label: t("fr.never"), value: "never", cls: "ghost" }, { label: "▶ " + t("fr.start"), value: "go", cls: "primary" }],
+      buttons: [{ label: t("fr.later"), value: "later", cls: "ghost" }, { label: t("fr.never"), value: "never", cls: "ghost" }, { label: t("fr.start"), value: "go", cls: "primary" }],
       onOpen: (ov) => { $("#frProf", ov).onchange = (e) => (prof.v = e.target.value); },
     });
     if (go1 === "never") { call("firstrun.done", {}, { silent: true }).catch(() => {}); return; }
     if (go1 !== "go") return;
     call("firstrun.done", {}, { silent: true }).catch(() => {});
     await App.setProfile(prof.v);
+    // Ask which Windows features are actually used, so everything else can be switched off too.
+    const unused = (await App.featureWizard()) || [];
     // Everything recommended for this machine that isn't applied yet (the image already carries the offline part), plus the look.
-    const ids = S.plan.items.filter((i) => (i.recommended || S.byId[i.id].category === "look") && S.status[i.id] !== "applied").map((i) => i.id);
+    const ids = S.plan.items.filter((i) => { const tw = S.byId[i.id]; return (i.recommended || (tw.category === "look" && tw.level >= 1)) && S.status[i.id] !== "applied"; }).map((i) => i.id);
     go("tune");
-    await App.apply(ids, { restorePoint: true });
+    await App.apply([...new Set([...ids, ...unused])], { restorePoint: true, preconfirmed: new Set(unused) });
   };
 
   document.addEventListener("DOMContentLoaded", boot);

@@ -114,6 +114,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         AppxRemoveAction a => AppxOps.ApplyAsync(a, ctx),
         DisplayRefreshAction a => DisplayOps.ApplyAsync(a, ctx),
         WallpaperAction a => WallpaperOps.ApplyAsync(a, ctx),
+        NvidiaProfileAction a => NvidiaOps.ApplyAsync(a, ctx),
         _ => throw new NotSupportedException(action.GetType().Name),
     };
 
@@ -182,6 +183,7 @@ public sealed class TweakExecutor(SystemProfile profile)
         "device" => DeviceOps.RevertAsync(r),
         "display" => DisplayOps.RevertAsync(r),
         "wallpaper" => WallpaperOps.RevertAsync(r),
+        "nvidia" => NvidiaOps.RevertAsync(r),
         _ => Task.CompletedTask, // "info": irreversible (removed apps)
     };
 
@@ -206,7 +208,7 @@ public sealed class TweakExecutor(SystemProfile profile)
                 {
                     applied = null;
                 }
-                applied ??= action is CommandAction or PowerShellAction or AppxRemoveAction ? BackupStore.Has(t.Id) : null;
+                applied ??= action is CommandAction or PowerShellAction or AppxRemoveAction or NvidiaProfileAction ? BackupStore.Has(t.Id) : null;
                 if (applied == true) yes++;
                 else if (applied == false) no++;
             }

@@ -84,12 +84,28 @@ public class LookAndUpdatesTests
         Assert.True(plan.IncludesLook);
         Assert.Contains("look.dark", plan.TweakIds);
         Assert.Contains("look.accent", plan.TweakIds);
-        Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.Name == "WallPaper" && r.Data == LookAssets.WallpaperFile("dark"));
+        Assert.Contains("look.wallpaper", plan.TweakIds);
+        // solid black desktop: no picture, black background colour, solid-colour mode
+        Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.Name == "WallPaper" && r.Data == "");
+        Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.Name == "Background" && r.Data == LookAssets.BlackRgb);
+        Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.Name == "BackgroundType" && r.Data == "1");
         Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.Software && r.Name == "LockScreenImagePath" && r.Data == LookAssets.WallpaperFile("lock"));
         Assert.Contains(plan.Registry, r => r.Name == "InstallTheme" && r.Kind == RegistryValueKind2.Expand && r.Data == LookAssets.ThemePathExpand);
+        // black taskbar and Start: accent shown on them
+        Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.SubKey.EndsWith(@"Themes\Personalize") && r.Name == "ColorPrevalence" && r.Data == "1");
         var palette = plan.Registry.Single(r => r.Name == "AccentPalette");
         Assert.Equal(LookAssets.AccentPalette(), Convert.FromBase64String(palette.Data!));
         Assert.Contains(plan.Registry, r => r.Name == "AccentColorMenu" && unchecked((uint)int.Parse(r.Data!)) == LookAssets.Abgr(LookAssets.Accent));
+    }
+
+    [Fact]
+    public void OptionalLookExtrasStayOutOfTheImage()
+    {
+        var plan = OfflineImagePlan.Build(Catalog, new OfflineImageOptions());
+        Assert.DoesNotContain("look.wallpaper-graphite", plan.TweakIds); // level 0 alternatives to the black desktop
+        Assert.DoesNotContain("look.wallpaper-obsidian", plan.TweakIds);
+        Assert.Single(plan.Registry, r => r.Name == "WallPaper");      // one desktop setting, no conflict
+        Assert.Contains(plan.Skipped, s => s.Id == "look.openshell" && s.Reason == "hardware"); // needs Open-Shell installed
     }
 
     [Fact]
@@ -107,19 +123,40 @@ public class LookAndUpdatesTests
         var accent = Catalog.Find("look.accent")!.Actions.OfType<RegistryAction>().ToList();
         Assert.Equal(Convert.ToBase64String(LookAssets.AccentPalette()), accent.Single(a => a.Name == "AccentPalette").Value!.Value.GetString());
         Assert.Equal(LookAssets.Abgr(LookAssets.Accent), (uint)accent.Single(a => a.Name == "AccentColorMenu").Value!.Value.GetInt64());
-        Assert.Equal(LookAssets.Abgr(LookAssets.Palette[5]), (uint)accent.Single(a => a.Name == "StartColorMenu").Value!.Value.GetInt64());
+        Assert.Equal(LookAssets.Abgr(LookAssets.StartColor), (uint)accent.Single(a => a.Name == "StartColorMenu").Value!.Value.GetInt64());
         Assert.Equal(LookAssets.Argb(LookAssets.Accent), (uint)accent.Single(a => a.Name == "ColorizationColor").Value!.Value.GetInt64());
-        Assert.Equal(0xFFFFFFu & 0xE07A12u, LookAssets.Argb(LookAssets.Accent) & 0xFFFFFFu);
+        Assert.Equal(0xFF000000u, LookAssets.Abgr(LookAssets.StartColor)); // Start and taskbar: pure black
+        Assert.All(LookAssets.Palette, c => Assert.True(c.R == c.G && c.G == c.B, "monochrome palette"));
     }
 
     [Fact]
-    public void ThemeFileIsDarkWithOurWallpaper()
+    public void ThemeFileIsBlackAndDark()
     {
         var theme = LookAssets.ThemeFile();
         Assert.Contains("DisplayName=AI Tweaker", theme);
-        Assert.Contains("Wallpaper=" + LookAssets.WallpaperFile("dark"), theme);
+        Assert.Contains("Wallpaper=" + Environment.NewLine, theme);
+        Assert.Contains("Background=" + LookAssets.BlackRgb, theme);
         Assert.Contains("SystemMode=Dark", theme);
-        Assert.Contains("ColorizationColor=0XC4E07A12", theme);
+        Assert.Contains("ColorizationColor=0XC41A1A1A", theme);
+    }
+
+    [Fact]
+    public void OpenShellPresetMatchesTheReference()
+    {
+        var t = Catalog.Find("look.openshell")!;
+        Assert.Equal("app.openShell", t.When);
+        var regs = t.Actions.OfType<RegistryAction>().ToDictionary(a => a.Name);
+        Assert.Equal("Win7", regs["MenuStyle"].Value!.Value.GetString());
+        var items = regs["MenuItems7"].Value!.Value.EnumerateArray().Select(e => e.GetString()).ToList();
+        Assert.Equal(new[] { "downloads", "computer", "control_panel", "pc_settings" },
+            items.Where(i => i!.Contains(".Command=")).Select(i => i!.Split('=')[1]));
+        Assert.Contains("Item3.Settings=TRACK_RECENT", items);   // Control Panel expands as a menu
+        Assert.Contains("Item1.Settings=NOEXPAND", items);       // Downloads is a plain link
+        // the first Start click opens the menu, not Open-Shell's style picker (StartMenuDLL\MenuContainer.cpp)
+        Assert.Contains(t.Actions.OfType<RegistryAction>(), a => a.Path == @"HKCU\Software\OpenShell\StartMenu" && a.Name == "ShowedStyle2");
+        // reload runs first (its undo reloads after rollback) and last (after the new values are written)
+        Assert.IsType<PowerShellAction>(t.Actions[0]);
+        Assert.IsType<PowerShellAction>(t.Actions[^1]);
     }
 
     private const string SearchHtml = """

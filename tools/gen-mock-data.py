@@ -54,7 +54,7 @@ def describe(a):
     if t == "display":
         return "display -> max refresh rate"
     if t == "wallpaper":
-        return f"wallpaper[{a.get('target', 'desktop')}] -> AI Tweaker {a.get('variant', 'dark')}"
+        return "wallpaper[lock] -> AI Tweaker lock screen" if a.get("target") == "lock" else f"wallpaper[desktop] -> {a.get('variant', 'black')}"
     return t
 
 
@@ -102,6 +102,9 @@ data = {
     "apps": load("apps.json"),
     "guides": load("guides.json"),
     "bios": load("bios.json"),
+    "programs": load("programs.json"),
+    "extensions": load("extensions.json"),
+    "features": load("features.json"),
 }
 
 with open(OUT, "w", encoding="utf-8") as f:

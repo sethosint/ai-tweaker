@@ -5,15 +5,31 @@
     "level": 2,
     "name": { "ru": "Убрать лаунчеры из автозагрузки", "en": "Remove launchers from startup" },
     "description": {
-      "ru": "Steam, Discord, Spotify, Epic Games и ExitLag больше не запускаются вместе с Windows — как в настройках мастера. Сами программы работают как обычно, если их открыть.",
-      "en": "Steam, Discord, Spotify, Epic Games and ExitLag no longer start with Windows — as in the master's settings. The apps work normally when you open them."
+      "ru": "Steam, Discord, Spotify, Epic Games, Battle.net, Telegram и ExitLag больше не запускаются вместе с Windows и не занимают память и сеть в фоне. Сами программы работают как обычно, если их открыть.",
+      "en": "Steam, Discord, Spotify, Epic Games, Battle.net, Telegram and ExitLag no longer start with Windows or use memory and network in the background. The apps work normally when you open them."
     },
     "actions": [
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Steam", "delete": true },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Discord", "delete": true },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Spotify", "delete": true },
       { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "EpicGamesLauncher", "delete": true },
-      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "ExitLag", "delete": true }
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "ExitLag", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Battle.net", "delete": true },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "name": "Telegram Desktop", "delete": true }
+    ]
+  },
+  {
+    "id": "apps.lightshot.prtsc",
+    "category": "apps",
+    "level": 1,
+    "when": "app.lightshot",
+    "name": { "ru": "Print Screen — для Lightshot", "en": "Print Screen for Lightshot" },
+    "description": {
+      "ru": "В Windows 11 клавиша Print Screen по умолчанию открывает «Ножницы» и перехватывает её у Lightshot. После этого PrtSc снова вызывает Lightshot.",
+      "en": "In Windows 11 the Print Screen key opens Snipping Tool by default and takes it away from Lightshot. Afterwards PrtSc opens Lightshot again."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "PrintScreenKeyForSnippingEnabled", "kind": "dword", "value": 0 }
     ]
   },
   {
@@ -23,8 +39,8 @@
     "when": "app.exitlag",
     "name": { "ru": "Отключить службу ExitLag", "en": "Disable the ExitLag service" },
     "description": {
-      "ru": "Служба ExitLagPmService не нужна для работы ExitLag (рекомендация мастера: sc config ExitLagPmService start= disabled).",
-      "en": "ExitLagPmService isn't required for ExitLag to work (master's recommendation: sc config ExitLagPmService start= disabled)."
+      "ru": "Служба ExitLagPmService не нужна для работы ExitLag — маршруты и оптимизация работают без неё.",
+      "en": "ExitLagPmService isn't required for ExitLag to work — routes and optimization work without it."
     },
     "actions": [
       { "type": "service", "name": "ExitLagPmService", "startup": "disabled" }
@@ -77,6 +93,32 @@
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BackgroundModeEnabled", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "MetricsReportingEnabled", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "apps.chrome.extensions",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Chrome: нужные расширения автоматически", "en": "Chrome: essential extensions automatically" },
+    "description": { "ru": "Через официальную политику Chrome ставит uBlock Origin Lite, SponsorBlock, DeepL и Volume Master из Chrome Web Store при следующем запуске браузера и дальше обновляет их сам. Отключить расширение можно, удалить — откатив этот твик. Пока политика действует, Chrome пишет «Управляется вашей организацией» — так и должно быть.", "en": "Through Chrome's official policy, installs uBlock Origin Lite, SponsorBlock, DeepL and Volume Master from the Chrome Web Store on the next browser start and keeps them updated. You can disable an extension; to remove it, roll this tweak back. While the policy is active Chrome shows 'Managed by your organization' — that's expected." },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "ExtensionSettings", "kind": "string", "value": "{\"ddkjiahejlhfcafbddmgiahcphecmpfh\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"mnjggcdmjocbbbhaepdhchncahnbgone\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"cofdbpoegempjloogbagkncekinflcnj\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"},\"jghecgabfgfdldnmbfkhmffcabddioke\":{\"installation_mode\":\"normal_installed\",\"update_url\":\"https://clients2.google.com/service/update2/crx\"}}" }
+    ]
+  },
+  {
+    "id": "apps.chrome.privacy",
+    "category": "apps",
+    "level": 2,
+    "name": { "ru": "Chrome: без рекламного профилирования", "en": "Chrome: no ad profiling" },
+    "description": { "ru": "Выключает рекламные темы и измерение рекламы Privacy Sandbox, всплывающее окно про них, сбор отзывов и список покупок; оставляет аппаратное ускорение включённым.", "en": "Turns off Privacy Sandbox ad topics and ad measurement, its prompt, feedback collection and the shopping list; keeps hardware acceleration on." },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxPromptEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxAdTopicsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxSiteEnabledAdsEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "PrivacySandboxAdMeasurementEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "UserFeedbackAllowed", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "ShoppingListEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "HardwareAccelerationModeEnabled", "kind": "dword", "value": 1 }
     ]
   }
 ]

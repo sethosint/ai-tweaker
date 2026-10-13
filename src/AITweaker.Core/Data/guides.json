@@ -4,7 +4,6 @@
     "name": "Discord",
     "icon": "discord",
     "detect": "app.discord",
-    "source": "master",
     "summary": {
       "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, приватность данных.",
       "en": "Overlay off, no autostart, minimal animations and background activity, data privacy."
@@ -14,7 +13,6 @@
       {
         "title": { "ru": "Игровой оверлей", "en": "Game Overlay" },
         "path": "User Settings → Game Overlay",
-        "image": "discord-overlay.webp",
         "settings": [
           { "name": "Enable Overlay", "value": "OFF" },
           { "name": "Enable Legacy Overlay", "value": "OFF" },
@@ -24,7 +22,6 @@
       {
         "title": { "ru": "Система", "en": "System" },
         "path": "User Settings → System → General",
-        "image": "discord-system.webp",
         "settings": [
           { "name": "Automatically open Discord when your computer starts up", "value": "OFF" },
           { "name": "Start Discord minimized", "value": "OFF" },
@@ -35,7 +32,6 @@
       {
         "title": { "ru": "Анимации (Accessibility → Reduced Motion)", "en": "Animations (Accessibility → Reduced Motion)" },
         "path": "User Settings → Accessibility → Reduced Motion",
-        "image": "discord-reduced-motion.webp",
         "settings": [
           { "name": "Sync with computer setting", "value": "ON" },
           { "name": "Play GIFs when Discord is focused", "value": "OFF" },
@@ -46,7 +42,6 @@
       {
         "title": { "ru": "Поле ввода и поиск", "en": "Chat box & search" },
         "path": "User Settings → Appearance → Chat Box / Search",
-        "image": "discord-chatbox.webp",
         "settings": [
           { "name": "Preview emoji, mentions, and markdown syntax as you type", "value": "ON" },
           { "name": "Automatically convert emoticons in your messages to emoji", "value": "OFF" },
@@ -59,7 +54,6 @@
       {
         "title": { "ru": "Голос — расширенные", "en": "Voice — advanced" },
         "path": "User Settings → Voice & Video → Voice (Show Advanced Voice Settings)",
-        "image": "discord-voice-advanced.webp",
         "settings": [
           { "name": "Automatic Gain Control", "value": "ON" },
           { "name": "Advanced Voice Activity", "value": "ON" },
@@ -75,7 +69,6 @@
       {
         "title": { "ru": "Стриминг и звуки", "en": "Streaming & sounds" },
         "path": "User Settings → Voice & Video → Streaming / Sounds",
-        "image": "discord-streaming.webp",
         "settings": [
           { "name": "Show Stream Previews", "value": "OFF" },
           { "name": "Stream Attenuation", "value": "OFF" },
@@ -86,7 +79,6 @@
       {
         "title": { "ru": "Диагностика (Voice → Advanced)", "en": "Diagnostics (Voice → Advanced)" },
         "path": "User Settings → Voice & Video → Advanced (Show Diagnostic Settings)",
-        "image": "discord-diagnostics.webp",
         "settings": [
           { "name": "Soundboard entrance sound", "value": "None" },
           { "name": "Stream Info Overlay", "value": "OFF" },
@@ -97,7 +89,6 @@
       {
         "title": { "ru": "Уведомления", "en": "Notifications" },
         "path": "User Settings → Notifications → Overview / Sounds / Badges",
-        "image": "discord-notifications.webp",
         "settings": [
           { "name": "Enable Desktop Notifications", "value": "ON" },
           { "name": "Enable Taskbar Flashing", "value": "ON" },
@@ -110,7 +101,6 @@
       {
         "title": { "ru": "Почта", "en": "Email" },
         "path": "User Settings → Notifications → Email",
-        "image": "discord-email.webp",
         "settings": [
           { "name": "Communication / Social / Announcements / Tip / Recommendations Emails", "value": "OFF" }
         ]
@@ -118,7 +108,6 @@
       {
         "title": { "ru": "Уведомления — расширенные", "en": "Notifications — advanced" },
         "path": "User Settings → Notifications → Advanced",
-        "image": "discord-notifications-advanced.webp",
         "settings": [
           { "name": "Mobile Notification Delay", "value": "1 minute" },
           { "name": "Allow playback and usage of /tts command", "value": "OFF" },
@@ -128,7 +117,6 @@
       {
         "title": { "ru": "Данные и приватность", "en": "Data & privacy" },
         "path": "User Settings → Data & Privacy → How Discord Uses My Data",
-        "image": "discord-privacy.webp",
         "settings": [
           { "name": "Use data to improve Discord", "value": "OFF" },
           { "name": "Use data to personalize my Discord experience", "value": "OFF" },
@@ -144,7 +132,6 @@
     "name": "Steam",
     "icon": "steam",
     "detect": "app.steam",
-    "source": "master",
     "summary": {
       "ru": "Без оверлея, трансляций и Remote Play; лёгкая библиотека; загрузки не мешают играм.",
       "en": "No overlay, broadcasting or Remote Play; lightweight library; downloads never interfere with games."
@@ -154,7 +141,6 @@
       {
         "title": { "ru": "Интерфейс", "en": "Interface" },
         "path": "Steam → Settings → Interface",
-        "image": "steam-interface.webp",
         "settings": [
           { "name": "Start Up Location", "value": "Library" },
           { "name": "Scale text and icons to match monitor settings", "value": "ON" },
@@ -170,7 +156,6 @@
       {
         "title": { "ru": "Библиотека", "en": "Library" },
         "path": "Steam → Settings → Library",
-        "image": "steam-library.webp",
         "settings": [
           { "name": "Display size for Library user interface elements", "value": "Automatic" },
           { "name": "Low Bandwidth Mode", "value": "ON" },
@@ -184,7 +169,6 @@
       {
         "title": { "ru": "Загрузки", "en": "Downloads" },
         "path": "Steam → Settings → Downloads",
-        "image": "steam-downloads.webp",
         "settings": [
           { "name": "Limit download speed", "value": "OFF" },
           { "name": "Display download rates in bits per second", "value": "ON" },
@@ -197,7 +181,6 @@
       {
         "title": { "ru": "В игре (оверлей)", "en": "In Game (overlay)" },
         "path": "Steam → Settings → In Game",
-        "image": "steam-in-game.webp",
         "settings": [
           { "name": "Enable the Steam Overlay while in-game", "value": "OFF" },
           { "name": "Show toolbar as list view", "value": "OFF" },
@@ -209,7 +192,6 @@
       {
         "title": { "ru": "Облако", "en": "Cloud" },
         "path": "Steam → Settings → Cloud",
-        "image": "steam-cloud.webp",
         "settings": [
           { "name": "Enable Steam Cloud", "value": "ON" },
           { "name": "Screenshot Management (open after closing a game)", "value": "OFF" }
@@ -218,7 +200,6 @@
       {
         "title": { "ru": "Remote Play и трансляции", "en": "Remote Play & Broadcast" },
         "path": "Steam → Settings → Remote Play / Broadcast",
-        "image": "steam-remote-play.webp",
         "settings": [
           { "name": "Enable Remote Play", "value": "OFF" },
           { "name": "Broadcast → Privacy setting", "value": "Broadcasting disabled" }
@@ -227,7 +208,6 @@
       {
         "title": { "ru": "Друзья и чат", "en": "Friends & Chat" },
         "path": "Steam → Settings → Friends & Chat",
-        "image": "steam-friends.webp",
         "settings": [
           { "name": "Enable Animated Avatars & Animated Avatar Frames", "value": "OFF" },
           { "name": "Compact friends list & chat view / Compact favorite friends area", "value": "OFF" },
@@ -247,16 +227,48 @@
     "icon": "nvidia",
     "detect": "app.nvidiaApp",
     "when": "gpu.nvidia",
-    "source": "master",
     "summary": {
-      "ru": "Без оверлея статистики и хайлайтов, без уведомлений и телеметрии.",
-      "en": "No statistics overlay or highlights, no notifications and telemetry."
+      "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
+      "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
     "sections": [
       {
+        "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
+        "path": "NVIDIA App → Graphics → Global Settings",
+        "settings": [
+          { "name": "Low Latency Mode", "value": "On", "note": { "ru": "В играх с NVIDIA Reflex включайте Reflex в самой игре — он важнее.", "en": "In games with NVIDIA Reflex turn Reflex on in the game — it matters more." } },
+          { "name": "Power Management Mode", "value": "Prefer maximum performance", "note": { "ru": "На ноутбуке от батареи — Normal.", "en": "On a laptop on battery — Normal." } },
+          { "name": "Texture Filtering - Quality", "value": "High performance" },
+          { "name": "Vertical Sync", "value": "Off", "note": { "ru": "С G-SYNC: On + ограничение FPS ниже частоты экрана.", "en": "With G-SYNC: On + an FPS cap below the refresh rate." } },
+          { "name": "Max Frame Rate", "value": "Off", "note": { "ru": "С G-SYNC — частота экрана минус 3 (например 177 для 180 Гц).", "en": "With G-SYNC — refresh rate minus 3 (e.g. 177 for 180 Hz)." } },
+          { "name": "Background Application Max Frame Rate", "value": "Off" },
+          { "name": "Shader Cache Size", "value": "Driver Default" },
+          { "name": "Threaded Optimization", "value": "Auto" },
+          { "name": "Image Scaling", "value": "Off" }
+        ],
+        "note": { "ru": "Первые три пункта AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки панели» (с откатом).", "en": "AI Tweaker sets the first three itself: Drivers → NVIDIA · panel settings (with rollback)." }
+      },
+      {
+        "title": { "ru": "Автооптимизация игр", "en": "Automatic game optimization" },
+        "path": "NVIDIA App → Graphics → ⋮ → Settings",
+        "settings": [
+          { "name": "Automatically optimize newly added games and apps", "value": "OFF", "note": { "ru": "Иначе NVIDIA App сама меняет графику в играх.", "en": "Otherwise NVIDIA App changes your games' graphics on its own." } }
+        ]
+      },
+      {
+        "title": { "ru": "Дисплей и G-SYNC", "en": "Display & G-SYNC" },
+        "path": "NVIDIA App → System → Displays",
+        "settings": [
+          { "name": "Refresh rate", "value": "Maximum" },
+          { "name": "Enable G-SYNC, G-SYNC Compatible", "value": "ON", "note": { "ru": "Если монитор поддерживает (FreeSync/G-SYNC).", "en": "If the monitor supports it (FreeSync/G-SYNC)." } },
+          { "name": "G-SYNC mode", "value": "Full screen" },
+          { "name": "Output dynamic range", "value": "Full" },
+          { "name": "Output color depth", "value": "Highest available" }
+        ]
+      },
+      {
         "title": { "ru": "Статистика", "en": "Statistics" },
         "path": "NVIDIA App → Settings → Features → Statistics",
-        "image": "nvidia-statistics.webp",
         "settings": [
           { "name": "Show statistics in heads up display (Alt+R)", "value": "OFF" },
           { "name": "Statistics view", "value": "Basic" }
@@ -265,7 +277,6 @@
       {
         "title": { "ru": "Настройка HUD", "en": "HUD configuration" },
         "path": "Statistics → Configure heads up display",
-        "image": "nvidia-hud.webp",
         "settings": [
           { "name": "Statistics overlay", "value": "Upper right" },
           { "name": "Horizontal / Vertical position", "value": "100 / 0" },
@@ -278,7 +289,6 @@
       {
         "title": { "ru": "Хайлайты", "en": "Highlights" },
         "path": "NVIDIA App → Settings → Features → Highlights",
-        "image": "nvidia-highlights.webp",
         "settings": [
           { "name": "Capture highlights", "value": "OFF" }
         ]
@@ -286,7 +296,6 @@
       {
         "title": { "ru": "Запись видео", "en": "Video capture" },
         "path": "Highlights → Configure video capture",
-        "image": "nvidia-video-capture.webp",
         "settings": [
           { "name": "Desktop capture", "value": "ON" },
           { "name": "Instant Replay length", "value": "00:20" },
@@ -300,7 +309,6 @@
       {
         "title": { "ru": "Уведомления и приватность", "en": "Notifications & privacy" },
         "path": "NVIDIA App → Settings → Notifications / About",
-        "image": "nvidia-privacy.webp",
         "settings": [
           { "name": "Driver updates (notification)", "value": "OFF" },
           { "name": "Available rewards", "value": "OFF" },
@@ -317,7 +325,6 @@
     "icon": "amd",
     "detect": "app.amdSoftware",
     "when": "gpu.amd",
-    "source": "master",
     "summary": {
       "ru": "Anti-Lag и Boost включены, все «улучшайзеры» и оверлеи выключены, фильтрация текстур — производительность.",
       "en": "Anti-Lag and Boost on, every 'enhancer' and overlay off, texture filtering set to performance."
@@ -326,7 +333,6 @@
       {
         "title": { "ru": "Графика (глобально)", "en": "Graphics (global)" },
         "path": "Gaming → Graphics",
-        "image": "amd-graphics-1.webp",
         "settings": [
           { "name": "Radeon Anti-Lag", "value": "ON" },
           { "name": "Radeon Boost", "value": "ON" },
@@ -341,7 +347,6 @@
       {
         "title": { "ru": "Графика — расширенные", "en": "Graphics — advanced" },
         "path": "Gaming → Graphics → Advanced",
-        "image": "amd-graphics-2.webp",
         "settings": [
           { "name": "Anti-Aliasing", "value": "Use application settings" },
           { "name": "Anti-Aliasing Method", "value": "Multisampling" },
@@ -356,7 +361,6 @@
       {
         "title": { "ru": "Система", "en": "System" },
         "path": "Settings (⚙) → System",
-        "image": "amd-system.webp",
         "settings": [
           { "name": "Issue Detection", "value": "OFF" }
         ]
@@ -364,7 +368,6 @@
       {
         "title": { "ru": "Горячие клавиши", "en": "Hotkeys" },
         "path": "Settings (⚙) → Hotkeys",
-        "image": "amd-hotkeys.webp",
         "settings": [
           { "name": "Use Hotkeys", "value": "OFF" },
           { "name": "Use Display Hotkeys", "value": "OFF" }
@@ -373,7 +376,6 @@
       {
         "title": { "ru": "Настройки программы", "en": "Preferences" },
         "path": "Settings (⚙) → Preferences",
-        "image": "amd-preferences.webp",
         "settings": [
           { "name": "In-Game Overlay", "value": "OFF" },
           { "name": "Web Browser", "value": "OFF" },
@@ -389,7 +391,6 @@
       {
         "title": { "ru": "Метрики производительности", "en": "Performance metrics" },
         "path": "Performance → Metrics",
-        "image": "amd-metrics.webp",
         "settings": [
           { "name": "Tracking / metrics (FPS, GPU, GPU Memory, CPU, System Memory)", "value": "OFF" }
         ]
@@ -401,7 +402,6 @@
     "name": "OBS Studio",
     "icon": "obs",
     "detect": "app.obs",
-    "source": "master",
     "summary": {
       "ru": "Стрим NVENC H.264 6000 Кбит/с, запись NVENC HEVC CQP 18, вывод 1664×936 при 60 FPS.",
       "en": "Stream NVENC H.264 at 6000 Kbps, record NVENC HEVC CQP 18, 1664×936 output at 60 FPS."
@@ -410,7 +410,6 @@
       {
         "title": { "ru": "Общие", "en": "General" },
         "path": "Settings → General",
-        "image": "obs-general.webp",
         "settings": [
           { "name": "Open stats dialog on startup", "value": "OFF" },
           { "name": "Hide OBS windows from screen capture", "value": "OFF" },
@@ -425,7 +424,6 @@
       {
         "title": { "ru": "Вывод — стрим", "en": "Output — streaming" },
         "path": "Settings → Output (Advanced) → Streaming",
-        "image": "obs-stream.webp",
         "settings": [
           { "name": "Video Encoder", "value": "NVIDIA NVENC H.264" },
           { "name": "Rescale Output", "value": "Disabled" },
@@ -444,7 +442,6 @@
       {
         "title": { "ru": "Вывод — запись", "en": "Output — recording" },
         "path": "Settings → Output (Advanced) → Recording",
-        "image": "obs-recording.webp",
         "settings": [
           { "name": "Type", "value": "Standard" },
           { "name": "Video Encoder", "value": "NVIDIA NVENC HEVC" },
@@ -463,7 +460,6 @@
       {
         "title": { "ru": "Видео", "en": "Video" },
         "path": "Settings → Video",
-        "image": "obs-video.webp",
         "settings": [
           { "name": "Base (Canvas) Resolution", "value": "1920x1080" },
           { "name": "Output (Scaled) Resolution", "value": "1664x936" },
@@ -478,7 +474,6 @@
     "name": "Spotify",
     "icon": "spotify",
     "detect": "app.spotify",
-    "source": "master",
     "summary": {
       "ru": "Без автозапуска, видео-фонов и оверлеев; высокое качество без автоподстройки.",
       "en": "No autostart, video canvases or overlays; high quality without auto-adjust."
@@ -488,7 +483,6 @@
       {
         "title": { "ru": "Качество и библиотека", "en": "Quality & library" },
         "path": "Settings → Audio quality / Your Library",
-        "image": "spotify-playback-quality.webp",
         "settings": [
           { "name": "Streaming quality / Download", "value": "High / High" },
           { "name": "Auto adjust quality", "value": "OFF" },
@@ -500,7 +494,6 @@
       {
         "title": { "ru": "Отображение и видео", "en": "Display & video" },
         "path": "Settings → Display / Videos and Canvas",
-        "image": "spotify-display.webp",
         "settings": [
           { "name": "Show the now-playing panel on click of play", "value": "OFF" },
           { "name": "Show desktop overlay when using media keys", "value": "OFF" },
@@ -512,7 +505,6 @@
       {
         "title": { "ru": "Воспроизведение", "en": "Playback" },
         "path": "Settings → Playback",
-        "image": "spotify-equalizer.webp",
         "settings": [
           { "name": "Crossfade songs / Gapless", "value": "OFF" },
           { "name": "Automix", "value": "ON" },
@@ -523,7 +515,6 @@
       {
         "title": { "ru": "Запуск и совместимость", "en": "Startup & compatibility" },
         "path": "Settings → Startup and window behaviour / Compatibility",
-        "image": "spotify-startup.webp",
         "settings": [
           { "name": "Open Spotify automatically after you log into the computer", "value": "No" },
           { "name": "Close button should minimize the Spotify window", "value": "ON" },
@@ -534,7 +525,6 @@
       {
         "title": { "ru": "Приватность", "en": "Privacy" },
         "path": "Settings → Listening activity / Profile",
-        "image": "spotify-privacy.webp",
         "settings": [
           { "name": "Private session", "value": "OFF" },
           { "name": "Listening activity", "value": "OFF" },
@@ -548,7 +538,6 @@
     "name": "Epic Games Launcher",
     "icon": "epic",
     "detect": "app.epic",
-    "source": "master",
     "summary": {
       "ru": "Без автозапуска, трея и уведомлений; облачные сохранения включены.",
       "en": "No autostart, tray or notifications; cloud saves on."
@@ -558,7 +547,6 @@
       {
         "title": { "ru": "Настройки лаунчера", "en": "Launcher settings" },
         "path": "Epic Games Launcher → Settings",
-        "image": "epic-settings.webp",
         "settings": [
           { "name": "Minimize To System Tray", "value": "OFF" },
           { "name": "Run When My Computer Starts", "value": "OFF" },
@@ -576,7 +564,6 @@
     "name": "ExitLag",
     "icon": "exitlag",
     "detect": "app.exitlag",
-    "source": "master",
     "summary": {
       "ru": "Умная оптимизация и двойные маршруты, служба ExitLag отключена. Не применяйте «FPS Boost» из ExitLag.",
       "en": "Smart optimization and dual routes, ExitLag service disabled. Don't apply ExitLag's 'FPS Boost'."
@@ -586,7 +573,6 @@
       {
         "title": { "ru": "Основные настройки", "en": "Main settings" },
         "path": "ExitLag → Settings",
-        "image": "exitlag-settings.webp",
         "settings": [
           { "name": "Launch on Windows startup", "value": "OFF" },
           { "name": "Minimize to tray on close", "value": "ON" },
@@ -594,7 +580,7 @@
           { "name": "Smart optimization", "value": "ON" },
           { "name": "Use dual routes", "value": "ON" },
           { "name": "Optimization accuracy level", "value": "High" },
-          { "name": "Route analysis protocol", "value": "ICMP", "note": { "ru": "Альтернатива от мастера: вместо ICMP — UDP/TCP, 2 UDP и 2 TCP соединения на игру.", "en": "Master's alternative: UDP/TCP instead of ICMP, with 2 UDP and 2 TCP connections per game." } },
+          { "name": "Route analysis protocol", "value": "ICMP", "note": { "ru": "Если с ICMP маршруты хуже — UDP/TCP, 2 UDP и 2 TCP соединения на игру.", "en": "If routes are worse with ICMP — UDP/TCP, with 2 UDP and 2 TCP connections per game." } },
           { "name": "IP version for route analysis", "value": "IPv4" },
           { "name": "Receive an alert when a connection starts / server unavailable alerts", "value": "OFF" },
           { "name": "Hardware data monitoring", "value": "OFF" },
@@ -605,7 +591,6 @@
       {
         "title": { "ru": "Маршруты игры (пример: Fortnite)", "en": "Game routes (example: Fortnite)" },
         "path": "ExitLag → Game → Advanced settings",
-        "image": "exitlag-routes.webp",
         "settings": [
           { "name": "Server", "value": "All regions — Automatic" },
           { "name": "Redirect login", "value": "ON" },
@@ -621,10 +606,9 @@
     "name": "NVIDIA Control Panel",
     "icon": "nvidia",
     "when": "gpu.nvidia",
-    "source": "ai",
     "summary": {
-      "ru": "Рекомендация AI Tweaker: глобальные параметры 3D для минимальной задержки.",
-      "en": "AI Tweaker recommendation: global 3D settings for the lowest latency."
+      "ru": "Глобальные параметры 3D для минимальной задержки.",
+      "en": "Global 3D settings for the lowest latency."
     },
     "sections": [
       {
@@ -633,13 +617,15 @@
         "settings": [
           { "name": "Low Latency Mode", "value": "On", "note": { "ru": "В играх с NVIDIA Reflex включайте Reflex в самой игре — он важнее этого параметра.", "en": "In games with NVIDIA Reflex enable Reflex in-game — it matters more than this setting." } },
           { "name": "Power management mode", "value": "Prefer maximum performance" },
+          { "name": "Preferred refresh rate", "value": "Highest available" },
           { "name": "Texture filtering - Quality", "value": "High performance" },
-          { "name": "Shader Cache Size", "value": "Unlimited" },
+          { "name": "Shader Cache Size", "value": "Driver Default" },
           { "name": "Threaded optimization", "value": "Auto" },
           { "name": "Vertical sync", "value": "Off (On if you use G-SYNC + FPS cap)" },
           { "name": "Max Frame Rate", "value": "Off (or refresh rate − 3 with G-SYNC)" },
           { "name": "Monitor Technology", "value": "G-SYNC Compatible (if supported)" }
-        ]
+        ],
+        "note": { "ru": "Режим низкой задержки, частоту обновления и режим питания AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки панели».", "en": "AI Tweaker sets Low Latency Mode, preferred refresh rate and power management itself: Drivers → NVIDIA · panel settings." }
       },
       {
         "title": { "ru": "Дисплей", "en": "Display" },
@@ -656,10 +642,9 @@
     "id": "windows-graphics",
     "name": "Windows: Display & Graphics",
     "icon": "windows",
-    "source": "ai",
     "summary": {
-      "ru": "Рекомендация AI Tweaker: системные настройки дисплея и графики.",
-      "en": "AI Tweaker recommendation: system display and graphics settings."
+      "ru": "Системные настройки дисплея и графики.",
+      "en": "System display and graphics settings."
     },
     "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations"],
     "sections": [
@@ -682,5 +667,386 @@
         ]
       }
     ]
+  },
+  {
+    "id": "openshell",
+    "name": "Open-Shell",
+    "icon": "start",
+    "detect": "app.openShell",
+    "summary": {
+      "ru": "Бесплатный классический «Пуск» в стиле Windows 7. Основное выставляется автоматически — твик «Классический «Пуск» в стиле Windows 7».",
+      "en": "A free classic Windows 7-style Start. The essentials are set automatically by the 'Classic Windows 7-style Start' tweak."
+    },
+    "autoTweaks": ["look.openshell", "look.dark", "look.accent"],
+    "sections": [
+      {
+        "title": { "ru": "Что выставляется автоматически", "en": "Set automatically" },
+        "path": "Open-Shell Menu Settings",
+        "settings": [
+          { "name": "Start menu style", "value": "Windows 7 style" },
+          { "name": "Skin", "value": "Immersive", "note": { "ru": "Плоский скин, который следует тёмной теме Windows.", "en": "A flat skin that follows Windows dark mode." } },
+          { "name": "Show user picture", "value": "OFF" },
+          { "name": "Small icons", "value": "ON" },
+          { "name": "Replace Start button", "value": "OFF", "note": { "ru": "Остаётся родная кнопка «Пуск» с логотипом Windows.", "en": "The native Windows Start button stays." } }
+        ],
+        "note": { "ru": "Применяется вместе с тёмной темой и чёрной панелью задач. Откат возвращает прежние настройки Open-Shell.", "en": "Applied together with dark mode and the black taskbar. Rollback restores your previous Open-Shell settings." }
+      },
+      {
+        "title": { "ru": "Правая колонка", "en": "Right column" },
+        "path": "Open-Shell → Customize Start Menu",
+        "settings": [
+          { "name": "Downloads", "value": "Display as a link" },
+          { "name": "Computer (This PC)", "value": "Display as a link" },
+          { "name": "Control Panel", "value": "Display as a menu" },
+          { "name": "PC Settings", "value": "Display as a link" },
+          { "name": "Documents, Pictures, Music, Games, Network…", "value": "Don't display" }
+        ]
+      },
+      {
+        "title": { "ru": "Если хочется подправить вручную", "en": "Manual adjustments" },
+        "path": "Пуск → правый клик → Settings",
+        "settings": [
+          { "name": "Show all settings", "value": "ON", "note": { "ru": "Открывает все вкладки настроек.", "en": "Unlocks all settings tabs." } },
+          { "name": "Main Menu → Programs style", "value": "Inline", "note": { "ru": "Список «Все программы» прямо в меню, с кнопкой «Назад».", "en": "The All Programs list inside the menu, with a Back button." } },
+          { "name": "Skin → Skin options", "value": "Opaque, Small icons" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "startallback",
+    "name": "StartAllBack",
+    "icon": "start",
+    "detect": "app.startAllBack",
+    "summary": {
+      "ru": "Платная альтернатива Open-Shell, которая заодно меняет панель задач и Проводник. Ниже — настройки под вид AI Tweaker. Лицензию покупают у автора, есть пробный период.",
+      "en": "A paid alternative to Open-Shell that also restyles the taskbar and Explorer. Below are the settings for the AI Tweaker look. Licenses are bought from the author; there is a trial."
+    },
+    "autoTweaks": ["look.dark", "look.accent", "look.wallpaper"],
+    "sections": [
+      {
+        "title": { "ru": "Установка", "en": "Install" },
+        "path": "Вкладка «Установка» → StartAllBack",
+        "settings": [
+          { "name": "Источник / Source", "value": "startallback.com (через winget)" },
+          { "name": "Лицензия / License", "value": "платная, есть пробный период" }
+        ],
+        "note": { "ru": "AI Tweaker ставит официальный установщик и не трогает лицензию. Если платить не хочется — Open-Shell даёт такой же «Пуск» бесплатно и настраивается автоматически.", "en": "AI Tweaker installs the official installer and never touches licensing. If you don't want to pay, Open-Shell gives the same Start for free and is configured automatically." }
+      },
+      {
+        "title": { "ru": "Тема", "en": "Theme" },
+        "path": "StartAllBack → Welcome",
+        "settings": [
+          { "name": "Base theme", "value": "Remastered 7" }
+        ],
+        "note": { "ru": "Remastered 7 даёт двухколоночный «Пуск» с поиском «Search programs and files» и кнопкой «Shut down».", "en": "Remastered 7 gives the two-column Start with 'Search programs and files' and the 'Shut down' button." }
+      },
+      {
+        "title": { "ru": "Пуск", "en": "Start menu" },
+        "path": "StartAllBack → Start menu",
+        "settings": [
+          { "name": "Visual style", "value": "Plain8", "note": { "ru": "Плоский вид без стекла.", "en": "Flat, no glass." } },
+          { "name": "Icon size", "value": "Small" },
+          { "name": "Control Panel", "value": "Display as menu" },
+          { "name": "Downloads, This PC, Settings", "value": "Show as links" },
+          { "name": "Highlight newly installed programs", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Панель задач", "en": "Taskbar" },
+        "path": "StartAllBack → Taskbar",
+        "settings": [
+          { "name": "Visual style", "value": "Plain8" },
+          { "name": "Icon size", "value": "Small" },
+          { "name": "Center task icons", "value": "OFF" },
+          { "name": "Combine taskbar buttons", "value": "Always, hide labels" },
+          { "name": "Colour", "value": "Чёрный — даёт твик «Чёрные панель задач и «Пуск»»" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cru",
+    "name": "CRU — растянутое разрешение",
+    "icon": "display",
+    "summary": {
+      "ru": "Как добавить своё разрешение (например, 4:3) и растянуть его на весь экран без чёрных полос — через CRU (любая видеокарта) или встроенными средствами NVIDIA/AMD.",
+      "en": "How to add your own resolution (e.g. 4:3) and stretch it to full screen without black bars — with CRU (any GPU) or with the NVIDIA/AMD control panels."
+    },
+    "sections": [
+      {
+        "title": { "ru": "1. Добавить разрешение в CRU", "en": "1. Add the resolution in CRU" },
+        "path": "CRU.exe → Detailed resolutions → Add…",
+        "settings": [
+          { "name": "Монитор / Monitor", "value": "ваш основной (верхний список)" },
+          { "name": "Timing", "value": "Automatic (PC)" },
+          { "name": "Active", "value": "1440 × 1080 или 1280 × 960 (4:3)", "note": { "ru": "Ширина и высота разрешения, в котором будет игра.", "en": "The width and height the game will run at." } },
+          { "name": "Refresh rate", "value": "максимальная частота монитора", "note": { "ru": "Например, 144/165/240 Гц — иначе потеряете плавность.", "en": "E.g. 144/165/240 Hz — otherwise you lose smoothness." } }
+        ],
+        "note": { "ru": "CRU бесплатный, скачивается на вкладке «Установка». Запустите CRU.exe, добавьте разрешение и нажмите OK во всех окнах.", "en": "CRU is free (Install tab). Run CRU.exe, add the resolution and press OK in every window." }
+      },
+      {
+        "title": { "ru": "2. Перезапустить драйвер", "en": "2. Restart the graphics driver" },
+        "path": "Папка CRU → restart64.exe",
+        "settings": [
+          { "name": "restart64.exe", "value": "запустить / run", "note": { "ru": "Экран на пару секунд погаснет — это нормально.", "en": "The screen goes black for a couple of seconds — that's normal." } }
+        ],
+        "note": { "ru": "Если разрешение не появилось в списке — перезагрузите компьютер. Вернуть всё как было: reset-all.exe, затем restart64.exe.", "en": "If the resolution doesn't show up, reboot. To undo everything: reset-all.exe, then restart64.exe." }
+      },
+      {
+        "title": { "ru": "3. NVIDIA: растянуть на весь экран", "en": "3. NVIDIA: stretch to full screen" },
+        "path": "NVIDIA Control Panel → Display → Adjust desktop size and position",
+        "settings": [
+          { "name": "Select a scaling mode", "value": "Full-screen" },
+          { "name": "Perform scaling on", "value": "GPU" },
+          { "name": "Override the scaling mode set by games and programs", "value": "ON" }
+        ],
+        "note": { "ru": "Разрешение можно создать и без CRU: Change resolution → Customize → Create Custom Resolution.", "en": "You can also create the resolution without CRU: Change resolution → Customize → Create Custom Resolution." }
+      },
+      {
+        "title": { "ru": "3. AMD: растянуть на весь экран", "en": "3. AMD: stretch to full screen" },
+        "path": "AMD Software → Settings → Display",
+        "settings": [
+          { "name": "GPU Scaling", "value": "ON" },
+          { "name": "Scaling Mode", "value": "Full panel" }
+        ],
+        "note": { "ru": "В AMD Software есть и свои кастомные разрешения: Display → Custom Resolutions → Create New.", "en": "AMD Software has its own custom resolutions too: Display → Custom Resolutions → Create New." }
+      },
+      {
+        "title": { "ru": "4. Включить в игре", "en": "4. Use it in the game" },
+        "path": "Настройки игры → Видео",
+        "settings": [
+          { "name": "Режим / Mode", "value": "Полноэкранный / Fullscreen" },
+          { "name": "Разрешение / Resolution", "value": "ваше растянутое, например 1440 × 1080" },
+          { "name": "Масштабирование (CS2 и др.)", "value": "Растянутое / Stretched" }
+        ],
+        "note": { "ru": "В оконном и безрамочном режимах растяжение не работает — только полноэкранный. Рабочий стол можно оставить на родном разрешении; переключиться на растянутое можно и во вкладке «Инструменты».", "en": "Stretching only works in exclusive fullscreen, not windowed or borderless. Keep the desktop native; you can also switch to the stretched mode from the Tools tab." }
+      }
+    ]
+  },
+  {
+    "id": "chrome",
+    "name": "Google Chrome",
+    "icon": "chrome",
+    "detect": "app.chrome",
+    "summary": {
+      "ru": "Расширения ставятся сами (твик «Chrome: нужные расширения автоматически»), фон и реклама выключаются политиками. Ниже — то, что задаётся только в самом Chrome.",
+      "en": "Extensions install themselves (the 'Chrome: essential extensions automatically' tweak); background mode and ads are switched off by policy. Below is what can only be set inside Chrome."
+    },
+    "autoTweaks": ["apps.chrome.extensions", "apps.chrome.privacy", "apps.chrome.background"],
+    "sections": [
+      {
+        "title": { "ru": "Расширения", "en": "Extensions" },
+        "path": "chromewebstore.google.com",
+        "settings": [
+          { "name": "uBlock Origin Lite", "value": "Авто / Auto" },
+          { "name": "SponsorBlock for YouTube", "value": "Авто / Auto" },
+          { "name": "DeepL", "value": "Авто / Auto" },
+          { "name": "Volume Master", "value": "Авто / Auto" }
+        ],
+        "note": { "ru": "Появятся после перезапуска Chrome. Закрепите uBlock Origin Lite и Volume Master на панели: значок пазла → булавка.", "en": "They appear after Chrome restarts. Pin uBlock Origin Lite and Volume Master: puzzle icon → pin." }
+      },
+      {
+        "title": { "ru": "Производительность", "en": "Performance" },
+        "path": "Settings → Performance",
+        "settings": [
+          { "name": "Memory Saver", "value": "ON", "note": { "ru": "Неактивные вкладки выгружаются из памяти — меньше нагрузка во время игры.", "en": "Inactive tabs are unloaded — less load while gaming." } },
+          { "name": "Energy Saver", "value": "OFF", "note": { "ru": "На ноутбуке можно оставить «только от батареи».", "en": "On laptops you can keep it 'only on battery'." } },
+          { "name": "Preload pages", "value": "Standard preloading" }
+        ]
+      },
+      {
+        "title": { "ru": "Система", "en": "System" },
+        "path": "Settings → System",
+        "settings": [
+          { "name": "Continue running background apps when Google Chrome is closed", "value": "OFF" },
+          { "name": "Use graphics acceleration when available", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Вид и запуск", "en": "Appearance & startup" },
+        "path": "Settings → Appearance / On startup",
+        "settings": [
+          { "name": "Mode", "value": "Device (тёмный вместе с Windows)" },
+          { "name": "On startup", "value": "Continue where you left off" }
+        ]
+      },
+      {
+        "title": { "ru": "Приватность", "en": "Privacy" },
+        "path": "Settings → Privacy and security",
+        "settings": [
+          { "name": "Third-party cookies", "value": "Block third-party cookies", "note": { "ru": "Если какой-то сайт перестанет пускать — добавьте его в исключения.", "en": "If a site stops working, add it to the exceptions." } },
+          { "name": "Safe Browsing", "value": "Standard protection" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lightshot",
+    "name": "Lightshot",
+    "icon": "camera",
+    "detect": "app.lightshot",
+    "summary": {
+      "ru": "Скриншот выделенной области по Print Screen, без курсора, в PNG.",
+      "en": "A screenshot of a selected area on Print Screen, without the cursor, as PNG."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Горячие клавиши", "en": "Hotkeys" },
+        "path": "Lightshot (значок в трее) → Options → Hotkeys",
+        "settings": [
+          { "name": "Primary hotkey", "value": "Prt Sc" },
+          { "name": "Hotkey for instant full screen saving", "value": "Shift + Prt Sc" },
+          { "name": "Hotkey for instant full screen upload", "value": "—", "note": { "ru": "Не задавайте: снимок уходит в интернет.", "en": "Leave empty: the shot is uploaded to the internet." } }
+        ]
+      },
+      {
+        "title": { "ru": "Общие", "en": "General" },
+        "path": "Lightshot → Options → General",
+        "settings": [
+          { "name": "Show cursor on screenshots", "value": "OFF" },
+          { "name": "Auto close option window after upload/copying", "value": "ON" },
+          { "name": "Show notifications about copying and saving", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Формат", "en": "Format" },
+        "path": "Lightshot → Options → Format",
+        "settings": [
+          { "name": "Saving format", "value": "PNG" },
+          { "name": "JPEG quality", "value": "100" }
+        ]
+      },
+      {
+        "title": { "ru": "Windows: клавиша Print Screen", "en": "Windows: the Print Screen key" },
+        "path": "Параметры → Специальные возможности → Клавиатура",
+        "settings": [
+          { "name": "Use the Print screen key to open screen capture", "value": "OFF", "note": { "ru": "Иначе PrtSc откроет «Ножницы», а не Lightshot. AI Tweaker выключает сам.", "en": "Otherwise PrtSc opens Snipping Tool instead of Lightshot. AI Tweaker turns it off itself." } }
+        ]
+      }
+    ],
+    "autoTweaks": ["apps.lightshot.prtsc"]
+  },
+  {
+    "id": "telegram",
+    "name": "Telegram / AyuGram",
+    "icon": "chat",
+    "detect": "app.telegram || app.ayugram",
+    "summary": {
+      "ru": "Без автозапуска, приватность номера и статуса, двухэтапная защита.",
+      "en": "No autostart, a private number and last seen, two-step verification."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Запуск и трей", "en": "Startup & tray" },
+        "path": "Settings → Advanced → System integration",
+        "settings": [
+          { "name": "Launch Telegram when system starts", "value": "OFF" },
+          { "name": "Show tray icon", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Конфиденциальность", "en": "Privacy" },
+        "path": "Settings → Privacy and Security",
+        "settings": [
+          { "name": "Phone Number → Who can see my phone number", "value": "Nobody" },
+          { "name": "Last Seen & Online", "value": "My Contacts" },
+          { "name": "Calls → Peer-to-peer", "value": "My Contacts", "note": { "ru": "Звонки с незнакомыми идут через серверы Telegram и не раскрывают ваш IP.", "en": "Calls with strangers go through Telegram servers and don't reveal your IP." } },
+          { "name": "Groups & Channels → Who can add me", "value": "My Contacts" },
+          { "name": "Two-Step Verification", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Данные", "en": "Data" },
+        "path": "Settings → Advanced → Automatic media download",
+        "settings": [
+          { "name": "In private chats", "value": "Photos, voice" },
+          { "name": "In groups / channels", "value": "Photos" },
+          { "name": "Autoplay GIFs and videos", "value": "ON" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ea",
+    "name": "EA app",
+    "icon": "gamepad",
+    "detect": "app.ea",
+    "summary": {
+      "ru": "Без автозапуска и оверлея, обновления игр — сами.",
+      "en": "No autostart or overlay, games update on their own."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Приложение", "en": "Application" },
+        "path": "EA app → ☰ → Settings → Application",
+        "settings": [
+          { "name": "Open EA app when Windows starts", "value": "OFF" },
+          { "name": "When I launch a game", "value": "Minimize EA app" },
+          { "name": "Hardware acceleration", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Внутриигровой оверлей", "en": "In-game overlay" },
+        "path": "EA app → Settings → Application → In-game overlay",
+        "settings": [
+          { "name": "Enable in-game overlay", "value": "OFF", "note": { "ru": "Нужен только для чата EA и покупок в игре.", "en": "Only needed for EA chat and in-game purchases." } }
+        ]
+      },
+      {
+        "title": { "ru": "Загрузки", "en": "Downloads" },
+        "path": "EA app → Settings → Download",
+        "settings": [
+          { "name": "Automatic game updates", "value": "ON" },
+          { "name": "Download speed limit", "value": "Unlimited" }
+        ]
+      },
+      {
+        "title": { "ru": "Уведомления", "en": "Notifications" },
+        "path": "EA app → Settings → Notifications",
+        "settings": [
+          { "name": "Desktop notifications", "value": "OFF" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "battlenet",
+    "name": "Battle.net",
+    "icon": "gamepad",
+    "detect": "app.battlenet",
+    "summary": {
+      "ru": "Battle.net закрывается при запуске игры и не висит в фоне.",
+      "en": "Battle.net closes when a game starts and doesn't sit in the background."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Приложение", "en": "App" },
+        "path": "Battle.net → ⚙ Settings → App",
+        "settings": [
+          { "name": "Launch Battle.net when you start your computer", "value": "OFF" },
+          { "name": "When I launch a game", "value": "Exit Battle.net completely" },
+          { "name": "Use browser hardware acceleration when available", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Загрузки", "en": "Downloads" },
+        "path": "Battle.net → Settings → Downloads",
+        "settings": [
+          { "name": "Network Bandwidth → Latest Updates", "value": "0 (unlimited)" },
+          { "name": "Network Bandwidth → Background downloads", "value": "0 (unlimited)" },
+          { "name": "Download future patch data when available", "value": "OFF" }
+        ]
+      },
+      {
+        "title": { "ru": "Стриминг и соцсеть", "en": "Streaming & social" },
+        "path": "Battle.net → Settings → Streaming / Social",
+        "settings": [
+          { "name": "Enable Streaming", "value": "OFF" },
+          { "name": "Show me as Away when I'm idle", "value": "ON" }
+        ]
+      }
+    ],
+    "autoTweaks": ["apps.autostart.cleanup"]
   }
 ]

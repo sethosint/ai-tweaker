@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "system", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
+    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -44,7 +44,7 @@
       const ov = document.createElement("div");
       ov.className = "overlay";
       ov.innerHTML = html`<div class="modal ${wide ? "wide" : ""}" role="dialog">
-        <div class="modal-h ${hazard ? "hazard" : ""}"><span>${title}</span><button class="x" aria-label="close">×</button></div>
+        <div class="modal-h ${hazard ? "hazard" : ""}"><span>${title}</span><button class="x" aria-label="close">${icon("x")}</button></div>
         <div class="modal-b">${body}</div>
         ${buttons.length ? `<div class="modal-f">${buttons.map((b, i) => `<button class="btn ${b.cls || ""}" data-i="${i}">${b.label}</button>`).join("")}</div>` : ""}
       </div>`;
@@ -72,7 +72,7 @@
       const res = await modal({
         title: `${t("confirm.title")} · ${i + 1} ${t("confirm.of")} ${need.length}`,
         hazard: true,
-        body: html`<div class="tt" style="font:700 15px/1.3 var(--font-head);letter-spacing:.06em">${esc(L(tw.name))}</div>
+        body: html`<div class="confirm-title">${esc(L(tw.name))}</div>
           <div style="color:var(--ink-2)">${esc(L(tw.description))}</div>
           ${tw.confirmText ? `<div class="callout crit"><b>${t("confirm.lose")}</b><br>${esc(L(tw.confirmText))}</div>` : ""}
           <div class="tm" style="display:flex;gap:6px;flex-wrap:wrap">${badges(tw)}</div>`,
@@ -85,11 +85,11 @@
 
   window.badges = (tw) => [
     `<span class="risk ${tw.risk}">${t("risk." + tw.risk)}</span>`,
-    `<span class="lvl">${tw.level === 0 ? t("lvl.0") : "L" + tw.level}</span>`,
-    tw.reboot ? `<span class="lvl">⟳ ${t("reboot")}</span>` : "",
-    tw.logoff ? `<span class="lvl">⇄ ${t("logoff")}</span>` : "",
-    tw.restartExplorer ? `<span class="lvl">⌂ ${t("explorer")}</span>` : "",
-    tw.reversible === false ? `<span class="lvl" style="color:var(--crit)">✕ ${t("irreversible")}</span>` : "",
+    `<span class="lvl">${tw.level === 0 ? t("lvl.0") : t("lvl") + " " + tw.level}</span>`,
+    tw.reboot ? `<span class="lvl">${t("reboot")}</span>` : "",
+    tw.logoff ? `<span class="lvl">${t("logoff")}</span>` : "",
+    tw.restartExplorer ? `<span class="lvl">${t("explorer")}</span>` : "",
+    tw.reversible === false ? `<span class="risk high">${t("irreversible")}</span>` : "",
   ].join("");
 
   // ------------------------------------------------------------------ busy veil
@@ -119,18 +119,110 @@
     };
   };
 
+  /**
+   * The apply sequence: a live part spins up in the middle, the ring fills and every applied tweak streams in.
+   * Returns { step(i, n, id), finish(results) }.
+   */
+  window.applyVeil = (title, total) => {
+    S.busy = true;
+    $("#statusLed").className = "led busy";
+    $("#statusText").textContent = t("status.busy");
+    const C = 2 * Math.PI * 160;
+    const kind = S.scan && S.scan.profile && S.scan.profile.gpus.some((g) => /nvidia|amd|radeon|geforce|arc/i.test(g.name)) ? "gpu" : "cpu";
+    const el = document.createElement("div");
+    el.className = "apply-veil";
+    el.innerHTML = html`<div class="apply-stage">
+      <div class="apply-core"><svg viewBox="0 0 340 340"><circle class="orbit" cx="170" cy="170" r="168"/><circle class="trk" cx="170" cy="170" r="160"/><circle class="arc" cx="170" cy="170" r="160" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>
+        <div data-hw="${kind}" data-load="${kind}" data-dist="6.2" data-spin="1.4"></div></div>
+      <div class="apply-title">${esc(title)}</div>
+      <div class="apply-count"><b>0</b>/ ${total}</div>
+      <div class="apply-feed"></div></div>`;
+    document.body.append(el);
+    let hw = null;
+    if (window.HW3D) { HW3D.solo(true); HW3D.scan(el, { [kind]: () => 0.9 }); hw = $("[data-hw]", el)._hw; if (hw) hw.boost(true); }
+    const arc = $(".arc", el), feed = $(".apply-feed", el), count = $(".apply-count b", el);
+    const set = (i, n) => { arc.style.strokeDashoffset = C * (1 - i / Math.max(1, n)); count.textContent = i; };
+    const close = () => { S.busy = false; if (window.HW3D) HW3D.solo(false); el.remove(); $("#statusLed").className = "led"; $("#statusText").textContent = t("status.ready"); };
+    return {
+      step(i, n, id) {
+        set(i, n);
+        const tw = S.byId[id];
+        const row = document.createElement("div");
+        row.dataset.id = id;
+        row.textContent = tw ? L(tw.name) : id;
+        feed.append(row);
+        while (feed.children.length > 7) feed.firstChild.remove();
+      },
+      async finish(results) {
+        if (!results) return close();
+        const bad = new Set(results.filter((r) => !r.ok).map((r) => r.id));
+        feed.querySelectorAll("[data-id]").forEach((r) => r.classList.toggle("err", bad.has(r.dataset.id)));
+        set(1, 1);
+        el.classList.add("done");
+        $(".apply-title", el).textContent = t("done.title");
+        if (hw) hw.boost(false);
+        await new Promise((r) => setTimeout(r, 1100));
+        close();
+      },
+    };
+  };
+
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["tools", "05"],
-    ["drivers", "06"], ["apps", "07"], ["bios", "08"], ["image", "09"], ["ai", "10"], ["backup", "11"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["services", "07"],
+    ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
+  const CODES = { dashboard: "OPS", tune: "AUTO-TUNE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
+
+  // The live 3D part shown next to each page title; fans and lights follow the real load.
+  const MODEL = { tune: "cpu", tweaks: "board", debloat: "ssd", install: "monitor", tools: "router", services: "ram", drivers: "gpu", apps: "monitor", bios: "board", image: "usb", ai: "cpu", backup: "ssd" };
+  const DIST = { router: 7.4, monitor: 6.4, board: 6.2, gpu: 6.9, usb: 6.2 };
+  const last = () => S.telemetry[S.telemetry.length - 1] || {};
+  const pct = (v) => (v == null ? 0.15 : v / 100);
+  window.HWLOAD = {
+    cpu: () => pct(last().cpu), gpu: () => pct(S.sensors && S.sensors.gpuLoad != null ? S.sensors.gpuLoad : last().gpu), ram: () => pct(last().ram),
+    board: () => pct(last().cpu), router: () => Math.min(1, (last().pingMs || 15) / 80), ssd: () => 0.25, monitor: () => 0.3, usb: () => 0.3,
+  };
+
+  /** Section code above every page title ("SEC 03 · CATALOG") and the model beside it, kept when a view re-renders itself. */
+  function kicker(section) {
+    const ph = section.querySelector(".page-h");
+    const head = ph && ph.querySelector(":scope > div:not(.ph-model):not(.actions)");
+    if (!head || ph.querySelector(".kicker")) return;
+    const view = section.id.slice(2);
+    const i = navList().findIndex(([v]) => v === view);
+    head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[view] || ""}</span>`);
+    if (MODEL[view] && !ph.querySelector("[data-hw]")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-model" data-hw="${MODEL[view]}" data-key="ph-${view}" data-yaw="-0.7" data-dist="${DIST[MODEL[view]] || 5.8}"></div>`);
+  }
+  const kickerWatch = new MutationObserver((list) => {
+    const seen = new Set();
+    list.forEach((m) => { const sec = m.target.closest(".view"); if (sec && !seen.has(sec)) { seen.add(sec); kicker(sec); if (window.HW3D) HW3D.scan(sec, HWLOAD); } });
+  });
+
+  /** Slides the highlight in the menu to the current page. */
+  function moveGlider() {
+    const g = $(".nav-glider"), on = $(".nav-item.on");
+    if (!g) return;
+    g.style.opacity = on ? 1 : 0;
+    if (on) g.style.top = on.offsetTop + "px";
+  }
 
   window.go = (view, opts = {}) => {
+    const changed = S.view !== view || !$(".view.on");
     S.view = view;
     $$(".nav-item").forEach((n) => n.classList.toggle("on", n.dataset.view === view));
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + view));
+    moveGlider();
+    const sec = $("#v-" + view);
+    if (changed && sec) {
+      // page entrance: sections rise in one after another
+      sec.classList.remove("enter"); void sec.offsetWidth; sec.classList.add("enter");
+      clearTimeout(sec._enter); sec._enter = setTimeout(() => sec.classList.remove("enter"), 900);
+      sec.scrollTop = 0;
+    }
     const r = Views[view];
     if (r) r(opts);
   };
@@ -140,28 +232,30 @@
     applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
-        <div class="brand"><div class="brand-mark"></div><div><div class="brand-name">AI TWEAKER</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
+        <div class="brand">${brandMark()}<div><div class="brand-name">AI Tweaker</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
         <div class="top-mid">
-          <button class="search-btn" id="searchBtn">⌕ <span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
+          <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
           <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
-          ${S.init && S.init.isAdmin ? `<span class="chip ok">● ${t("admin")}</span>` : `<span class="chip crit">● ${t("notAdmin")}</span>`}
-          <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>⟳ ${t("rs.chip")}</button>
+          ${S.init && S.init.isAdmin ? `<span class="chip ok dot">${t("admin")}</span>` : `<span class="chip crit dot">${t("notAdmin")}</span>`}
+          <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>${icon("refresh")}${t("rs.chip")}</button>
         </div>
         <div class="top-right">
-          <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">☀ ${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">☾ ${t("shift.night")}</button></div>
+          <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">${t("shift.night")}</button></div>
           <div class="seg" id="langSeg"><button data-v="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button><button data-v="en" class="${S.lang === "en" ? "on" : ""}">EN</button></div>
-          <button class="icon-btn" id="settingsBtn" title="${t("settings")}">⚙</button>
+          ${S.demo ? `<span class="demo-pill">${t("demo")}</span>` : ""}
+          <button class="icon-btn" id="settingsBtn" title="${t("settings")}">${icon("settings")}</button>
           <div class="clock" id="clock">${fmtTime()}</div>
         </div>
       </header>
-      <nav class="nav">
-        ${NAV.map(([v, n], i) => `${i === 1 || i === 5 || i === 9 ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${n}</span><span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
-        <div class="nav-foot">${t("nav.foot")}<br><br>v${esc((S.init && S.init.version) || "1.0.0")} · ${esc((S.init && S.init.machine) || "")}</div>
+      <nav class="nav"><div class="nav-glider"></div>
+        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === (all.some(([x]) => x === "ai") ? "ai" : "backup") ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        <div class="nav-foot">${t("nav.foot")}<br><br><span class="mono">AI TWEAKER ${esc((S.init && S.init.version) || "1.0.0")}${S.init && S.init.machine ? " · " + esc(S.init.machine) : ""}</span></div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
       <footer class="statusbar"><span class="led" id="statusLed"></span><span id="statusText">${t("status.ready")}</span><span class="ticker" id="ticker"></span><span id="sbTele"></span></footer>`;
-    if (S.demo) { const b = document.createElement("div"); b.className = "demo-badge"; b.textContent = t("demo"); $("#app").append(b); }
 
+    $$(".view").forEach((sec) => kickerWatch.observe(sec, { childList: true, subtree: true }));
+    requestAnimationFrame(moveGlider);
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
@@ -185,12 +279,16 @@
     S.theme = S.themeMode === "auto" ? (S.system.dark ? "night" : "day") : S.themeMode;
     const root = document.documentElement;
     root.dataset.theme = S.theme;
-    const panel = S.theme === "night" ? "#14160f" : "#f6f3ea";
-    const base = S.accentMode === "industrial" ? (S.theme === "night" ? "#f2a93b" : "#e8590c") : S.system.accent || "#0078D4";
+    const panel = S.theme === "night" ? "#111316" : "#f7f5ef";
+    // Signal orange/amber by default; the Windows accent on request; monochrome on request or when that accent is colourless.
+    let base = S.accentMode === "system" ? S.system.accent || "#0067C0" : S.theme === "night" ? "#f5a524" : "#e2560b";
+    const c0 = rgb(base);
+    if (S.accentMode === "mono" || Math.max(...c0) - Math.min(...c0) < 24) base = S.theme === "night" ? "#ebe9e3" : "#17171a";
     const a = fit(base, panel);
     root.style.setProperty("--accent", hex(a));
-    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#14160f" : "#ffffff");
+    root.style.setProperty("--accent-ink", lum(a) > 0.42 ? "#111214" : "#ffffff");
     root.style.setProperty("--radar", hex(a));
+    if (window.HW3D) HW3D.retint();
     call("window.theme", { theme: S.theme }, { silent: true }).catch(() => {});
   };
 
@@ -222,21 +320,26 @@
     await modal({
       title: t("settings"),
       body: html`<label class="field">${t("settings.accent")}
-          <select class="input" id="setAccent"><option value="system" ${S.accentMode === "system" ? "selected" : ""}>${t("settings.accent.system")}</option><option value="industrial" ${S.accentMode === "industrial" ? "selected" : ""}>${t("settings.accent.industrial")}</option></select></label>
+          <select class="input" id="setAccent">${["industrial", "system", "mono"].map((m) => `<option value="${m}" ${S.accentMode === m ? "selected" : ""}>${t("settings.accent." + m)}</option>`).join("")}</select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="field">${t("settings.autoRestart")}
           <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
-        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
+        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>
+        <label class="check"><input type="checkbox" id="setAdv" ${s.showAdvisor ? "checked" : ""}><span class="box"></span>${t("settings.advisor")}</label>
+        <div class="td" style="color:var(--muted);margin-top:-6px;padding-left:26px">${t("settings.advisorD")}</div>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
       onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
+        const showAdvisor = $("#setAdv", ov).checked;
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode });
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds });
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode, showAdvisor });
+        const navChanged = !!s.showAdvisor !== showAdvisor;
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, showAdvisor });
+        if (navChanged) { if (!showAdvisor && S.view === "ai") S.view = "dashboard"; renderShell(); go(S.view); }
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });
@@ -246,7 +349,7 @@
 
   function searchIndex() {
     const idx = [];
-    NAV.forEach(([v]) => idx.push({ type: "page", title: t("nav." + v), desc: t(v === "dashboard" ? "dash.desc" : v + ".desc"), go: () => go(v) }));
+    navList().forEach(([v]) => idx.push({ type: "page", title: t("nav." + v), desc: t(v === "dashboard" ? "dash.desc" : v + ".desc"), go: () => go(v) }));
     S.catalog.forEach((tw) => idx.push({ type: "tweak", title: L(tw.name), desc: tw.id + " · " + L(tw.description), keys: tw.id + " " + tw.name.ru + " " + tw.name.en + " " + tw.description.ru + " " + tw.description.en, go: () => go("tweaks", { focus: tw.id }) }));
     ((window.MOCK_DATA && MOCK_DATA.guides) || S.guides || []).forEach((g) => g.sections.forEach((sec) => sec.settings.forEach((st) =>
       idx.push({ type: "setting", title: `${g.name}: ${st.name}`, desc: `${L(sec.title)} → ${st.value}`, keys: `${g.name} ${st.name} ${sec.title.ru} ${sec.title.en} ${sec.path}`, go: () => go("apps", { guide: g.id }) }))));

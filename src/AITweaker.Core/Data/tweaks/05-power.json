@@ -104,6 +104,21 @@
     ]
   },
   {
+    "id": "power.epp.performance",
+    "category": "power",
+    "level": 3,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Процессор: приоритет производительности (EPP 0)", "en": "CPU: performance first (EPP 0)" },
+    "description": {
+      "ru": "Сообщает процессору (Intel Speed Shift, AMD CPPC), что от сети важна скорость, а не экономия: частота поднимается сразу, без «раскачки». На гибридных Intel — и для энергоэффективных ядер. Выше потребление в простое.",
+      "en": "Tells the CPU (Intel Speed Shift, AMD CPPC) that on AC speed matters more than saving power: clocks rise at once, without ramping. On hybrid Intel also for efficient cores. Higher idle power."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Processor energy performance preference policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "36687f9e-e3a5-4dbf-b1dc-15eb381c6863", "ac": 0 },
+      { "type": "powercfg", "alias": "Processor energy performance preference policy (class 1)", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "36687f9e-e3a5-4dbf-b1dc-15eb381c6864", "ac": 0, "when": "cpu.hybrid" }
+    ]
+  },
+  {
     "id": "power.core-parking.off",
     "category": "power",
     "level": 3,
@@ -156,6 +171,21 @@
     },
     "actions": [
       { "type": "command", "file": "powercfg.exe", "args": "/hibernate off", "undoFile": "powercfg.exe", "undoArgs": "/hibernate on" }
+    ]
+  },
+  {
+    "id": "power.sleep.desktop",
+    "category": "power",
+    "level": 0,
+    "when": "system.desktop",
+    "name": { "ru": "ПК не засыпает сам (экран гаснет через 15 минут)", "en": "The PC doesn't sleep on its own (display off after 15 minutes)" },
+    "description": {
+      "ru": "Загрузки игр, стримы и обновления не прерываются сном. Экран всё равно выключается через 15 минут простоя. Перевести в сон можно вручную из «Пуска».",
+      "en": "Game downloads, streams and updates aren't interrupted by sleep. The display still turns off after 15 idle minutes. You can still put the PC to sleep from Start."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Sleep after", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "29f6c1db-86da-48c5-9fdb-f2b67b1f44da", "ac": 0 },
+      { "type": "powercfg", "alias": "Turn off display after", "subgroup": "7516b95f-f776-4464-8c53-06167f40cc99", "setting": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e", "ac": 900 }
     ]
   }
 ]

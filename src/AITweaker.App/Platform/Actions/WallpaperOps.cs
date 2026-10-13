@@ -9,6 +9,8 @@ namespace AITweaker.App.Platform.Actions;
 public static class WallpaperOps
 {
     private const string Desktop = @"HKCU\Control Panel\Desktop";
+    private const string Colors = @"HKCU\Control Panel\Colors";
+    private const string Wallpapers = @"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers";
     private const string Csp = @"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\PersonalizationCSP";
 
     private static readonly string Windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -54,18 +56,29 @@ public static class WallpaperOps
     {
         ExtractAssets(SystemRoot);
         RegisterTheme();
-        var file = Resolve(a.File);
         if (a.Target == "lock")
         {
-            RegistryOps.SetValue(Csp, "LockScreenImagePath", file, RegistryValueKind.String, ctx);
-            RegistryOps.SetValue(Csp, "LockScreenImageUrl", file, RegistryValueKind.String, ctx);
+            var lockFile = Resolve(a.File);
+            RegistryOps.SetValue(Csp, "LockScreenImagePath", lockFile, RegistryValueKind.String, ctx);
+            RegistryOps.SetValue(Csp, "LockScreenImageUrl", lockFile, RegistryValueKind.String, ctx);
             RegistryOps.SetValue(Csp, "LockScreenImageStatus", 1, RegistryValueKind.DWord, ctx);
             return Task.CompletedTask;
         }
 
+        // Recorded first, so on rollback it runs last — after the colour and style values are restored.
         ctx.Record(ChangeRecord.Of("wallpaper", ("path", Native.GetWallpaper())));
         RegistryOps.SetValue(Desktop, "WallpaperStyle", "10", RegistryValueKind.String, ctx); // fill
         RegistryOps.SetValue(Desktop, "TileWallpaper", "0", RegistryValueKind.String, ctx);
+        RegistryOps.SetValue(Wallpapers, "BackgroundType", a.SolidBlack ? 1 : 0, RegistryValueKind.DWord, ctx); // 1 = solid colour, 0 = picture (no Spotlight)
+        if (a.SolidBlack)
+        {
+            RegistryOps.SetValue(Colors, "Background", LookAssets.BlackRgb, RegistryValueKind.String, ctx);
+            Native.SetDesktopColor(0, 0, 0);
+            if (!Native.SetWallpaper("")) throw new InvalidOperationException("Windows refused to remove the wallpaper");
+            ctx.Log("desktop -> solid black");
+            return Task.CompletedTask;
+        }
+        var file = Resolve(a.File);
         if (!Native.SetWallpaper(file)) throw new InvalidOperationException("Windows refused to set the wallpaper");
         ctx.Log("wallpaper -> " + file);
         return Task.CompletedTask;
@@ -73,13 +86,20 @@ public static class WallpaperOps
 
     public static Task RevertAsync(ChangeRecord r)
     {
-        var old = r["path"];
-        Native.SetWallpaper(string.IsNullOrEmpty(old) || !File.Exists(old) ? Path.Combine(Windir, @"Web\Wallpaper\Windows\img0.jpg") : old);
+        // The registry values (colour, style, background type) are already restored at this point.
+        if (RegistryHelper.Read(Colors, "Background").Data?.Split(' ') is [var rr, var gg, var bb]
+            && byte.TryParse(rr, out var cr) && byte.TryParse(gg, out var cg) && byte.TryParse(bb, out var cb))
+            Native.SetDesktopColor(cr, cg, cb);
+        var old = r["path"] ?? "";
+        // An empty path means the desktop was a solid colour before.
+        Native.SetWallpaper(old.Length == 0 ? "" : File.Exists(old) ? old : Path.Combine(Windir, @"Web\Wallpaper\Windows\img0.jpg"));
         return Task.CompletedTask;
     }
 
     public static bool? Check(WallpaperAction a)
     {
+        if (a.SolidBlack)
+            return Native.GetWallpaper().Length == 0 && RegistryHelper.Read(Colors, "Background").Data?.Trim() == LookAssets.BlackRgb;
         var file = Resolve(a.File);
         var current = a.Target == "lock" ? RegistryHelper.Read(Csp, "LockScreenImagePath").Data : Native.GetWallpaper();
         return string.Equals(current, file, StringComparison.OrdinalIgnoreCase);

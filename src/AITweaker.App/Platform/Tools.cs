@@ -50,6 +50,70 @@ public static class NetworkTest
 
     public static Task<ProcessResult> FlushDnsAsync() => ProcessRunner.RunAsync("ipconfig.exe", "/flushdns");
 
+    /// <summary>Public DNS resolvers offered next to "from the provider" (DHCP).</summary>
+    public static readonly Dictionary<string, string[]> DnsPresets = new()
+    {
+        ["cloudflare"] = ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"],
+        ["google"] = ["8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"],
+        ["quad9"] = ["9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"],
+    };
+
+    private const string ActiveAdapters = "Get-NetAdapter -Physical | Where-Object Status -eq 'Up'";
+
+    /// <summary>Which preset the connected adapters use ("auto" = from the router/provider, "custom" = something else).</summary>
+    public static async Task<object> GetDnsAsync()
+    {
+        var r = await ProcessRunner.PowerShellAsync(
+            $"{ActiveAdapters} | ForEach-Object {{ [pscustomobject]@{{ alias = $_.Name; servers = @((Get-DnsClientServerAddress -InterfaceIndex $_.ifIndex -AddressFamily IPv4).ServerAddresses); dhcp = ((Get-NetIPInterface -InterfaceIndex $_.ifIndex -AddressFamily IPv4).Dhcp -eq 'Enabled') -and -not (Get-ItemProperty -Path ('HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\' + $_.InterfaceGuid) -Name NameServer -ErrorAction SilentlyContinue).NameServer }} }} | ConvertTo-Json -Compress -Depth 3",
+            TimeSpan.FromSeconds(30));
+        var adapters = new List<(string Alias, string[] Servers, bool Auto)>();
+        if (r.Output.Trim().Length > 0)
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(r.Output);
+            var items = doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array ? doc.RootElement.EnumerateArray().ToList() : [doc.RootElement];
+            foreach (var e in items)
+                adapters.Add((e.GetProperty("alias").GetString() ?? "",
+                    e.GetProperty("servers").ValueKind == System.Text.Json.JsonValueKind.Array ? e.GetProperty("servers").EnumerateArray().Select(x => x.GetString() ?? "").ToArray() : [],
+                    e.TryGetProperty("dhcp", out var d) && d.ValueKind == System.Text.Json.JsonValueKind.True));
+        }
+        string Preset((string Alias, string[] Servers, bool Auto) a) =>
+            a.Auto ? "auto" : DnsPresets.FirstOrDefault(p => a.Servers.Length > 0 && p.Value.Contains(a.Servers[0])).Key ?? "custom";
+        var presets = adapters.Select(Preset).Distinct().ToList();
+        return new
+        {
+            current = presets.Count == 1 ? presets[0] : presets.Count == 0 ? "auto" : "mixed",
+            adapters = adapters.Select(a => new { alias = a.Alias, servers = a.Servers, preset = Preset(a) }),
+        };
+    }
+
+    /// <param name="preset">auto (back to the provider's DNS) or a key of <see cref="DnsPresets"/>.</param>
+    public static async Task SetDnsAsync(string preset)
+    {
+        string body = preset == "auto"
+            ? "Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ResetServerAddresses"
+            : DnsPresets.TryGetValue(preset, out var servers)
+                ? $"Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ServerAddresses {string.Join(",", servers.Select(ProcessRunner.PsQuote))}"
+                : throw new ArgumentException("unknown DNS preset " + preset);
+        var r = await ProcessRunner.PowerShellAsync($"$ErrorActionPreference = 'Stop'; {ActiveAdapters} | ForEach-Object {{ {body} }}; Clear-DnsClientCache", TimeSpan.FromSeconds(60));
+        if (!r.Success) throw new InvalidOperationException("DNS change failed: " + r.Error.Trim());
+        AppLog.Ok("network", $"DNS -> {preset}");
+    }
+
+    /// <summary>Average lookup time of each resolver from this connection (ms; -1 = no answer).</summary>
+    public static async Task<Dictionary<string, int>> BenchmarkDnsAsync()
+    {
+        var targets = new Dictionary<string, string>(DnsPresets.ToDictionary(p => p.Key, p => p.Value[0]));
+        var current = await ProcessRunner.PowerShellAsync($"({ActiveAdapters} | Select-Object -First 1 | ForEach-Object {{ (Get-DnsClientServerAddress -InterfaceIndex $_.ifIndex -AddressFamily IPv4).ServerAddresses }} | Select-Object -First 1)", TimeSpan.FromSeconds(20));
+        var cur = current.Output.Trim();
+        if (System.Net.IPAddress.TryParse(cur, out _) && !targets.ContainsValue(cur)) targets["current"] = cur;
+        var script = string.Join("; ", targets.Select(t =>
+            $"$t = @(); foreach ($n in 'www.google.com','www.youtube.com','discord.com','steamcommunity.com','store.epicgames.com') {{ $sw = [Diagnostics.Stopwatch]::StartNew(); try {{ Resolve-DnsName -Name $n -Server {ProcessRunner.PsQuote(t.Value)} -Type A -DnsOnly -NoHostsFile -QuickTimeout -ErrorAction Stop | Out-Null; $t += $sw.ElapsedMilliseconds }} catch {{ }} }}; " +
+            $"Write-Output ({ProcessRunner.PsQuote(t.Key + "=")} + $(if ($t.Count) {{ [int](($t | Measure-Object -Average).Average) }} else {{ -1 }}))"));
+        var r = await ProcessRunner.PowerShellAsync(script, TimeSpan.FromMinutes(2));
+        return r.Output.Split('\n').Select(l => l.Trim().Split('=')).Where(a => a.Length == 2 && int.TryParse(a[1], out _))
+            .ToDictionary(a => a[0], a => int.Parse(a[1]));
+    }
+
     /// <summary>Winsock + TCP/IP stack reset (needs a reboot).</summary>
     public static async Task ResetStackAsync()
     {

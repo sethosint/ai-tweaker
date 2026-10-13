@@ -4,8 +4,9 @@ using System.Text;
 namespace AITweaker.Core.Image;
 
 /// <summary>
-/// AI Tweaker's own Windows look: wallpapers drawn for this project (tools/wallpapers), the signature amber accent
-/// and a .theme file so the look also shows up in Settings → Personalization → Themes.
+/// AI Tweaker's own Windows look: black and monochrome — black taskbar and Start, solid black desktop, dark mode,
+/// with minimal dark wallpapers made for this project (tools/wallpapers, no text or logos) as an option and a .theme
+/// file so the look also shows up in Settings → Personalization → Themes.
 /// </summary>
 public static class LookAssets
 {
@@ -14,24 +15,34 @@ public static class LookAssets
     public const string ThemePath = Folder + @"\aitweaker.theme";
     /// <summary>Same file as <see cref="ThemePath"/>, written the way registry REG_EXPAND_SZ values expect it.</summary>
     public const string ThemePathExpand = @"%ProgramData%\AITweaker\Look\aitweaker.theme";
-    public static readonly string[] Variants = ["dark", "light", "lock"];
 
-    public static string WallpaperFile(string variant) => $@"{Folder}\aitweaker-{(Variants.Contains(variant) ? variant : "dark")}.jpg";
+    /// <summary>Wallpaper image files shipped inside the exe. "black" is not a file: it is a solid colour desktop.</summary>
+    public static readonly string[] Variants = ["graphite", "obsidian", "lock"];
+    public const string Black = "black";
 
-    /// <summary>Signature accent "signal amber" and the shades Windows uses for controls, Start and the taskbar.</summary>
+    /// <summary>"Background" colour value (HKCU\Control Panel\Colors) for the solid black desktop.</summary>
+    public const string BlackRgb = "0 0 0";
+
+    public static string WallpaperFile(string variant) => $@"{Folder}\aitweaker-{(Variants.Contains(variant) ? variant : "graphite")}.jpg";
+
+    /// <summary>
+    /// Monochrome accent palette. The dark shades are black, so with "accent colour on Start and taskbar" both turn black;
+    /// the light shades stay grey so toggles, links and selection remain visible in dark mode.
+    /// </summary>
     public static readonly (byte R, byte G, byte B)[] Palette =
     [
-        (0xFB, 0xDD, 0xA6), // light 3
-        (0xF7, 0xC4, 0x6E), // light 2
-        (0xF2, 0xA9, 0x3B), // light 1 — the app's night accent, used by Windows dark mode
-        (0xE0, 0x7A, 0x12), // accent
-        (0xB8, 0x5F, 0x0A), // dark 1
-        (0x8A, 0x45, 0x07), // dark 2
-        (0x5C, 0x2E, 0x05), // dark 3
-        (0x3B, 0x8F, 0xD9), // complementary
+        (0xE0, 0xE0, 0xE0), // light 3
+        (0xBD, 0xBD, 0xBD), // light 2 — toggles and links in dark mode
+        (0x9A, 0x9A, 0x9A), // light 1
+        (0x1A, 0x1A, 0x1A), // accent
+        (0x00, 0x00, 0x00), // dark 1
+        (0x00, 0x00, 0x00), // dark 2 — Start and taskbar
+        (0x00, 0x00, 0x00), // dark 3
+        (0x6E, 0x6E, 0x6E), // complementary
     ];
 
     public static (byte R, byte G, byte B) Accent => Palette[3];
+    public static (byte R, byte G, byte B) StartColor => Palette[5];
 
     /// <summary>REG_BINARY AccentPalette: 8 × RGBA.</summary>
     public static byte[] AccentPalette() => Palette.SelectMany(c => new[] { c.R, c.G, c.B, (byte)0 }).ToArray();
@@ -44,24 +55,26 @@ public static class LookAssets
 
     public static string ThemeFile()
     {
-        var a = Accent;
         var sb = new StringBuilder();
-        sb.AppendLine("; AI Tweaker — own Windows look (dark, signal amber accent, AI Tweaker wallpaper)");
+        sb.AppendLine("; AI Tweaker — own Windows look (dark mode, black taskbar and Start, solid black desktop)");
         sb.AppendLine("[Theme]");
         sb.AppendLine("DisplayName=AI Tweaker");
         sb.AppendLine();
         sb.AppendLine(@"[Control Panel\Desktop]");
-        sb.AppendLine($"Wallpaper={WallpaperFile("dark")}");
+        sb.AppendLine("Wallpaper=");
         sb.AppendLine("WallpaperStyle=10");
         sb.AppendLine("TileWallpaper=0");
         sb.AppendLine("Pattern=");
+        sb.AppendLine();
+        sb.AppendLine(@"[Control Panel\Colors]");
+        sb.AppendLine("Background=" + BlackRgb);
         sb.AppendLine();
         sb.AppendLine("[VisualStyles]");
         sb.AppendLine(@"Path=%SystemRoot%\resources\themes\Aero\Aero.msstyles");
         sb.AppendLine("ColorStyle=NormalColor");
         sb.AppendLine("Size=NormalSize");
         sb.AppendLine("AutoColorization=0");
-        sb.AppendLine("ColorizationColor=0X" + Argb(a).ToString("X8", CultureInfo.InvariantCulture));
+        sb.AppendLine("ColorizationColor=0X" + Argb(Accent).ToString("X8", CultureInfo.InvariantCulture));
         sb.AppendLine("SystemMode=Dark");
         sb.AppendLine("AppMode=Dark");
         sb.AppendLine();

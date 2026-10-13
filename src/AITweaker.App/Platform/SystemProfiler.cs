@@ -345,6 +345,13 @@ public static class SystemProfiler
             ["store"] = () => Package("Microsoft.WindowsStore"),
             ["onedrive"] = () => File.Exists(Path.Combine(local, "Microsoft", "OneDrive", "OneDrive.exe")) || File.Exists(Path.Combine(pf, "Microsoft OneDrive", "OneDrive.exe")),
             ["teams"] = () => Package("MSTeams"),
+            ["openShell"] = () => File.Exists(Path.Combine(pf, "Open-Shell", "StartMenu.exe")),
+            ["lightshot"] = () => File.Exists(Path.Combine(pf86, "Skillbrains", "lightshot", "Lightshot.exe")) || File.Exists(Path.Combine(pf, "Skillbrains", "lightshot", "Lightshot.exe")),
+            ["telegram"] = () => File.Exists(Path.Combine(roaming, "Telegram Desktop", "Telegram.exe")) || File.Exists(Path.Combine(pf, "Telegram Desktop", "Telegram.exe")),
+            ["ayugram"] = () => File.Exists(Path.Combine(roaming, "AyuGram Desktop", "AyuGram.exe")) || File.Exists(Path.Combine(local, "Programs", "AyuGram Desktop", "AyuGram.exe")) || File.Exists(Path.Combine(pf, "AyuGram Desktop", "AyuGram.exe")),
+            ["ea"] = () => File.Exists(Path.Combine(pf, "Electronic Arts", "EA Desktop", "EA Desktop", "EADesktop.exe")),
+            ["battlenet"] = () => File.Exists(Path.Combine(pf86, "Battle.net", "Battle.net Launcher.exe")) || File.Exists(Path.Combine(pf, "Battle.net", "Battle.net Launcher.exe")),
+            ["startAllBack"] = () => Directory.Exists(Path.Combine(pf, "StartAllBack")) || RegistryHelper.KeyExists(@"HKCU\Software\StartIsBack"),
         };
 
         var found = new List<string>();

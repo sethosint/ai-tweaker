@@ -28,7 +28,7 @@ public static class ProcessRunner
 
     public static string System32(string exe) => Path.Combine(Environment.SystemDirectory, exe);
 
-    public static async Task<ProcessResult> RunAsync(string file, string args, TimeSpan? timeout = null, Action<string>? onLine = null, Encoding? encoding = null, CancellationToken ct = default)
+    public static async Task<ProcessResult> RunAsync(string file, string args, TimeSpan? timeout = null, Action<string>? onLine = null, Encoding? encoding = null, CancellationToken ct = default, string? workingDir = null)
     {
         if (!Path.IsPathRooted(file) && File.Exists(System32(file))) file = System32(file);
 
@@ -40,7 +40,7 @@ public static class ProcessRunner
             RedirectStandardError = true,
             StandardOutputEncoding = encoding ?? OemEncoding,
             StandardErrorEncoding = encoding ?? OemEncoding,
-            WorkingDirectory = Environment.SystemDirectory,
+            WorkingDirectory = workingDir ?? Environment.SystemDirectory,
         };
 
         using var p = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -91,10 +91,17 @@ public static class ProcessRunner
 
     public static void OpenUrl(string url)
     {
-        if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("ms-settings:", StringComparison.OrdinalIgnoreCase)))
-            throw new ArgumentException("Only web and ms-settings links can be opened");
+        if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+              || url.StartsWith("ms-settings:", StringComparison.OrdinalIgnoreCase) || url.StartsWith("ms-windows-store://", StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Only web, ms-settings and Microsoft Store links can be opened");
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 
     public static void OpenFolder(string path) => Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
+
+    /// <summary>Opens Explorer with the file selected (only for files that exist).</summary>
+    public static void Reveal(string path)
+    {
+        if (File.Exists(path)) Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+    }
 }

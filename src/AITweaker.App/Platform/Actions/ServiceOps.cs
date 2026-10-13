@@ -41,7 +41,7 @@ public static class ServiceOps
             await ProcessRunner.RunAsync("sc.exe", $"stop \"{a.Name}\"", TimeSpan.FromSeconds(20));
     }
 
-    private static async Task SetAsync(string name, int start, int delayed)
+    internal static async Task SetAsync(string name, int start, int delayed)
     {
         try
         {
