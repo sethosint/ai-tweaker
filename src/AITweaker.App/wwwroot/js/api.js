@@ -161,6 +161,15 @@
       { category: "network", name: profile.network[0].description, vendor: "ethernet", status: "ok", links: [{ title: "ASUS Support", url: "https://www.asus.com/support/download-center/" }] },
     ],
     "drivers.rescan": async () => { await sleep(900); return { exitCode: 0 }; },
+    "nvidia.check": async () => { await sleep(700); return { gpu: "NVIDIA GeForce RTX 5070 Ti", installed: "576.88", installedDate: "2026-03-02T00:00:00", updateAvailable: true, error: null,
+      latest: { version: "591.44", name: "GeForce Game Ready Driver", releaseDate: "Tue Sep 22, 2026", url: "https://us.download.nvidia.com/Windows/591.44/591.44-desktop-win10-win11-64bit-international-dch-whql.exe", size: "912.4 MB", detailsUrl: "https://www.nvidia.com/en-us/drivers/" } }; },
+    "nvidia.install": async () => {
+      for (let i = 0; i <= 20; i++) { emit("nvidia.progress", { step: "download", value: i / 20 }); await sleep(90); }
+      emit("nvidia.progress", { step: "extract", value: 0 }); await sleep(700);
+      emit("nvidia.progress", { step: "install", value: 0 }); await sleep(1400);
+      log("ok", "nvidia", "driver 591.44 installed (driver + HD Audio + PhysX)");
+      return { ok: true, exitCode: 0, version: "591.44", minimal: true, error: null };
+    },
     "guides.list": async () => D.guides.filter((g) => evalWhen(g.when)).map((g) => ({ ...g, installed: !g.detect || evalWhen(g.detect) })).sort((a, b) => b.installed - a.installed),
     "bios.list": async () => ({
       board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate, vendor: "asus" },

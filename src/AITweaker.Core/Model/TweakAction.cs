@@ -20,6 +20,7 @@ namespace AITweaker.Core.Model;
 [JsonDerivedType(typeof(AppxRemoveAction), "appx")]
 [JsonDerivedType(typeof(DisplayRefreshAction), "display")]
 [JsonDerivedType(typeof(WallpaperAction), "wallpaper")]
+[JsonDerivedType(typeof(NvidiaProfileAction), "nvidia")]
 public abstract class TweakAction
 {
     /// <summary>Optional per-action condition (e.g. different values on laptops).</summary>
@@ -210,4 +211,30 @@ public sealed class WallpaperAction : TweakAction
     /// <summary>The image file, or empty for the solid black desktop.</summary>
     public string File => SolidBlack ? "" : Image.LookAssets.WallpaperFile(Target == "lock" ? "lock" : Variant);
     public override string Describe() => SolidBlack ? "wallpaper[desktop] -> solid black" : $"wallpaper[{Target}] -> {File}";
+}
+
+/// <summary>
+/// Global NVIDIA driver settings ("Manage 3D settings → Global", also shown in NVIDIA App → Graphics), written to the
+/// driver's Base Profile through NVIDIA Profile Inspector. The original values are read back first, so a rollback
+/// restores exactly what was there.
+/// </summary>
+public sealed class NvidiaProfileAction : TweakAction
+{
+    public required List<NvidiaSetting> Settings { get; init; }
+
+    public override string Describe() => "nvidia " + string.Join(", ", Settings.Select(s => $"{s.Name} = {s.Value}"));
+}
+
+public sealed class NvidiaSetting
+{
+    /// <summary>DRS setting id in hex as in NvApiDriverSettings.h, e.g. <c>0x1057EB71</c>.</summary>
+    public required string Id { get; init; }
+    public string Name { get; init; } = "";
+    public uint Value { get; init; }
+    /// <summary>The driver's own default, written back on rollback when the setting was never customized.</summary>
+    public uint Default { get; init; }
+    /// <summary>Optional condition for this one setting (e.g. maximum performance only on desktops).</summary>
+    public string? When { get; init; }
+
+    public uint SettingId => Convert.ToUInt32(Id, 16);
 }

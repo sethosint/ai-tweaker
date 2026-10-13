@@ -28,6 +28,8 @@ public sealed class ApiService
 
     public Action<string>? ThemeChanged { get; set; }
 
+    private NvidiaDriverStatus? _nvidia;
+
     public ApiService(Func<Func<object?>, Task<object?>> onUi, Action<string, object?> emit)
     {
         _engine = new RecommendationEngine(_catalog);
@@ -53,6 +55,17 @@ public sealed class ApiService
         "appx.remove" => await Exclusive(() => Platform.Actions.AppxOps.RemoveAsync(Ids(p, "names") ?? [], n => _emit("appx.progress", n))),
         "drivers.list" => DriverCenter.Build(await ProfileAsync()),
         "drivers.rescan" => await DriverCenter.RescanAsync(),
+        "nvidia.check" => _nvidia = await NvidiaTools.CheckAsync(await ProfileAsync()),
+        "nvidia.install" => await Exclusive(async () =>
+        {
+            var offer = (_nvidia ??= await NvidiaTools.CheckAsync(await ProfileAsync())).Latest
+                ?? throw new InvalidOperationException(_nvidia.Error ?? "No driver found for this card");
+            var r = await NvidiaTools.InstallAsync(offer, Bool(p, "hdAudio") ?? true, Bool(p, "physX") ?? true, Bool(p, "clean") ?? true,
+                (step, v) => _emit("nvidia.progress", new { step, value = v }), NewLongTask());
+            _profile = null; // the new driver version shows up on the next scan
+            _nvidia = null;
+            return r;
+        }),
         "guides.list" => await GuidesAsync(),
         "programs.list" => await Task.Run(Programs),
         "features.list" => await FeaturesAsync(),

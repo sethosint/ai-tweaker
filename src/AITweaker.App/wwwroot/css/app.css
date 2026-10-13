@@ -380,6 +380,15 @@ label.field { display: grid; gap: 7px; font: 600 10.5px/1.2 var(--font-head); le
 .flow-stats b { display: block; font: 700 22px/1.15 var(--font-head); color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 2px; }
 .flow-stats .c1 b { color: var(--accent); } .flow-stats .c2 b { color: var(--info); } .flow-stats .c3 b { color: var(--ok); }
 
+.nv-vers { display: grid; grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); gap: 10px; align-items: center; }
+.nv-vers > div:not(.arrow) { display: grid; gap: 3px; padding: 14px 16px; border-radius: var(--r); background: var(--surface); }
+.nv-vers .k { font: 600 10px/1 var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.nv-vers b { font: 700 28px/1.1 var(--font-head); font-variant-numeric: tabular-nums; }
+.nv-vers .s { font: 400 11px/1.3 var(--font-mono); color: var(--muted); min-height: 1.3em; }
+.nv-vers .new { box-shadow: inset 0 0 0 1.5px var(--accent), 0 12px 30px -18px var(--glow); }
+.nv-vers .new b { color: var(--accent); }
+.nv-vers .arrow { display: grid; place-items: center; color: var(--muted); }
+
 /* 3D next to a section (drivers, BIOS, tools, image) */
 .hw-side { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px; align-items: center; }
 .hw-side > [data-hw] { height: 140px; }

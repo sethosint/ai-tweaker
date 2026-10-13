@@ -28,7 +28,7 @@ public static class ProcessRunner
 
     public static string System32(string exe) => Path.Combine(Environment.SystemDirectory, exe);
 
-    public static async Task<ProcessResult> RunAsync(string file, string args, TimeSpan? timeout = null, Action<string>? onLine = null, Encoding? encoding = null, CancellationToken ct = default)
+    public static async Task<ProcessResult> RunAsync(string file, string args, TimeSpan? timeout = null, Action<string>? onLine = null, Encoding? encoding = null, CancellationToken ct = default, string? workingDir = null)
     {
         if (!Path.IsPathRooted(file) && File.Exists(System32(file))) file = System32(file);
 
@@ -40,7 +40,7 @@ public static class ProcessRunner
             RedirectStandardError = true,
             StandardOutputEncoding = encoding ?? OemEncoding,
             StandardErrorEncoding = encoding ?? OemEncoding,
-            WorkingDirectory = Environment.SystemDirectory,
+            WorkingDirectory = workingDir ?? Environment.SystemDirectory,
         };
 
         using var p = new Process { StartInfo = psi, EnableRaisingEvents = true };

@@ -188,9 +188,21 @@
     const v = $("#v-drivers");
     if (needScan(v)) return;
     if (!S.drivers) { v.innerHTML = `<div class="empty">…</div>`; S.drivers = await call("drivers.list"); }
+    const nv = S.scan.profile.gpus.some((g) => g.vendor === "NVIDIA");
+    const nvTweaks = S.catalog.filter((tw) => tw.id.startsWith("gaming.nvidia-") && (S.plan ? S.plan.items.some((i) => i.id === tw.id) : true));
     v.innerHTML = html`
       <div class="page-h"><div><h1>${t("drivers.title")}</h1><p>${t("drivers.desc")}</p></div>
         <div class="actions"><button class="btn sm" id="drvRescan">${t("drivers.rescan")}</button><button class="btn sm" id="drvOptional">${t("drivers.optional")}${icon("external")}</button></div></div>
+      ${nv ? html`<div class="grid cols-2" style="margin-bottom:30px">
+        <div class="panel"><div class="panel-h">${t("nv.title")}<span class="right" id="nvState"><span class="led busy"></span>${t("nv.checking")}</span></div>
+          <div class="panel-b" id="nvBody">${nvVersions(null)}</div></div>
+        <div class="panel"><div class="panel-h">${t("nv.settings")}</div>
+          <div class="panel-b" style="display:grid;gap:12px"><div class="td" style="color:var(--muted)">${t("nv.settingsD")}</div>
+            <div>${nvTweaks.map((tw) => `<div class="tool-row"><div><div class="tn">${esc(L(tw.name))}</div><div class="td" style="color:var(--muted);font-size:12px">${t("nv.sub." + tw.id)}</div></div><span class="status ${S.status[tw.id] === "applied" ? "applied" : "off"}">${t(S.status[tw.id] === "applied" ? "st.applied" : "st.off")}</span></div>`).join("")}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="nvApply" ${nvTweaks.every((tw) => S.status[tw.id] === "applied") ? "disabled" : ""}>${t("nv.applySettings")}</button>
+              <button class="btn ghost" data-guide="nvidia-app">NVIDIA App${icon("arrow")}</button><button class="btn ghost" data-guide="nvidia-control-panel">${t("nv.cpl")}${icon("arrow")}</button></div>
+          </div></div>
+      </div>` : ""}
       <div class="cards">${S.drivers.map((d) => html`<div class="card" style="cursor:default">
         <div class="cn">${t("drv." + d.category)}</div>
         <div style="font-weight:700">${esc(d.name)}</div>
@@ -199,9 +211,75 @@
         <div class="cf">${d.links.map((l) => `<button class="btn sm" data-url="${esc(l.url)}">${esc(l.title)}${icon("external")}</button>`).join("")}</div>
       </div>`).join("")}</div>`;
     v.querySelectorAll("[data-url]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.url })));
+    v.querySelectorAll("[data-guide]").forEach((b) => (b.onclick = () => go("apps", { guide: b.dataset.guide })));
     $("#drvRescan").onclick = async () => { await call("drivers.rescan"); S.drivers = null; await App.scan(true); V.drivers(); };
     $("#drvOptional").onclick = () => call("shell.open", { url: "ms-settings:windowsupdate-optionalupdates" });
+    if (!nv) return;
+    $("#nvApply").onclick = () => App.apply(nvTweaks.filter((tw) => S.status[tw.id] !== "applied").map((tw) => tw.id));
+    if (!S.nvidia) S.nvidia = await call("nvidia.check", {}, { silent: true }).catch((e) => ({ error: e.message }));
+    if (S.view === "drivers" && $("#nvBody")) nvRender(nvTweaks);
   };
+
+  const nvDate = (d) => { const x = d ? new Date(d) : null; return x && !isNaN(x) ? fmtDate(x) : esc(d || ""); };
+
+  function nvVersions(n) {
+    const g = S.scan.profile.gpus.find((x) => x.vendor === "NVIDIA");
+    const inst = n && n.installed ? n.installed : g.driverVersion;
+    return html`<div class="nv-vers">
+      <div><span class="k">${t("nv.installed")}</span><b>${esc(inst || "—")}</b><span class="s">${g.driverDate ? fmtDate(g.driverDate) : ""}</span></div>
+      <div class="arrow">${icon("arrow")}</div>
+      <div class="${n && n.updateAvailable ? "new" : ""}"><span class="k">${t("nv.latest")}</span><b>${n && n.latest ? esc(n.latest.version) : "…"}</b><span class="s">${n && n.latest ? `${nvDate(n.latest.releaseDate)}${n.latest.size ? " · " + esc(n.latest.size) : ""}` : ""}</span></div>
+    </div><div class="td" style="color:var(--muted);margin-top:4px">${esc(g.name)}</div>`;
+  }
+
+  function nvRender(nvTweaks) {
+    const n = S.nvidia || {};
+    const st = $("#nvState");
+    if (n.latest) st.innerHTML = `<span class="chip ${n.updateAvailable ? "warn" : "ok"} dot">${t(n.updateAvailable ? "nv.update" : "nv.upToDate")}</span>`;
+    else st.innerHTML = `<span class="chip crit dot">${t("nv.unknown")}</span>`;
+    const panelOn = nvTweaks.length > 0;
+    $("#nvBody").innerHTML = html`${nvVersions(n)}
+      ${n.latest ? html`<div style="display:grid;gap:9px;margin:16px 0 4px">
+          <label class="check"><input type="checkbox" id="nvAudio" checked><span class="box"></span>${t("nv.hdAudio")}</label>
+          <label class="check"><input type="checkbox" id="nvPhysx" checked><span class="box"></span>${t("nv.physx")}</label>
+          <label class="check"><input type="checkbox" id="nvClean" checked><span class="box"></span>${t("nv.clean")}</label>
+          ${panelOn ? `<label class="check"><input type="checkbox" id="nvPanel" checked><span class="box"></span>${t("nv.panel")}</label>` : ""}
+        </div>
+        <div class="callout" style="margin:10px 0 14px">${t("nv.note")}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${n.updateAvailable ? "primary" : ""}" id="nvInstall">${icon("download")}${t(n.updateAvailable ? "nv.install" : "nv.reinstall").replace("{v}", esc(n.latest.version))}</button>
+          ${n.latest.detailsUrl ? `<button class="btn ghost" data-nvurl="${esc(n.latest.detailsUrl)}">${t("nv.details")}${icon("external")}</button>` : ""}
+          <button class="btn ghost" data-nvurl="https://www.nvidia.com/en-us/software/nvidia-app/">NVIDIA App${icon("external")}</button></div>`
+      : html`<div class="callout warn" style="margin-top:14px">${t("nv.lookupFail")}${n.error ? `<div class="tid" style="margin-top:6px">${esc(n.error)}</div>` : ""}</div>
+        <div style="margin-top:12px"><button class="btn" data-nvurl="https://www.nvidia.com/en-us/drivers/">${t("nv.page")}${icon("external")}</button></div>`}`;
+    $$("#nvBody [data-nvurl]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.nvurl })));
+    if ($("#nvInstall")) $("#nvInstall").onclick = () => nvInstall(nvTweaks);
+  }
+
+  async function nvInstall(nvTweaks) {
+    const n = S.nvidia, ver = n.latest.version;
+    const opts = { hdAudio: $("#nvAudio").checked, physX: $("#nvPhysx").checked, clean: $("#nvClean").checked };
+    const panel = $("#nvPanel") ? $("#nvPanel").checked : false;
+    const ok = await confirmBox(t("nv.confirmT"), t("nv.confirmD").replace("{v}", esc(ver)).replace("{size}", esc(n.latest.size || "")), t("nv.install").replace("{v}", esc(ver)));
+    if (!ok) return;
+    const before = Object.keys(S.status).filter((id) => S.status[id] === "applied");
+    const span = { download: [0, 0.72], extract: [0.72, 0.1], install: [0.84, 0.14] };
+    const b = busy(t("nv.busy").replace("{v}", esc(ver)));
+    const off = API.on("nvidia.progress", (p) => { const [a, w] = span[p.step] || [0, 0]; b.progress(a + w * p.value, t("nv.step." + p.step) + (p.step === "download" ? ` · ${Math.round(p.value * 100)}%` : "")); });
+    let r;
+    try { r = await call("nvidia.install", opts); } catch { return; } finally { off(); b.done(); }
+    if (!r.ok) { toast(t("nv.failed").replace("{e}", r.error || r.exitCode), "error", 9000); return; }
+    toast(t("nv.done").replace("{v}", esc(r.version)), "ok", 6000);
+    S.nvidia = null;
+    S.drivers = null;
+    await App.scan(true);
+    // a clean install resets the driver profile and GPU device settings: put back what was applied before, plus the panel settings
+    const lost = before.filter((id) => S.byId[id] && S.status[id] !== "applied");
+    const extra = panel ? nvTweaks.map((tw) => tw.id).filter((id) => S.status[id] !== "applied") : [];
+    const ids = [...new Set([...lost, ...extra])];
+    if (ids.length) await App.apply(ids, { preconfirmed: new Set(lost), restorePoint: false });
+    App.setRebootPending(true);
+    await App.restartPrompt("reboot");
+  }
 
   // ------------------------------------------------------------------ [06] app guides
 
