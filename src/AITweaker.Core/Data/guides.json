@@ -599,6 +599,51 @@
           {
             "name": "Throttle downloads while streaming",
             "value": "OFF"
+          },
+          {
+            "name": "Clear Download Cache",
+            "value": "Clear Cache",
+            "note": {
+              "ru": "Если загрузка встала или игра не запускается после обновления — сначала это.",
+              "en": "If a download is stuck or a game won't start after an update, try this first."
+            }
+          },
+          {
+            "name": "Game File Transfer over Local Network",
+            "value": "ON",
+            "note": {
+              "ru": "Игры с другого ПК в вашей сети копируются по локалке, а не качаются заново.",
+              "en": "Games from another PC on your network copy over LAN instead of downloading again."
+            }
+          },
+          {
+            "name": "Allow transfers from this device to",
+            "value": "Only me"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Кэш шейдеров",
+          "en": "Shader Pre-Caching"
+        },
+        "path": "Steam → Settings → Downloads → Shader Pre-Caching",
+        "settings": [
+          {
+            "name": "Enable Shader Pre-caching",
+            "value": "ON",
+            "note": {
+              "ru": "Steam скачивает готовые шейдеры под вашу видеокарту — меньше фризов в первых минутах игр на Vulkan и OpenGL.",
+              "en": "Steam downloads pre-built shaders for your GPU — less stutter in the first minutes of Vulkan and OpenGL games."
+            }
+          },
+          {
+            "name": "Allow background processing of Vulkan shaders",
+            "value": "OFF",
+            "note": {
+              "ru": "Иначе Steam компилирует шейдеры в фоне и грузит процессор, когда вы не ждёте.",
+              "en": "Otherwise Steam compiles shaders in the background and loads the CPU when you don't expect it."
+            }
           }
         ]
       },
@@ -628,6 +673,23 @@
           {
             "name": "Scale Steam Overlay text and icons to match monitor settings",
             "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Запись игр",
+          "en": "Game Recording"
+        },
+        "path": "Steam → Settings → Game Recording",
+        "settings": [
+          {
+            "name": "Select your recording mode",
+            "value": "Recording Off",
+            "note": {
+              "ru": "Фоновая запись держит кодировщик видеокарты и пишет на диск всё время игры. Повторы — через OBS Replay Buffer.",
+              "en": "Background recording keeps the GPU encoder busy and writes to disk the whole time you play. Use OBS Replay Buffer for replays."
+            }
           }
         ]
       },
