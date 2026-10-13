@@ -84,8 +84,12 @@ public sealed class InstallProgram
     public string? Installer { get; init; }
     /// <summary>GitHub repository whose latest release holds the installer (owner/name), with <see cref="Asset"/>.</summary>
     public string? Github { get; init; }
-    /// <summary>Regular expression for the installer's file name in the latest GitHub release.</summary>
+    /// <summary>Regular expression for the installer's file name in the latest GitHub release, or on <see cref="Page"/>.</summary>
     public string? Asset { get; init; }
+    /// <summary>The vendor's own download page or folder listing: the newest link whose file name matches <see cref="Asset"/> is downloaded.</summary>
+    public string? Page { get; init; }
+    /// <summary>Microsoft Store product id for apps that only exist in the Store (installed through the Store, own group in the Install tab).</summary>
+    public string? Store { get; init; }
     /// <summary>Silent switches for the installer; null = the installer opens normally and the user clicks through it.</summary>
     public string? Silent { get; init; }
     /// <summary>Official page, opened when neither winget nor the direct download works.</summary>

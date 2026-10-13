@@ -189,7 +189,8 @@
       await sleep(250);
       return {
         winget: true,
-        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, source: p.github ? "github.com/" + p.github : p.installer ? new URL(p.installer).host : null, silent: !!p.silent || /\.msi/.test(p.installer || ""), installed: mock.installed.has(p.id) })),
+        store: !mock.removedApps.has("Microsoft.WindowsStore"),
+        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, source: p.store ? "Microsoft Store" : p.github ? "github.com/" + p.github : (p.installer || p.page) ? new URL(p.installer || p.page).host : p.download ? new URL(p.download).host : null, silent: !!p.silent || /\.msi/.test(p.installer || ""), installed: mock.installed.has(p.id) })),
         extensions: D.extensions.map((e) => ({ ...e, storeUrl: "https://chromewebstore.google.com/detail/" + e.extensionId })),
       };
     },

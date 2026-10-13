@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using AITweaker.Core.Catalog;
+using AITweaker.Core.Engine;
 using AITweaker.Core.Model;
 using Microsoft.Win32;
 
@@ -75,15 +76,42 @@ public static class ProgramInstaller
             catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException) { /* skip unreadable hive */ }
         }
 
+        var packages = StorePackages();
         var result = new Dictionary<string, bool>();
         foreach (var p in catalog.Programs)
         {
-            bool found = p.Download is not null
-                ? Directory.Exists(Path.Combine(ToolsDir, p.Id))
+            bool found = p.Download is not null ? Directory.Exists(Path.Combine(ToolsDir, p.Id))
+                // Store apps don't appear under Uninstall: their Detect is the package name ("Microsoft.GamingApp_")
+                : p.Store is not null ? p.Detect is { Length: > 0 } pk && packages.Any(n => n.StartsWith(pk, StringComparison.OrdinalIgnoreCase))
                 : p.Detect is { Length: > 0 } d && d.Split('|').Any(frag => names.Any(n => n.Contains(frag, StringComparison.OrdinalIgnoreCase)));
             result[p.Id] = found;
         }
         return result;
+    }
+
+    /// <summary>Full names of the Store (AppX/MSIX) packages registered for the current user.</summary>
+    private static List<string> StorePackages()
+    {
+        using var k = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages");
+        return k?.GetSubKeyNames().ToList() ?? [];
+    }
+
+    /// <summary>Microsoft Store is installed (it can be removed in Debloat; Store-only apps then can't be installed).</summary>
+    public static bool StoreAvailable() => StorePackages().Any(n => n.StartsWith("Microsoft.WindowsStore_", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Store-only apps: through winget's msstore source when it works, otherwise the app's page in the Store opens.</summary>
+    private static async Task<InstallResult> StoreAsync(InstallProgram p, string? winget, CancellationToken ct)
+    {
+        if (!StoreAvailable()) return new InstallResult(p.Id, p.Name, false, "store", "Microsoft Store is removed — bring it back in Debloat → Removed");
+        if (winget is not null)
+        {
+            var r = await ProcessRunner.RunAsync(winget, $"install --id {p.Store} --source msstore --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity",
+                TimeSpan.FromMinutes(30), encoding: Encoding.UTF8, ct: ct);
+            if (r.ExitCode is 0 or PackageAlreadyInstalled or InstallAlreadyInstalled) return new InstallResult(p.Id, p.Name, true, "store", null);
+            AppLog.Write("warn", "install", $"{p.Name}: msstore exit 0x{r.ExitCode:X8}, opening the Store page");
+        }
+        ProcessRunner.OpenUrl($"ms-windows-store://pdp/?productid={p.Store}");
+        return new InstallResult(p.Id, p.Name, false, "page", "opened in Microsoft Store — press Get there");
     }
 
     public static async Task<InstallSummary> InstallAsync(TweakCatalog catalog, IReadOnlyList<string> ids, Action<int, int, string> progress, CancellationToken ct)
@@ -103,8 +131,12 @@ public static class ProgramInstaller
             InstallResult r;
             try
             {
-                InstallResult? direct = p.Installer is not null || p.Github is not null ? await InstallerAsync(p, ct) : null;
-                if (direct is { Ok: true })
+                InstallResult? direct = p.Installer is not null || p.Github is not null || p.Page is not null ? await InstallerAsync(p, ct) : null;
+                if (p.Store is not null)
+                {
+                    r = await StoreAsync(p, winget, ct);
+                }
+                else if (direct is { Ok: true })
                 {
                     r = direct;
                 }
@@ -232,6 +264,10 @@ public static class ProgramInstaller
                 var rx = new System.Text.RegularExpressions.Regex(p.Asset ?? @"\.exe$");
                 (name, url) = await Downloader.LatestGitHubAssetAsync(p.Github, n => rx.IsMatch(n), ct);
             }
+            else if (p.Page is not null)
+            {
+                (name, url) = await NewestLinkAsync(p.Page, p.Asset ?? @"\.exe$", ct);
+            }
             else
             {
                 url = p.Installer!.Replace("{lang}", SettingsStore.Current.Language == "en" ? "en-US" : "ru");
@@ -301,6 +337,11 @@ public static class ProgramInstaller
         using var f = File.OpenRead(file);
         return f.Read(head) == 4 && head[0] == 0xD0 && head[1] == 0xCF && head[2] == 0x11 && head[3] == 0xE0;
     }
+
+    /// <summary>The newest installer linked from the vendor's own download page (or folder listing).</summary>
+    internal static async Task<(string Name, string Url)> NewestLinkAsync(string page, string pattern, CancellationToken ct) =>
+        LinkPicker.Newest(await Downloader.Http.GetStringAsync(page, ct), page, pattern)
+            ?? throw new InvalidOperationException($"no link matching {pattern} on {page}");
 
     /// <summary>Official portable zip → C:\ProgramData\AITweaker\Tools\&lt;id&gt; with a Start menu shortcut.</summary>
     private static async Task<InstallResult> DownloadAsync(InstallProgram p, CancellationToken ct)

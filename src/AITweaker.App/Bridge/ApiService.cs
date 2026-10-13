@@ -368,8 +368,10 @@ public sealed class ApiService
 
     /// <summary>Where the installer comes from, as shown next to the program: the vendor's site or GitHub repository.</summary>
     private static string? Source(InstallProgram p) =>
-        p.Github is not null ? "github.com/" + p.Github
-        : p.Installer is not null && Uri.TryCreate(p.Installer, UriKind.Absolute, out var u) ? u.Host
+        p.Store is not null ? "Microsoft Store"
+        : p.Github is not null ? "github.com/" + p.Github
+        : (p.Installer ?? p.Page) is { } link && Uri.TryCreate(link, UriKind.Absolute, out var u) ? u.Host
+        : p.Download is not null && Uri.TryCreate(p.Download, UriKind.Absolute, out var d) ? d.Host
         : null;
 
     private object Programs()
@@ -379,9 +381,10 @@ public sealed class ApiService
         return new
         {
             winget = ProgramInstaller.FindWinget() is not null,
+            store = ProgramInstaller.StoreAvailable(),
             programs = _catalog.Programs
                 .Where(x => facts is null || ConditionEvaluator.Evaluate(x.When, facts))
-                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, source = Source(x), silent = x.Silent is not null || (x.Installer ?? "").Contains(".msi"), installed = installed.GetValueOrDefault(x.Id) }),
+                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, source = Source(x), x.Store, silent = x.Silent is not null || (x.Installer ?? "").Contains(".msi"), installed = installed.GetValueOrDefault(x.Id) }),
             extensions = _catalog.Extensions.Select(e => new { e.Id, e.Name, e.ExtensionId, e.MinVersion, e.Note, e.StoreUrl }),
         };
     }

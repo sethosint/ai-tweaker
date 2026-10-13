@@ -195,12 +195,26 @@ public class CatalogTests
     [Fact]
     public void ProgramsAreInstallable()
     {
-        var groups = new[] { "browsers", "communication", "gaming", "media", "tools", "runtimes", "look" };
+        var groups = new[] { "browsers", "communication", "gaming", "media", "tools", "runtimes", "look", "store" };
         Assert.Equal(Catalog.Programs.Count, Catalog.Programs.Select(p => p.Id).Distinct().Count());
         foreach (var p in Catalog.Programs)
         {
             Assert.Contains(p.Group, groups);
-            Assert.True(p.Winget is not null || p.Download is not null || p.Url is not null, $"{p.Id}: no way to install");
+            Assert.True(p.Winget is not null || p.Download is not null || p.Url is not null || p.Store is not null, $"{p.Id}: no way to install");
+            if (p.Page is not null)
+            {
+                Assert.StartsWith("https://", p.Page);
+                Assert.NotNull(p.Asset);
+                _ = new System.Text.RegularExpressions.Regex(p.Asset!);
+            }
+            // Store-only apps sit in their own group, are found by package name and have nothing else to install from
+            Assert.Equal(p.Store is not null, p.Group == "store");
+            if (p.Store is not null)
+            {
+                Assert.Matches("^[0-9A-Z]{12}$", p.Store);
+                Assert.Matches(@"^[\w.]+_$", p.Detect ?? "");
+                Assert.True(p.Installer is null && p.Github is null && p.Page is null && p.Download is null, p.Id);
+            }
             if (p.Winget is not null) Assert.Matches(@"^[A-Za-z0-9][\w+-]*(\.[\w+-]+)+$", p.Winget);
             if (p.Download is not null) Assert.StartsWith("https://", p.Download);
             if (p.Url is not null) Assert.StartsWith("https://", p.Url);
@@ -217,8 +231,8 @@ public class CatalogTests
             Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
         }
         // the main programs come from their vendors' own installers, not winget
-        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell" })
-            Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github) is not null, id);
+        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "vlc", "everything", "mpv" })
+            Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github ?? x.Page) is not null, id);
         // the apps from the user's own setup are there
         foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
             Assert.Contains(Catalog.Programs, p => p.Id == id);
