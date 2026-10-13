@@ -23,7 +23,7 @@ namespace AITweaker.Core.Image;
 public sealed class AmePlaybook
 {
     public const string Password = "malte";
-    public const string Version = "1.0.0";
+    public const string Version = "1.1.0";
     public static readonly Guid UniqueId = new("17b2d243-a6da-43bd-914a-6d3908f8785e");
     public const string OpenShellOption = "start-openshell";
     private const string KeepStartOption = "start-windows";
