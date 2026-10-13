@@ -59,7 +59,7 @@
             ${left.length ? `<button class="btn hazard" id="dashApply" ${S.busy ? "disabled" : ""}><span>${t("dash.applyBest")} · ${left.length}</span></button>` : `<button class="btn done" id="dashApply" disabled>${icon("check")}${t("dash.allSet")}</button>`}
             <button class="btn ghost" id="dashTune">${t("dash.tune")}${icon("arrow")}</button>
           </div>
-          <div class="hero-actions"><button class="btn sm ghost" id="dashScan">${icon("refresh")}${t("h.scan")}</button><span class="meta">${S.scan ? `${t("h.lastScan")} ${fmtTime(p.scannedAt)} · ${esc(t("prof." + S.profileName))}` : t("h.never")}</span></div>
+          <div class="hero-actions"><button class="btn sm ghost" id="dashScan">${icon("refresh")}${t("h.scan")}</button><span class="meta">${S.scan ? `${t("h.lastScan")} ${fmtTime(p.scannedAt)}` : t("h.never")}</span></div>
         </div>
       </section>
 

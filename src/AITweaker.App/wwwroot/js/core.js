@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
+    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Extreme", gameMode: false, demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -63,24 +63,14 @@
   window.confirmBox = (title, text, yes, cls = "primary", hazard = false) =>
     modal({ title, body: `<div>${text}</div>`, hazard, buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: yes || t("yes"), value: true, cls }] });
 
-  /** Walks the user through every tweak that disables something important. Returns the ids they accepted. */
+  /** Asks about every tweak that switches off something important ("switch off" vs "keep"). Returns the ids to apply. */
   window.confirmImportant = async (ids) => {
-    const need = ids.map((id) => S.byId[id]).filter((tw) => tw && (tw.confirm || tw.risk === "high"));
-    const declined = new Set();
-    for (let i = 0; i < need.length; i++) {
-      const tw = need[i];
-      const res = await modal({
-        title: `${t("confirm.title")} · ${i + 1} ${t("confirm.of")} ${need.length}`,
-        hazard: true,
-        body: html`<div class="confirm-title">${esc(L(tw.name))}</div>
-          <div style="color:var(--ink-2)">${esc(L(tw.description))}</div>
-          ${tw.confirmText ? `<div class="callout crit"><b>${t("confirm.lose")}</b><br>${esc(L(tw.confirmText))}</div>` : ""}
-          <div class="tm" style="display:flex;gap:6px;flex-wrap:wrap">${badges(tw)}</div>`,
-        buttons: [{ label: t("confirm.no"), value: false, cls: "ghost" }, { label: t("confirm.yes"), value: true, cls: tw.risk === "high" ? "danger" : "primary" }],
-      });
-      if (res !== true) declined.add(tw.id);
-    }
-    return ids.filter((id) => !declined.has(id));
+    const feats = await App.loadFeatures();
+    const qs = ids.map((id) => App.questionFor(S.byId[id], feats)).filter(Boolean);
+    if (!qs.length) return ids;
+    const res = await askQuestions(qs, [], { summary: false, title: t("confirm.title") });
+    if (!res) return [];
+    return ids.filter((id) => !res.kept.has(id));
   };
 
   window.badges = (tw) => [
@@ -174,7 +164,7 @@
     ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OPS", tune: "AUTO-TUNE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const CODES = { dashboard: "OPS", tune: "GAME SETUP", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
   const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
@@ -234,7 +224,7 @@
         <div class="brand">${brandMark()}<div class="brand-name">AI Tweaker</div></div>
         <div class="top-mid">
           <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
-          <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
+          <button class="gm-btn ${S.gameMode ? "on" : ""}" id="gmBtn" title="${t("gm.title")}">${icon("gamepad")}<span>${t("gm.btn")}</span><b class="gm-state">${S.gameMode ? t("gm.on") : t("gm.off")}</b></button>
           ${S.init && S.init.isAdmin ? `<span class="chip ok dot">${t("admin")}</span>` : `<span class="chip crit dot">${t("notAdmin")}</span>`}
           <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>${icon("refresh")}${t("rs.chip")}</button>
         </div>
@@ -259,6 +249,7 @@
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
     $("#rebootChip").onclick = () => App.restartPrompt("reboot");
+    $("#gmBtn").onclick = () => App.gameMode();
     $("#shiftSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.v); };
     $("#langSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setLang(b.dataset.v); };
     updateBadges();

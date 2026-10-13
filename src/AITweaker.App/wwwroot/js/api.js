@@ -37,7 +37,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Extreme", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
     services: [
       ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
       ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
@@ -231,7 +231,7 @@
     "display.keep": async () => true,
     "display.revert": async () => true,
     "features.list": async () => D.features
-      .map((f) => ({ id: f.id, name: f.name, used: !!f.keepByDefault || (f.usedWhen ? evalWhen(f.usedWhen) : false), tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
+      .map((f) => ({ id: f.id, name: f.name, used: f.usedWhen ? evalWhen(f.usedWhen) : false, keep: !!f.keepByDefault, tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
       .filter((f) => f.tweaks.length),
     "image.preview": async ({ options }) => {
       const o = options || {};
@@ -296,6 +296,26 @@
     "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },
     "clean.analyze": async () => { await sleep(500); return [["temp-user", 912e6, 4210], ["temp-windows", 214e6, 388], ["shader-nvidia", 1.9e9, 1630], ["shader-amd", 0, 0], ["shader-directx", 640e6, 2210], ["windows-update", 3.1e9, 77], ["crash-dumps", 88e6, 12]].map(([id, bytes, files]) => ({ id, path: "", bytes, files })); },
     "clean.run": async ({ ids }) => { await sleep(900); return ids.length * 3.2e8; },
+    "gamemode.state": async () => mock.game || {
+      active: false,
+      options: [
+        { id: "updates", items: ["Windows Update", "Delivery Optimization", "Background Intelligent Transfer Service", "Microsoft Edge Update Service (edgeupdate)"] },
+        { id: "indexing", items: ["Windows Search", "SysMain"] },
+        { id: "telemetry", items: ["Connected User Experiences and Telemetry", "Program Compatibility Assistant Service"] },
+        { id: "print", items: ["Print Spooler"] },
+        { id: "apps", items: ["OneDrive", "Microsoft Teams", "Widgets"] },
+        { id: "power", items: ["high"] },
+        { id: "memory", items: [] },
+        { id: "timer", items: [] },
+      ],
+    },
+    "gamemode.start": async ({ groups }) => {
+      await sleep(900);
+      log("ok", "game", `game mode on: ${groups.join(", ")}`);
+      mock.game = { active: true, started: new Date().toISOString(), groups, services: ["wuauserv", "DoSvc", "BITS", "WSearch", "SysMain", "DiagTrack", "Spooler"], apps: ["OneDrive", "ms-teams", "Widgets"], freedMb: 2650 };
+      return mock.game;
+    },
+    "gamemode.stop": async () => { await sleep(700); mock.game = null; log("ok", "game", "game mode off: everything restored"); return true; },
     "memory.purge": async () => { await sleep(300); log("ok", "memory", "standby list purged"); return { freedBytes: 2.7e9, availableBytes: 24e9 }; },
     "explorer.restart": async () => true,
   };

@@ -18,7 +18,7 @@
     "id": "gaming.gamemode.on",
     "category": "gaming",
     "level": 1,
-    "name": { "ru": "Включить «Игровой режим»", "en": "Enable Game Mode" },
+    "name": { "ru": "Включить игровой режим Windows", "en": "Enable Windows Game Mode" },
     "description": {
       "ru": "Windows отдаёт игре приоритет по CPU/GPU и не ставит обновления драйверов во время игры. На двухчиплетных Ryzen X3D обязателен для правильного выбора кэш-ядер.",
       "en": "Windows prioritizes the game for CPU/GPU and holds driver updates while you play. Required on dual-CCD Ryzen X3D for correct cache-core selection."
@@ -238,6 +238,36 @@
     "reboot": true,
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "kind": "dword", "value": 5 }
+    ]
+  },
+  {
+    "id": "gaming.gamebar.off",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "restartExplorer": true,
+    "when": "!cpu.x3dMultiCcd",
+    "name": { "ru": "Отключить оверлей Xbox Game Bar", "en": "Disable the Xbox Game Bar overlay" },
+    "description": {
+      "ru": "Win+G и кнопка Xbox на геймпаде больше не открывают Game Bar поверх игры, его подсказки не всплывают. Игровой режим Windows продолжает работать. На двухчиплетных Ryzen X3D не предлагается: там Game Bar нужен драйверу для выбора кэш-ядер.",
+      "en": "Win+G and the Xbox button on a controller no longer open Game Bar over the game, and its tips stop popping up. Windows Game Mode keeps working. Not offered on dual-CCD Ryzen X3D, where the driver needs Game Bar to pick the cache cores."
+    },
+    "confirmText": {
+      "ru": "Не будет оверлея Game Bar: счётчика FPS, записи клипов по Win+Alt+R, виджетов и чата Xbox поверх игры.",
+      "en": "No Game Bar overlay: no FPS counter, no Win+Alt+R clip recording, no widgets or Xbox chat over the game."
+    },
+    "gain": {
+      "ru": "Поверх игры ничего не всплывает от случайного нажатия Win+G или кнопки Xbox, и Game Bar не запускается.",
+      "en": "Nothing pops up over the game from a stray Win+G or Xbox button press, and Game Bar doesn't start."
+    },
+    "keep": {
+      "ru": "Game Bar открывается по Win+G: запись клипов, счётчик FPS, виджеты.",
+      "en": "Game Bar opens with Win+G: clip recording, FPS counter, widgets."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "UseNexusForGameBarEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "ShowStartupPanel", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "DisabledHotkeys", "kind": "string", "value": "G" }
     ]
   }
 ]

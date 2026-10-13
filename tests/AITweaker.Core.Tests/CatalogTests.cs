@@ -255,4 +255,39 @@ public class CatalogTests
             Assert.True(Catalog.Find(id)!.Confirm, id);
         Assert.True(Catalog.Features.Single(f => f.Id == "vbs").KeepByDefault);
     }
+
+    [Fact]
+    public void EveryQuestionHasBothSides()
+    {
+        // Game setup asks about these one by one: "switch off" (gain, and what is lost) against "keep".
+        var featureTweaks = Catalog.Features.SelectMany(f => f.Tweaks).ToHashSet();
+        foreach (var t in Catalog.Tweaks.Where(t => t.Confirm || t.Risk == RiskLevel.High || featureTweaks.Contains(t.Id)))
+        {
+            Assert.True(t.Gain is { Ru.Length: > 0, En.Length: > 0 }, $"{t.Id} needs gain");
+            Assert.True(t.Keep is { Ru.Length: > 0, En.Length: > 0 }, $"{t.Id} needs keep");
+        }
+        foreach (var id in new[] { "system.update.manual", "system.update.defer-feature", "system.store-autoupdate.off", "gaming.gamebar.off" })
+            Assert.True(Catalog.Find(id) is { Confirm: true }, id);
+    }
+
+    [Fact]
+    public void NothingTurnsOffWindowsProtection()
+    {
+        // Antivirus and UAC prompts stay on: no tweak may switch them off.
+        string[] banned = ["DisableRealtimeMonitoring", "DisableAntiSpyware", "DisableAntiVirus", "DisableBehaviorMonitoring", "DisableIOAVProtection", "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop"];
+        string[] services = ["WinDefend", "WdNisSvc", "Sense", "SecurityHealthService", "wscsvc", "mpssvc"];
+        foreach (var t in Catalog.Tweaks)
+            foreach (var a in t.Actions)
+            {
+                var text = a switch
+                {
+                    RegistryAction r => r.Path + " " + r.Name,
+                    PowerShellAction ps => ps.Script,
+                    CommandAction c => c.Describe(),
+                    _ => a.Describe(),
+                };
+                foreach (var b in banned) Assert.False(text.Contains(b, StringComparison.OrdinalIgnoreCase), $"{t.Id}: {b}");
+                if (a is ServiceAction sv) Assert.DoesNotContain(sv.Name, services, StringComparer.OrdinalIgnoreCase);
+            }
+    }
 }

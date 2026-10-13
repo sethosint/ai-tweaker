@@ -1,12 +1,11 @@
 /* Views 02–10. */
 (function () {
   const V = (window.Views ||= {});
-  const PROFILES = ["Safe", "Balanced", "Performance", "Extreme"];
   const catName = (id) => L((S.init.categories.find((c) => c.id === id) || {}).name) || id;
   const needScan = (el) => { if (S.scan) return false; el.innerHTML = `<div class="empty">${t("scanFirst")}<br><br><button class="btn primary" onclick="App.scan()">${t("radar.scan")}</button></div>`; return true; };
   const statusChip = (id) => { const st = S.status[id] || "n/a"; return `<span class="status ${st}">${t(st === "n/a" ? "st.na" : "st." + st)}</span>`; };
 
-  // ------------------------------------------------------------------ [02] auto-tune
+  // ------------------------------------------------------------------ [02] game setup
 
   V.tune = () => {
     const v = $("#v-tune");
@@ -14,36 +13,73 @@
     const items = S.plan.items;
     const groups = S.init.categories.map((c) => ({ c, list: items.filter((i) => S.byId[i.id] && S.byId[i.id].category === c.id) })).filter((g) => g.list.length);
     const sel = [...S.selected].filter((id) => items.some((i) => i.id === id));
-    const confirmN = sel.filter((id) => { const tw = S.byId[id]; return tw && (tw.confirm || tw.risk === "high"); }).length;
-    const counts = Object.fromEntries(PROFILES.map((p, i) => [p, items.filter((x) => { const tw = S.byId[x.id]; return tw.level > 0 && tw.level <= i + 1; }).length]));
+    const feats = new Map();
+    (S.features || []).forEach((f) => f.tweaks.forEach((id) => feats.set(id, f)));
+    const asks = sel.filter((id) => App.questionFor(S.byId[id], feats)).length;
+    const applied = items.filter((i) => S.status[i.id] === "applied").length;
+    const manual = App.manualList();
 
     v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div>
+      <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div></div>
+      <div class="tune-hero">
+        <div class="th-l">
+          <div class="th-k">${t("tune.heroK")}</div>
+          <div class="th-t">${t("tune.heroT")}</div>
+          <div class="th-d">${t("tune.heroD")}</div>
+          <div class="th-stats">
+            <div><b>${sel.length}</b><span>${t("tune.changes")}</span></div>
+            <div><b>${asks}</b><span>${t("tune.questions")}</span></div>
+            <div><b>${applied}</b><span>${t("tune.done")}</span></div>
+          </div>
+        </div>
+        <div class="th-r">
+          <button class="btn hazard th-go" id="gameSetup" ${sel.length ? "" : "disabled"}><span>${sel.length ? t("tune.go") : t("tune.allDone")}</span></button>
+          <label class="check"><input type="checkbox" id="rpCheck" ${S.init.settings.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("tune.rp")}</label>
+          <div class="th-note">${t("tune.goNote")}</div>
+        </div>
+      </div>
+      <div class="tune-cards">
+        <div class="gm-card ${S.gameMode ? "on" : ""}">
+          <div class="gm-ico">${icon("gamepad")}</div>
+          <div class="gm-t">${t("gm.title")}<span class="chip ${S.gameMode ? "ok dot" : ""}">${S.gameMode ? t("gm.on") : t("gm.off")}</span></div>
+          <div class="gm-d">${t("gm.cardD")}</div>
+          <button class="btn ${S.gameMode ? "danger" : "primary"}" id="gmCard">${S.gameMode ? t("gm.stop") : t("gm.start")}</button>
+        </div>
+        <div class="man-card">
+          <div class="man-h">${icon("hand")}<div><b>${t("man.title")}</b><span>${t("man.desc")}</span></div></div>
+          <div class="man-list">${manual.map((m, i) => html`<div class="man-row"><span class="man-n">${String(i + 1).padStart(2, "0")}</span>
+            <div><div class="man-t">${t("man." + m.id)}</div><div class="man-d">${t("man." + m.id + "D")}</div></div>
+            ${m.go || m.url ? `<button class="btn sm ghost" data-man="${i}">${t(m.url ? "man.open" : "man.go")}${icon(m.url ? "external" : "arrow")}</button>` : "<span></span>"}</div>`).join("")}</div>
+        </div>
+      </div>
+      <div class="tune-list-h"><div><b>${t("tune.listT")}</b><span>${t("tune.listD")}</span></div>
         <div class="actions"><button class="btn ghost sm" id="selRec">${t("tune.selectRec")}</button><button class="btn ghost sm" id="selNone">${t("tune.selectNone")}</button></div></div>
-      <div class="callout unused-callout"><div><b>${t("tune.unusedTitle")}</b><div>${t("tune.unusedDesc")}</div></div><button class="btn sm" id="disableUnused">${t("tune.unusedBtn")}</button></div>
-      <div class="profiles">${PROFILES.map((p, i) => `<div class="prof ${S.profileName === p ? "on" : ""}" data-p="${p}"><div class="pc">L${i + 1}</div><div class="pn">${t("prof." + p)}</div><div class="pd">${t("prof." + p + ".d")}</div><div class="pk">${t("tune.tweaksN")}: ${counts[p]}</div></div>`).join("")}</div>
       ${groups.map(({ c, list }) => html`<div class="cat-group">
         <div class="cat-h">${esc(L(c.name))}<span class="n">${list.filter((i) => S.selected.has(i.id)).length}/${list.length}</span></div>
-        ${list.map((i) => { const tw = S.byId[i.id]; return html`<div class="trow">
+        ${list.map((i) => { const tw = S.byId[i.id]; const ask = App.questionFor(tw, feats); return html`<div class="trow">
           <label class="check"><input type="checkbox" data-id="${tw.id}" ${S.selected.has(tw.id) ? "checked" : ""}><span class="box"></span></label>
-          <div><div class="tt">${esc(L(tw.name))} ${i.needsConfirm ? `<span class="chip warn">${t("needsConfirm")}</span>` : ""}</div>
+          <div><div class="tt">${esc(L(tw.name))} ${ask ? `<span class="chip warn">${t("tune.asks")}</span>` : ""}</div>
             <div class="td">${esc(L(tw.description))}</div>
-            <div class="why">${esc(L(i.reason))}</div>
+            ${tw.gain ? `<div class="why">${esc(L(tw.gain))}</div>` : `<div class="why">${esc(L(i.reason))}</div>`}
             <div class="tm">${badges(tw)}<span class="tid">${tw.id}</span></div></div>
           <div class="tr">${statusChip(tw.id)}</div></div>`; }).join("")}
       </div>`).join("")}
       <div class="sticky-apply">
-        <button class="btn hazard" id="applyPlan" ${sel.length ? "" : "disabled"}><span>${t("tune.apply")}</span></button>
-        <div class="sum"><b>${sel.length}</b> ${t("tune.selected")} · <b>${confirmN}</b> ${t("tune.confirmCount")}</div>
-        <label class="check" style="margin-left:auto"><input type="checkbox" id="rpCheck" ${S.init.settings.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("tune.rp")}</label>
+        <button class="btn hazard" id="applyPlan" ${sel.length ? "" : "disabled"}><span>${t("tune.go")}</span></button>
+        <div class="sum"><b>${sel.length}</b> ${t("tune.selected")} · <b>${asks}</b> ${t("tune.confirmCount")}</div>
       </div>`;
 
-    v.querySelectorAll(".prof").forEach((el) => (el.onclick = () => App.setProfile(el.dataset.p)));
-    $("#disableUnused").onclick = () => App.disableUnused();
+    const run = () => App.gameSetup({ restorePoint: $("#rpCheck").checked });
+    $("#gameSetup").onclick = run;
+    $("#applyPlan").onclick = run;
+    $("#gmCard").onclick = () => App.gameMode();
+    v.querySelectorAll("[data-man]").forEach((b) => (b.onclick = () => {
+      const m = manual[+b.dataset.man];
+      if (m.url) call("shell.open", { url: m.url }).catch(() => {}); else m.go();
+    }));
     v.querySelectorAll("input[data-id]").forEach((cb) => (cb.onchange = () => { cb.checked ? S.selected.add(cb.dataset.id) : S.selected.delete(cb.dataset.id); V.tune(); }));
-    $("#selRec").onclick = () => { S.selected = new Set(items.filter((i) => i.recommended).map((i) => i.id)); V.tune(); };
+    $("#selRec").onclick = async () => { await App.buildPlan(); V.tune(); };
     $("#selNone").onclick = () => { S.selected.clear(); V.tune(); };
-    $("#applyPlan").onclick = () => App.apply([...S.selected], { restorePoint: $("#rpCheck").checked });
   };
 
   // ------------------------------------------------------------------ [03] tweaks catalog

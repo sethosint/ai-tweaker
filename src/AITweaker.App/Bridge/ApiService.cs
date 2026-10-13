@@ -39,7 +39,7 @@ public sealed class ApiService
 
     public async Task<object?> InvokeAsync(string method, JsonElement p) => method switch
     {
-        "app.init" => Init(),
+        "app.init" => await InitAsync(),
         "system.scan" => await ScanAsync(),
         "plan.build" => BuildPlan(Str(p, "profile") ?? SettingsStore.Current.Profile),
         "tweaks.catalog" => Catalog(),
@@ -130,14 +130,18 @@ public sealed class ApiService
         "clean.analyze" => await Task.Run(Cleaner.Analyze),
         "clean.run" => await Exclusive(() => Cleaner.CleanAsync(Ids(p) ?? [])),
         "memory.purge" => MemoryTools.PurgeStandby(),
+        "gamemode.state" => GameSession.Describe(await ProfileAsync()),
+        "gamemode.start" => await Exclusive(async () => await GameSession.StartAsync(Ids(p, "groups") ?? [], await ProfileAsync())),
+        "gamemode.stop" => await GameSession.StopAsync(),
         "explorer.restart" => await RestartExplorer(),
         _ => throw new InvalidOperationException($"Unknown method {method}"),
     };
 
     // ------------------------------------------------------------------ app & scan
 
-    private object Init()
+    private async Task<object> InitAsync()
     {
+        await GameSession.RestoreLeftoverAsync();
         var s = SettingsStore.Current;
         return new
         {
@@ -226,6 +230,8 @@ public sealed class ApiService
         risk = t.Risk.ToString().ToLowerInvariant(),
         t.Confirm,
         t.ConfirmText,
+        t.Gain,
+        t.Keep,
         t.Reboot,
         t.Logoff,
         t.RestartExplorer,
@@ -346,7 +352,8 @@ public sealed class ApiService
             {
                 f.Id,
                 f.Name,
-                used = f.KeepByDefault || (f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts)),
+                used = f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts),
+                keep = f.KeepByDefault,
                 tweaks = f.Tweaks.Where(id => _catalog.Find(id) is { } t && ConditionEvaluator.Evaluate(t.When, facts)).ToList(),
             })
             .Where(f => f.tweaks.Count > 0);

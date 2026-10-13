@@ -49,7 +49,7 @@ public static class PowerOps
 
     // ------------------------------------------------------------------ schemes
 
-    private static async Task<HashSet<Guid>> ListSchemesAsync()
+    internal static async Task<HashSet<Guid>> ListSchemesAsync()
     {
         var r = await ProcessRunner.RunAsync("powercfg.exe", "/list");
         return GuidRx.Matches(r.Output).Select(m => Guid.Parse(m.Value)).ToHashSet();

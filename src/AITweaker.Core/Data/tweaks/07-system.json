@@ -62,6 +62,14 @@
       "ru": "Служба Windows Search перестаёт постоянно сканировать диски. Убирает фоновую нагрузку на диск и CPU.",
       "en": "Windows Search stops constantly scanning your drives. Removes background disk and CPU load."
     },
+    "gain": {
+      "ru": "Диск и процессор не заняты постоянной индексацией, поэтому меньше подвисаний при загрузке уровней и в фоне.",
+      "en": "The disk and CPU are no longer busy indexing, so there are fewer hitches while levels load and in the background."
+    },
+    "keep": {
+      "ru": "Мгновенный поиск файлов и их содержимого в «Пуске», Проводнике и Outlook.",
+      "en": "Instant search of files and their contents from Start, Explorer and Outlook."
+    },
     "actions": [
       { "type": "service", "name": "WSearch", "startup": "disabled" }
     ]
@@ -81,6 +89,14 @@
       "ru": "Принтеров не обнаружено — служба печати только занимает память и исторически была источником уязвимостей.",
       "en": "No printers detected — the spooler only takes memory and has a history of vulnerabilities."
     },
+    "gain": {
+      "ru": "На одну службу в памяти меньше, и закрыта известная дыра в безопасности (PrintNightmare).",
+      "en": "One less service in memory, and a well-known security hole (PrintNightmare) is closed."
+    },
+    "keep": {
+      "ru": "Можно печатать и сохранять документы в PDF через «Печать».",
+      "en": "You can print and save documents to PDF through Print."
+    },
     "actions": [
       { "type": "service", "name": "Spooler", "startup": "disabled" }
     ]
@@ -94,6 +110,14 @@
     "description": {
       "ru": "Bluetooth-адаптер не найден — службы поддержки Bluetooth и гарнитур не нужны.",
       "en": "No Bluetooth adapter found — the Bluetooth support and audio gateway services aren't needed."
+    },
+    "gain": {
+      "ru": "Службы Bluetooth больше не держатся в памяти: адаптера всё равно нет.",
+      "en": "Bluetooth services no longer stay in memory, since there's no adapter anyway."
+    },
+    "keep": {
+      "ru": "Если позже подключите Bluetooth-адаптер, наушники и геймпады заработают сразу.",
+      "en": "If you plug in a Bluetooth adapter later, headphones and gamepads work right away."
     },
     "actions": [
       { "type": "service", "name": "bthserv", "startup": "disabled" },
@@ -114,6 +138,14 @@
     "description": {
       "ru": "Приложение Xbox не установлено — службы авторизации, сохранений и сети Xbox Live можно отключить.",
       "en": "The Xbox app is not installed — Xbox Live auth, save and networking services can be disabled."
+    },
+    "gain": {
+      "ru": "Четыре службы Xbox не запускаются в фоне.",
+      "en": "Four Xbox services stop running in the background."
+    },
+    "keep": {
+      "ru": "Работают вход в Xbox в играх, Game Pass, облачные сохранения и настройка геймпадов Xbox.",
+      "en": "Xbox sign-in in games, Game Pass, cloud saves and Xbox controller setup keep working."
     },
     "actions": [
       { "type": "service", "name": "XblAuthManager", "startup": "disabled" },
@@ -190,6 +222,14 @@
       "ru": "Windows Update часто подменяет свежий драйвер видеокарты или чипсета старым «универсальным». Запрещает это.",
       "en": "Windows Update often replaces a fresh GPU or chipset driver with an older generic one. This prevents it."
     },
+    "gain": {
+      "ru": "Windows не заменит свежий драйвер видеокарты или чипсета старым: меньше внезапных просадок FPS и вылетов.",
+      "en": "Windows won't swap a fresh GPU or chipset driver for an older one: fewer sudden FPS drops and crashes."
+    },
+    "keep": {
+      "ru": "Драйверы для мелких устройств (принтеров, веб-камер) ставятся сами.",
+      "en": "Drivers for small devices (printers, webcams) install by themselves."
+    },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "ExcludeWUDriversInQualityUpdate", "kind": "dword", "value": 1 }
     ]
@@ -220,6 +260,14 @@
     "description": {
       "ru": "UWP-приложения не работают в фоне, когда закрыты — меньше процессов и сетевой активности.",
       "en": "UWP apps stop running in the background when closed — fewer processes and less network activity."
+    },
+    "gain": {
+      "ru": "Закрытые приложения из Store не работают в фоне: меньше процессов, занятой памяти и сетевого трафика.",
+      "en": "Closed Store apps stop running in the background: fewer processes, less memory and less network traffic."
+    },
+    "keep": {
+      "ru": "Приложения из Store присылают уведомления, даже когда закрыты.",
+      "en": "Store apps send notifications even when they're closed."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy", "name": "LetAppsRunInBackground", "kind": "dword", "value": 2 }
@@ -254,6 +302,14 @@
       "ru": "OneDrive постоянно синхронизирует файлы в фоне и навязчиво предлагает резервное копирование.",
       "en": "OneDrive constantly syncs in the background and nags about backups."
     },
+    "gain": {
+      "ru": "Нет фоновой синхронизации, которая нагружает диск и сеть, и нет навязчивых предложений резервного копирования.",
+      "en": "No background sync loading the disk and network, and no pushy backup prompts."
+    },
+    "keep": {
+      "ru": "Файлы синхронизируются с OneDrive и доступны на других устройствах.",
+      "en": "Files sync with OneDrive and are available on your other devices."
+    },
     "actions": [
       {
         "type": "powershell",
@@ -271,6 +327,14 @@
     "confirmText": { "ru": "Перестанут работать WSL 2, Docker Desktop, эмуляторы Android на Hyper-V, «Песочница Windows» и виртуальные машины Hyper-V. Вместе с гипервизором выключится и изоляция ядра (VBS). Если игре или античиту понадобится VBS — откат в один клик.", "en": "WSL 2, Docker Desktop, Hyper-V-based Android emulators, Windows Sandbox and Hyper-V virtual machines stop working. Core isolation (VBS) goes off with the hypervisor. If a game or anti-cheat needs VBS, roll back in one click." },
     "name": { "ru": "Отключить Hyper-V и виртуализацию Windows", "en": "Turn off Hyper-V and Windows virtualization" },
     "description": { "ru": "Выключает компоненты Hyper-V, «Платформа виртуальной машины», «Платформа гипервизора Windows», «Песочница» и запуск гипервизора при загрузке. Гипервизор больше не стоит между игрой и железом — меньше задержка и выше FPS, особенно на старых CPU.", "en": "Turns off the Hyper-V, Virtual Machine Platform, Windows Hypervisor Platform and Sandbox features and the hypervisor at boot. Nothing sits between games and the hardware — lower latency and higher FPS, especially on older CPUs." },
+    "gain": {
+      "ru": "Игра работает с железом напрямую, без гипервизора: ниже задержка и выше FPS, особенно на старых процессорах.",
+      "en": "Games run on the hardware directly, without a hypervisor: lower latency and higher FPS, especially on older CPUs."
+    },
+    "keep": {
+      "ru": "Работают WSL 2, Docker, эмуляторы Android, «Песочница Windows» и виртуальные машины.",
+      "en": "WSL 2, Docker, Android emulators, Windows Sandbox and virtual machines keep working."
+    },
     "actions": [
       { "type": "powershell", "script": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; $names = 'Microsoft-Hyper-V-All','VirtualMachinePlatform','HypervisorPlatform','Containers-DisposableClientVM'; $on = @(); foreach ($n in $names) { $f = Get-WindowsOptionalFeature -Online -FeatureName $n -ErrorAction SilentlyContinue; if ($f -and $f.State -eq 'Enabled') { Disable-WindowsOptionalFeature -Online -FeatureName $n -NoRestart -WarningAction SilentlyContinue | Out-Null; $on += $n } }; if ($on.Count -gt 0) { Set-Content -Path $file -Value $on -Encoding UTF8 }", "undo": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; if (Test-Path $file) { foreach ($n in Get-Content $file) { if ($n) { Enable-WindowsOptionalFeature -Online -FeatureName $n -All -NoRestart -WarningAction SilentlyContinue | Out-Null } }; Remove-Item $file }" },
       { "type": "bcd", "element": "hypervisorlaunchtype", "value": "off" }
@@ -284,6 +348,14 @@
     "confirmText": { "ru": "К этому компьютеру нельзя будет подключиться через «Удалённый рабочий стол» и «Удалённого помощника» Windows. AnyDesk, TeamViewer и Parsec продолжат работать.", "en": "This PC won't accept Remote Desktop or Windows Remote Assistance connections. AnyDesk, TeamViewer and Parsec keep working." },
     "name": { "ru": "Запретить удалённый рабочий стол и удалённую помощь", "en": "Block Remote Desktop and Remote Assistance" },
     "description": { "ru": "Закрывает входящие подключения RDP и «Удалённого помощника» — меньше открытых дверей в систему.", "en": "Closes incoming RDP and Remote Assistance connections — fewer open doors into the system." },
+    "gain": {
+      "ru": "Закрыт вход в компьютер по сети через RDP: меньше открытых дверей для атак.",
+      "en": "Network sign-in through RDP is closed: fewer open doors for attacks."
+    },
+    "keep": {
+      "ru": "К этому ПК можно подключиться через «Удалённый рабочий стол» Windows.",
+      "en": "You can connect to this PC with Windows Remote Desktop."
+    },
     "actions": [
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server", "name": "fDenyTSConnections", "kind": "dword", "value": 1 },
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Remote Assistance", "name": "fAllowToGetHelp", "kind": "dword", "value": 0 }
@@ -298,6 +370,14 @@
     "confirmText": { "ru": "Перестанет работать вход по лицу и отпечатку пальца (Windows Hello). Вход по PIN-коду и паролю останется.", "en": "Face and fingerprint sign-in (Windows Hello) stops working. PIN and password sign-in stay." },
     "name": { "ru": "Отключить биометрию Windows Hello", "en": "Turn off Windows Hello biometrics" },
     "description": { "ru": "Останавливает службу биометрии — на настольном ПК без сканеров она просто висит в памяти.", "en": "Stops the biometrics service — on a desktop without readers it just sits in memory." },
+    "gain": {
+      "ru": "Служба биометрии не держится в памяти на ПК без сканеров.",
+      "en": "The biometrics service no longer stays in memory on a PC without scanners."
+    },
+    "keep": {
+      "ru": "Работает вход по лицу или отпечатку пальца (Windows Hello).",
+      "en": "Face and fingerprint sign-in (Windows Hello) keeps working."
+    },
     "actions": [
       { "type": "service", "name": "WbioSrvc", "startup": "disabled" }
     ]
@@ -310,6 +390,14 @@
     "confirmText": { "ru": "Перестанут работать смарт-карты и USB-токены: электронная подпись (ЭЦП), Рутокен, JaCarta, банк-клиенты, вход по смарт-карте. Если подписываете документы или ходите в госуслуги с токеном — не отключайте.", "en": "Smart cards and USB tokens stop working: digital signatures, Rutoken, JaCarta, bank clients, smart-card sign-in. If you sign documents with a token, keep this." },
     "name": { "ru": "Отключить смарт-карты и токены", "en": "Turn off smart cards and tokens" },
     "description": { "ru": "Останавливает службы смарт-карт, если вы ими не пользуетесь.", "en": "Stops the smart card services if you don't use them." },
+    "gain": {
+      "ru": "Три службы смарт-карт не запускаются в фоне.",
+      "en": "Three smart card services stop running in the background."
+    },
+    "keep": {
+      "ru": "Работают электронная подпись, USB-токены и банк-клиенты.",
+      "en": "Digital signatures, USB tokens and banking clients keep working."
+    },
     "actions": [
       { "type": "service", "name": "SCardSvr", "startup": "disabled" },
       { "type": "service", "name": "ScDeviceEnum", "startup": "disabled" },
@@ -324,6 +412,14 @@
     "confirmText": { "ru": "Перестанут работать звонки с компьютера через «Связь с телефоном».", "en": "Calls from the PC through Phone Link stop working." },
     "name": { "ru": "Отключить телефонную службу", "en": "Turn off the phone service" },
     "description": { "ru": "Служба телефонии нужна только для звонков через «Связь с телефоном».", "en": "The telephony service is only needed for calls through Phone Link." },
+    "gain": {
+      "ru": "Служба телефонии не работает в фоне.",
+      "en": "The telephony service stops running in the background."
+    },
+    "keep": {
+      "ru": "Можно звонить с компьютера через «Связь с телефоном».",
+      "en": "You can make calls from the PC through Phone Link."
+    },
     "actions": [
       { "type": "service", "name": "PhoneSvc", "startup": "disabled" }
     ]
@@ -336,6 +432,14 @@
     "confirmText": { "ru": "Нельзя будет раздавать интернет с компьютера по Wi-Fi («Мобильный хот-спот»).", "en": "You won't be able to share the PC's internet over Wi-Fi (Mobile hotspot)." },
     "name": { "ru": "Отключить мобильный хот-спот", "en": "Turn off Mobile hotspot" },
     "description": { "ru": "Служба раздачи интернета с ПК; большинству не нужна.", "en": "The internet-sharing service; most people don't need it." },
+    "gain": {
+      "ru": "Служба мобильного хот-спота не работает в фоне.",
+      "en": "The mobile hotspot service stops running in the background."
+    },
+    "keep": {
+      "ru": "Можно раздавать интернет с компьютера по Wi-Fi.",
+      "en": "You can share the PC's internet over Wi-Fi."
+    },
     "actions": [
       { "type": "service", "name": "icssvc", "startup": "disabled" }
     ]
@@ -348,6 +452,14 @@
     "confirmText": { "ru": "Перестанут работать сканеры и старые камеры, которые подключаются через WIA («Факсы и сканирование», приложение «Сканер»).", "en": "Scanners and old cameras that use WIA (Fax and Scan, the Scan app) stop working." },
     "name": { "ru": "Отключить службу сканеров (WIA)", "en": "Turn off the scanner service (WIA)" },
     "description": { "ru": "Служба получения изображений нужна только сканерам и некоторым старым камерам.", "en": "The image acquisition service is only needed by scanners and some old cameras." },
+    "gain": {
+      "ru": "Служба сканеров не работает в фоне.",
+      "en": "The scanner service stops running in the background."
+    },
+    "keep": {
+      "ru": "Работают сканеры, приложение «Сканер» и «Факсы и сканирование».",
+      "en": "Scanners, the Scan app and Fax and Scan keep working."
+    },
     "actions": [
       { "type": "service", "name": "stisvc", "startup": "disabled" }
     ]
@@ -385,6 +497,87 @@
     "actions": [
       { "type": "service", "name": "WalletService", "startup": "disabled" },
       { "type": "service", "name": "SEMgrSvc", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.update.manual",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "name": { "ru": "Обновления Windows — только по вашей команде", "en": "Windows updates only when you say so" },
+    "description": {
+      "ru": "Windows показывает, что вышли обновления, но ничего не скачивает и не ставит сама: установку вы запускаете в «Центре обновления», когда удобно. Это штатная политика Windows «Настройка автоматического обновления → Уведомлять о загрузке».",
+      "en": "Windows shows that updates are out but downloads and installs nothing by itself: you start the install in Windows Update whenever it suits you. This is the standard Windows policy Configure Automatic Updates → Notify for download."
+    },
+    "confirmText": {
+      "ru": "Исправления безопасности тоже перестанут ставиться сами. Раз в пару недель открывайте «Центр обновления Windows» и нажимайте «Скачать и установить».",
+      "en": "Security fixes stop installing by themselves too. Every couple of weeks open Windows Update and press Download & install."
+    },
+    "gain": {
+      "ru": "Никаких фоновых загрузок и установок посреди игры: диск, сеть и процессор свободны, внезапных перезагрузок нет.",
+      "en": "No background downloads or installs mid-game: the disk, network and CPU stay free, and there are no surprise restarts."
+    },
+    "keep": {
+      "ru": "Обновления и исправления безопасности ставятся сами, ничего не нужно помнить.",
+      "en": "Updates and security fixes install by themselves; nothing to remember."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoUpdate", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUOptions", "kind": "dword", "value": 2 }
+    ]
+  },
+  {
+    "id": "system.update.defer-feature",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "when": "!(os.edition ~ \"Core\")",
+    "name": { "ru": "Крупные обновления Windows — через год", "en": "Big Windows upgrades a year later" },
+    "description": {
+      "ru": "Новые версии Windows (например, 24H2 → 25H2) приходят через 365 дней после выхода, когда их ошибки с драйверами и играми уже исправлены. Ежемесячные исправления безопасности приходят как обычно. Работает в Pro и выше.",
+      "en": "New Windows versions (for example 24H2 → 25H2) arrive 365 days after release, once their driver and game bugs are fixed. Monthly security fixes arrive as usual. Works on Pro and above."
+    },
+    "confirmText": {
+      "ru": "Новые функции Windows появятся у вас примерно на год позже.",
+      "en": "New Windows features reach you about a year later."
+    },
+    "gain": {
+      "ru": "Нет внезапного перехода на свежую версию Windows, который часто ломает драйверы, античиты и производительность.",
+      "en": "No sudden jump to a fresh Windows version, which often breaks drivers, anti-cheats and performance."
+    },
+    "keep": {
+      "ru": "Новые версии Windows приходят сразу после выхода.",
+      "en": "New Windows versions arrive right after release."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdates", "kind": "dword", "value": 1 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdatesPeriodInDays", "kind": "dword", "value": 365 }
+    ]
+  },
+  {
+    "id": "system.store-autoupdate.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "name": { "ru": "Microsoft Store не обновляет приложения сам", "en": "Microsoft Store stops updating apps by itself" },
+    "description": {
+      "ru": "Store перестаёт скачивать и ставить обновления приложений в фоне (штатная политика «Отключить автоматическую загрузку и установку обновлений»).",
+      "en": "The Store stops downloading and installing app updates in the background (the standard policy Turn off Automatic Download and Install of updates)."
+    },
+    "confirmText": {
+      "ru": "Приложения из Store (Xbox, Gaming Services, «Фотографии», «Калькулятор» и др.) придётся обновлять вручную: Store → «Загрузки» → «Получить обновления».",
+      "en": "Store apps (Xbox, Gaming Services, Photos, Calculator and others) have to be updated by hand: Store → Downloads → Get updates."
+    },
+    "gain": {
+      "ru": "Store не качает и не ставит обновления посреди игры.",
+      "en": "The Store doesn't download or install updates mid-game."
+    },
+    "keep": {
+      "ru": "Приложения из Store обновляются сами.",
+      "en": "Store apps update by themselves."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsStore", "name": "AutoDownload", "kind": "dword", "value": 2 }
     ]
   }
 ]
