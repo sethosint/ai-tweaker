@@ -8,6 +8,7 @@
   let renderer = null, canvas = null, envMap = null, clock = null, failed = false, solo = false;
   // Software rendering (no GPU driver, RDP, some VMs): draw a few frames a second so the rest of the UI stays smooth.
   let slow = false, lastDraw = 0, lastFrame = 0, gapAvg = 16, frames = 0;
+  const MAX_RATIO = 1.25; // sharp enough for small models, far cheaper than a 2x canvas
   const accentColor = () => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f5a524");
 
   // ------------------------------------------------------------------ geometry & materials
@@ -46,6 +47,9 @@
       blade: std({ color: 0x14171b, metalness: 0.2, roughness: 0.42, side: THREE.DoubleSide }),
       glow: std({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1, metalness: 0, roughness: 0.4 }),
       ledGreen: std({ color: 0x50ff8a, emissive: 0x50ff8a, emissiveIntensity: 2.4 }),
+      glass: std({ color: 0x9fb4c8, metalness: 0, roughness: 0.2, transparent: true, opacity: 0.07, depthWrite: false, envMapIntensity: 0.15 }),
+      key: std({ color: 0x15171b, metalness: 0.15, roughness: 0.55 }),
+      matte: std({ color: 0x0c0d10, metalness: 0.1, roughness: 0.9 }),
     });
     return M;
   }
@@ -91,6 +95,63 @@
   }
 
   const MODELS = {
+    /** The whole PC: a tower with a glass side, front fans, an AIO pump, RAM and the graphics card inside. */
+    tower() {
+      const m = materials(), g = new THREE.Group(), glow = glowMat(), fans = [];
+      const W = 2.8, H = 3.1, D = 1.25;
+      // frame: back side, top, bottom, rear and front
+      const back = new THREE.Mesh(rbox(W, H, 0.06, 0.03), m.matte); back.position.z = -D / 2; g.add(back);
+      const top = new THREE.Mesh(rbox(W, 0.08, D, 0.03), m.shroud); top.position.y = H / 2; g.add(top);
+      const bottom = new THREE.Mesh(rbox(W, 0.1, D, 0.03), m.shroud); bottom.position.y = -H / 2; g.add(bottom);
+      const rear = new THREE.Mesh(rbox(0.06, H, D, 0.02), m.aluDark); rear.position.x = -W / 2; g.add(rear);
+      const front = new THREE.Mesh(rbox(0.1, H, D, 0.04), m.gloss); front.position.x = W / 2; g.add(front);
+      const strip = new THREE.Mesh(box(0.02, H * 0.86, 0.04), glow); strip.position.set(W / 2 + 0.06, 0, D * 0.32); g.add(strip);
+      const glass = new THREE.Mesh(box(W - 0.1, H - 0.12, 0.02), m.glass); glass.position.z = D / 2; glass.renderOrder = 2; g.add(glass);
+      const frame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(W - 0.1, H - 0.12, 0.02)), new THREE.LineBasicMaterial({ color: 0x3a4048 })); frame.position.z = D / 2; g.add(frame);
+      // inside
+      const board = new THREE.Mesh(box(2.0, 2.3, 0.04), m.chip); board.position.set(-0.3, 0.25, -D / 2 + 0.07); g.add(board);
+      const psu = new THREE.Mesh(rbox(W - 0.14, 0.6, D - 0.08, 0.04), m.shroud); psu.position.y = -H / 2 + 0.38; g.add(psu);
+      const psuLine = new THREE.Mesh(box(W * 0.6, 0.015, 0.01), glow); psuLine.position.set(-0.1, -H / 2 + 0.5, D / 2 - 0.03); g.add(psuLine);
+      const gpu = new THREE.Mesh(rbox(2.0, 0.42, 0.5, 0.06), m.shroud); gpu.position.set(-0.2, -0.45, -0.18); g.add(gpu);
+      const gpuStrip = new THREE.Mesh(box(1.5, 0.03, 0.02), glow); gpuStrip.position.set(-0.3, -0.36, 0.08); g.add(gpuStrip);
+      const pump = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.16, 40), m.plastic); pump.rotation.x = Math.PI / 2; pump.position.set(-0.35, 0.75, -0.42); g.add(pump);
+      const pumpRing = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.025, 10, 48), glow); pumpRing.position.set(-0.35, 0.75, -0.33); g.add(pumpRing);
+      for (let i = 0; i < 2; i++) {
+        const r = new THREE.Mesh(box(0.06, 0.9, 0.12), m.shroud); r.position.set(0.32 + i * 0.13, 0.7, -0.48); g.add(r);
+        const b = new THREE.Mesh(box(0.06, 0.05, 0.13), glow); b.position.set(0.32 + i * 0.13, 1.17, -0.48); g.add(b);
+      }
+      // radiator with two fans under the top, three intake fans at the front, one exhaust at the rear
+      const rad = new THREE.Mesh(box(1.7, 0.12, 0.8), m.aluDark); rad.position.set(-0.1, H / 2 - 0.16, -0.05); g.add(rad);
+      [-0.55, 0.35].forEach((x) => { const f = fan(0.33, glow); f.rotation.x = Math.PI / 2; f.position.set(x, H / 2 - 0.26, -0.05); g.add(f); fans.push(f.userData.rotor); });
+      [0.95, 0, -0.95].forEach((y) => { const f = fan(0.4, glow); f.rotation.y = Math.PI / 2; f.position.set(W / 2 - 0.12, y + 0.2, 0); g.add(f); fans.push(f.userData.rotor); });
+      const ex = fan(0.34, glow); ex.rotation.y = -Math.PI / 2; ex.position.set(-W / 2 + 0.1, 0.8, -0.05); g.add(ex); fans.push(ex.userData.rotor);
+      [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(([x, z]) => { const f = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.08, 16), m.plastic); f.position.set(x, -H / 2 - 0.09, z); g.add(f); });
+      return { group: g, fans, glow, scale: 0.95, tilt: 0.12 };
+    },
+    /** A gaming laptop: lit keyboard, glowing front edge, the screen with a live line. */
+    laptop() {
+      const m = materials(), g = new THREE.Group(), glow = glowMat();
+      const base = new THREE.Mesh(rbox(3.3, 0.14, 2.2, 0.06), m.shroud); base.position.y = -0.62; g.add(base);
+      const edge = new THREE.Mesh(box(2.4, 0.02, 0.02), glow); edge.position.set(0, -0.62, 1.11); g.add(edge);
+      const under = new THREE.Mesh(box(2.8, 0.005, 1.0), glow); under.position.set(0, -0.548, -0.32); g.add(under);
+      const keys = [];
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 14; c++) keys.push([-1.3 + c * 0.2, -0.535, -0.78 + r * 0.2]);
+      g.add(instanced(box(0.17, 0.035, 0.17), m.key, keys));
+      const pad = new THREE.Mesh(rbox(1.1, 0.012, 0.62, 0.005), m.gloss); pad.position.set(0, -0.545, 0.62); g.add(pad);
+      const lid = new THREE.Group(); lid.position.set(0, -0.55, -1.08); lid.rotation.x = -0.22; g.add(lid);
+      const panel = new THREE.Mesh(rbox(3.3, 2.05, 0.08, 0.04), m.gloss); panel.position.y = 1.02; lid.add(panel);
+      const c = document.createElement("canvas"); c.width = 640; c.height = 380;
+      const ctx = c.getContext("2d"), acc = "#" + accentColor().getHexString();
+      const grd = ctx.createLinearGradient(0, 0, 640, 380); grd.addColorStop(0, "#07080b"); grd.addColorStop(1, "#15171c");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, 640, 380);
+      ctx.strokeStyle = acc; ctx.lineWidth = 3; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); for (let x = 0; x <= 640; x += 8) { const y = 250 - 80 * Math.exp(-((x - 320) ** 2) / 9000) - 10 * Math.sin(x / 21); x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = "#e9e6de"; ctx.font = '600 50px "Plex Cond", Bahnschrift, sans-serif'; ctx.fillText("AI TWEAKER", 40, 90);
+      const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(3.12, 1.86), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+      screen.position.set(0, 1.02, 0.042); lid.add(screen);
+      return { group: g, glow, scale: 0.92, tilt: 0.22 };
+    },
     gpu() {
       const m = materials(), g = new THREE.Group(), glow = glowMat(), fans = [];
       g.add(new THREE.Mesh(rbox(3.4, 1.32, 0.5, 0.09), m.shroud));
@@ -238,7 +299,7 @@
     } catch {
       failed = true; canvas.remove(); return false;
     }
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setPixelRatio(Math.min(MAX_RATIO, window.devicePixelRatio || 1));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
@@ -261,12 +322,15 @@
     if (!solo && document.querySelector(".overlay, .busy-veil")) return;
     if (lastFrame && !slow) {
       gapAvg = gapAvg * 0.95 + (now - lastFrame) * 0.05;
-      if (++frames > 180 && gapAvg > 45) { slow = true; renderer.setPixelRatio(1); }
+      // the page itself is struggling: drop to a light mode instead of making everything stutter
+      if (++frames > 120 && gapAvg > 26) { slow = true; renderer.setPixelRatio(1); }
     }
     lastFrame = now;
-    if (slow && now - lastDraw < 125) return;
+    // 40 fps is plenty for slowly turning models; a window in the background (a game in front) gets 8 fps
+    const minGap = !document.hasFocus() ? 125 : slow ? 50 : 24;
+    if (now - lastDraw < minGap) return;
     lastDraw = now;
-    const dt = Math.min(slow ? 0.2 : 0.05, clock.getDelta()), t = clock.elapsedTime;
+    const dt = Math.min(0.15, clock.getDelta()), t = clock.elapsedTime;
     const w = window.innerWidth, h = window.innerHeight;
     if (canvas.width !== Math.floor(w * renderer.getPixelRatio()) || canvas.height !== Math.floor(h * renderer.getPixelRatio())) renderer.setSize(w, h, false);
     renderer.setScissorTest(false);

@@ -32,12 +32,13 @@
     const C = 2 * Math.PI * 64;
     const open = ins.filter((i) => ticketState(i) !== "resolved" && i.severity !== "info").length;
     const left = todo();
-    const heroKind = p && !p.gpus.some((g) => /nvidia|amd|radeon|geforce|arc/i.test(g.name)) ? "cpu" : "gpu";
+    // the whole machine, not one part: a laptop or a tower, whichever this PC is
+    const heroKind = p && p.machine && p.machine.isLaptop ? "laptop" : "tower";
 
     v.innerHTML = html`
       <section class="hero">
         <div class="hero-stage">
-          <div class="hero-model" data-hw="${heroKind}" data-load="${heroKind}" data-key="dash-hero" data-dist="5.5" data-yaw="-0.6"></div>
+          <div class="hero-model" data-hw="${heroKind}" data-load="cpu" data-key="dash-hero-${heroKind}" data-dist="${heroKind === "laptop" ? 6.2 : 7.4}" data-yaw="-0.55"></div>
           <div class="hero-tag l t"><span class="k">GPU</span><span class="v" id="tgGpuT">—</span></div>
           <div class="hero-tag l b"><span class="k">GPU · ${t("hw.load")}</span><span class="v" id="tgGpuL">—</span></div>
           <div class="hero-tag r t"><span class="k">CPU</span><span class="v" id="tgCpuT">—</span></div>

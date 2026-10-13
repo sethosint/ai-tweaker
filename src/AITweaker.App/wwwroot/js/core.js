@@ -178,8 +178,6 @@
   const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
-  const MODEL = { tune: "cpu", tweaks: "board", debloat: "ssd", install: "monitor", tools: "router", services: "ram", drivers: "gpu", apps: "monitor", bios: "board", image: "usb", ai: "cpu", backup: "ssd" };
-  const DIST = { router: 7.4, monitor: 6.4, board: 6.2, gpu: 6.9, usb: 6.2 };
   const last = () => S.telemetry[S.telemetry.length - 1] || {};
   const pct = (v) => (v == null ? 0.15 : v / 100);
   window.HWLOAD = {
@@ -190,12 +188,13 @@
   /** Section code above every page title ("SEC 03 · CATALOG") and the model beside it, kept when a view re-renders itself. */
   function kicker(section) {
     const ph = section.querySelector(".page-h");
-    const head = ph && ph.querySelector(":scope > div:not(.ph-model):not(.actions)");
+    const head = ph && ph.querySelector(":scope > div:not(.ph-icon):not(.actions)");
     if (!head || ph.querySelector(".kicker")) return;
     const view = section.id.slice(2);
     const i = navList().findIndex(([v]) => v === view);
     head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[view] || ""}</span>`);
-    if (MODEL[view] && !ph.querySelector("[data-hw]")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-model" data-hw="${MODEL[view]}" data-key="ph-${view}" data-yaw="-0.7" data-dist="${DIST[MODEL[view]] || 5.8}"></div>`);
+    // 3D lives on the console only; other pages get their own flat emblem
+    if (!ph.querySelector(".ph-icon")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
   }
   const kickerWatch = new MutationObserver((list) => {
     const seen = new Set();
@@ -232,7 +231,7 @@
     applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
-        <div class="brand">${brandMark()}<div><div class="brand-name">AI Tweaker</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
+        <div class="brand">${brandMark()}<div class="brand-name">AI Tweaker</div></div>
         <div class="top-mid">
           <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
           <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
