@@ -93,7 +93,7 @@ public static class ProcessRunner
     {
         if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
               || url.StartsWith("ms-settings:", StringComparison.OrdinalIgnoreCase) || url.StartsWith("ms-windows-store://", StringComparison.OrdinalIgnoreCase)
-              || url.Equals("windowsdefender:", StringComparison.OrdinalIgnoreCase)))
+              || url.Equals("windowsdefender://threatsettings", StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("Only web, ms-settings, Windows Security and Microsoft Store links can be opened");
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }

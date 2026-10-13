@@ -210,7 +210,7 @@
       f["system.laptop"] && f["gpu.discrete"] ? { id: "gpupick", go: () => go("apps", { guide: "windows-graphics" }) } : null,
       { id: "dnd", url: "ms-settings:notifications" },
       { id: "update", url: "ms-settings:windowsupdate" },
-      { id: "defender", url: "windowsdefender:" },
+      { id: "defender", url: "windowsdefender://threatsettings" },
     ].filter(Boolean);
   };
 })();
