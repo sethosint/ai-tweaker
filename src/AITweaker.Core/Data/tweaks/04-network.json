@@ -57,12 +57,12 @@
   {
     "id": "network.nic-flow-control.off",
     "category": "network",
-    "level": 3,
+    "level": 0,
     "when": "net.ethernet && !system.vm",
     "name": { "ru": "Отключить управление потоком (Flow Control)", "en": "Disable Flow Control" },
     "description": {
-      "ru": "Роутер не может «ставить на паузу» вашу сетевую карту — меньше микрозадержек при загрузке канала.",
-      "en": "The router can no longer pause your adapter — fewer micro-stalls when the link is busy."
+      "ru": "Отключает Flow Control на сетевой карте. AtlasOS сознательно оставляет его включённым: без него при перегрузке возможны потерянные кадры. Только для ручной проверки на своём железе.",
+      "en": "Turns Flow Control off on the network card. AtlasOS deliberately keeps it on: without it, frames can be dropped under load. For manual testing on your own hardware only."
     },
     "actions": [
       { "type": "nic", "target": "ethernet", "keywords": { "*FlowControl": "0" } }
@@ -108,6 +108,33 @@
     "actions": [
       { "type": "powercfg", "alias": "Wireless adapter power saving", "subgroup": "19cbb8fa-5279-450e-9fac-8a3d5fedd0c1", "setting": "12bbebe6-58d6-4636-95bb-3217ef867c1a", "ac": 0 },
       { "type": "nic", "target": "wifi", "keywords": { "*PacketCoalescing": "0" } }
+    ]
+  },
+  {
+    "id": "network.legacy-name-resolution.off",
+    "category": "network",
+    "level": 3,
+    "confirm": true,
+    "name": { "ru": "Отключить LLMNR и NetBIOS", "en": "Disable LLMNR and NetBIOS" },
+    "description": {
+      "ru": "Устаревшие протоколы поиска имён в локальной сети больше не слушают порты и не отвечают на широковещательные запросы — меньше лишнего трафика и закрыта известная атака подмены имён. На FPS не влияет.",
+      "en": "Legacy local name lookup protocols stop listening on ports and answering broadcasts — less noise on the network and a known name-spoofing attack closed. No effect on FPS."
+    },
+    "confirmText": {
+      "ru": "Очень старые сетевые устройства без DNS (NAS и принтеры времён SMB1) могут перестать находиться по имени — по IP-адресу работать будут.",
+      "en": "Very old network devices without DNS (SMB1-era NAS boxes and printers) may stop resolving by name — they still work by IP address."
+    },
+    "gain": {
+      "ru": "Меньше открытых портов и широковещательного трафика, нет атаки подмены LLMNR/NetBIOS.",
+      "en": "Fewer open ports and broadcast traffic, no LLMNR/NetBIOS spoofing attack."
+    },
+    "keep": {
+      "ru": "Старые устройства в локальной сети находятся по имени.",
+      "en": "Old devices on the local network resolve by name."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient", "name": "EnableMulticast", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters\\Interfaces\\Tcpip_*", "name": "NetbiosOptions", "kind": "dword", "value": 2, "onlyIfKeyExists": true }
     ]
   }
 ]

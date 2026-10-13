@@ -100,5 +100,18 @@
     "actions": [
       { "type": "powershell", "script": "$f = Join-Path $env:ProgramData 'AITweaker\\backups\\device-power.json'; $d = @(Get-CimInstance -Namespace root/WMI -ClassName MSPower_DeviceEnable -ErrorAction Stop | Where-Object Enable); if (-not (Test-Path $f)) { ConvertTo-Json -InputObject @($d.InstanceName) | Set-Content -Path $f -Encoding UTF8 }; foreach ($x in $d) { try { $x | Set-CimInstance -Property @{ Enable = $false } -ErrorAction Stop } catch { } }", "undo": "$f = Join-Path $env:ProgramData 'AITweaker\\backups\\device-power.json'; if (Test-Path $f) { $names = @(Get-Content $f -Raw | ConvertFrom-Json); Get-CimInstance -Namespace root/WMI -ClassName MSPower_DeviceEnable | Where-Object { $names -contains $_.InstanceName } | ForEach-Object { try { $_ | Set-CimInstance -Property @{ Enable = $true } -ErrorAction Stop } catch { } }; Remove-Item $f }", "check": "if (Test-Path (Join-Path $env:ProgramData 'AITweaker\\backups\\device-power.json')) { 1 } else { 0 }" }
     ]
+  },
+  {
+    "id": "devices.no-companion-apps",
+    "category": "devices",
+    "level": 2,
+    "name": { "ru": "Без автоустановки софта к устройствам", "en": "No companion apps for devices" },
+    "description": {
+      "ru": "Windows не скачивает из сети метаданные и «приложения-компаньоны» при подключении мыши, гарнитуры или принтера — штатная политика PreventDeviceMetadataFromNetwork (есть в CIS Benchmark).",
+      "en": "Windows doesn't download device metadata and companion apps when a mouse, headset or printer is plugged in — the standard PreventDeviceMetadataFromNetwork policy (part of the CIS Benchmark)."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Device Metadata", "name": "PreventDeviceMetadataFromNetwork", "kind": "dword", "value": 1 }
+    ]
   }
 ]

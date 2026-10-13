@@ -254,6 +254,15 @@ public sealed class NvidiaSetting
     public uint Default { get; init; }
     /// <summary>Optional condition for this one setting (e.g. maximum performance only on desktops).</summary>
     public string? When { get; init; }
+    /// <summary>A value that depends on this PC: <c>maxHz-3</c> = the fastest display's refresh rate minus 3 (the G-SYNC frame cap).</summary>
+    public string? ValueFrom { get; init; }
 
     public uint SettingId => Convert.ToUInt32(Id, 16);
+
+    /// <summary>The value to write on this PC (<see cref="Value"/> unless <see cref="ValueFrom"/> says otherwise).</summary>
+    public uint Resolve(Profile.SystemProfile profile) => ValueFrom switch
+    {
+        "maxHz-3" => (uint)Math.Max(30, (profile.Displays.Select(d => Math.Max(d.MaxRefreshHz, d.RefreshHz)).DefaultIfEmpty(60).Max()) - 3),
+        _ => Value,
+    };
 }

@@ -231,7 +231,7 @@
       "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
       "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
-    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "gaming.nvidia-shader-cache", "privacy.nvidia-telemetry"],
+    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "gaming.nvidia-shader-cache", "gaming.nvidia-ansel.off", "gaming.nvidia-gsync-preset", "privacy.nvidia-telemetry"],
     "sections": [
       {
         "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
@@ -336,7 +336,7 @@
         "path": "Gaming → Graphics",
         "settings": [
           { "name": "Radeon Anti-Lag", "value": "ON" },
-          { "name": "Radeon Boost", "value": "ON" },
+          { "name": "Radeon Boost", "value": "OFF" },
           { "name": "Performance Mode", "value": "Performance" },
           { "name": "Radeon Chill", "value": "OFF" },
           { "name": "Radeon Image Sharpening", "value": "OFF" },

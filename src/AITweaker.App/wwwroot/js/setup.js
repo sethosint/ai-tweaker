@@ -42,10 +42,10 @@
               ${hint ? `<div class="qz-hint">${icon("alert")}${esc(hint)}</div>` : ""}
               <div class="qz-opts">
                 <button class="qz-opt off ${a === "off" ? "on" : ""}" data-a="off">
-                  <span class="qz-oh">${icon("power")}${t("q.ifOff")}</span>
+                  <span class="qz-oh">${icon("power")}${t(tw.enables ? "q.ifOn" : "q.ifOff")}</span>
                   <span class="qz-pro">${esc(L(tw.gain) || L(tw.description))}</span>
                   ${tw.confirmText ? `<span class="qz-con">${esc(L(tw.confirmText))}</span>` : ""}
-                  <span class="qz-ob">${t("q.off")}</span>
+                  <span class="qz-ob">${t(tw.enables ? "q.on" : "q.off")}</span>
                 </button>
                 <button class="qz-opt keep ${a === "keep" ? "on" : ""}" data-a="keep">
                   <span class="qz-oh">${icon("check")}${t("q.ifKeep")}</span>
@@ -104,8 +104,8 @@
   App.questionFor = (tw, feats) => {
     if (!tw || !(tw.confirm || tw.risk === "high" || feats.has(tw.id))) return null;
     const f = feats.get(tw.id);
-    const keep = !!(f && (f.used || f.keep));
-    return { tw, keep, hint: f && f.used ? t("q.used") : f && f.keep ? t("q.keepSafe") : "" };
+    const keep = !!(f && (f.used || f.keep)) || !!tw.keepByDefault;
+    return { tw, keep, hint: tw.hint ? L(tw.hint) : f && f.used ? t("q.used") : (f && f.keep) || tw.keepByDefault ? t("q.keepSafe") : "" };
   };
 
   /** The one big button: asks, removes the built-in apps the user let go, then applies everything else in one run. */
@@ -170,7 +170,9 @@
       App.gmButton();
       return;
     }
-    const on = new Set(st.options.map((o) => o.id));
+    // clearing the standby list barely matters with 16 GB or more, so it's left for the user to tick there
+    const ram = (S.scan && S.scan.profile.memory.totalGb) || 0;
+    const on = new Set(st.options.map((o) => o.id).filter((id) => id !== "memory" || ram < 16));
     const row = (o) => html`<button class="gm-opt ${on.has(o.id) ? "on" : ""}" data-o="${o.id}">
       <span><b>${t("gm." + o.id)}</b><small>${o.id === "power" ? t("gm.power." + o.items[0]) : o.id === "wifi" ? `${t("gm.wifiD")} · ${esc(o.items.join(", "))}` : o.items.length ? esc([...new Set(o.items)].join(", ")) : t("gm." + o.id + "D")}</small></span>
       <span class="switch ${on.has(o.id) ? "on" : ""}"></span></button>`;
@@ -207,14 +209,14 @@
   App.gamesPanel = () => {
     const g = S.games;
     if (!g) return `<div class="games"><div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t("games.loading")}</span></div></div></div>`;
-    const sw = (on, exe, key) => `<button class="gp-sw ${key === "priority" ? "opt" : ""}" data-sw="${key}" data-exe="${esc(exe)}" aria-pressed="${on}" title="${t("games." + key + "T")}"><span class="switch ${on ? "on" : ""}"></span>${t("games." + key)}</button>`;
+    const sw = (on, exe, key) => `<button class="gp-sw ${key === "priority" || key === "noFso" ? "opt" : ""}" data-sw="${key}" data-exe="${esc(exe)}" aria-pressed="${on}" title="${t("games." + key + "T")}"><span class="switch ${on ? "on" : ""}"></span>${t("games." + key)}</button>`;
     const pending = g.games.filter((x) => !x.qos || (g.twoGpus && !x.gpu)).length;
     return html`<div class="games">
       <div class="gp-h">${icon("gamepad")}<div><b>${t("games.title")}</b><span>${t(g.twoGpus ? "games.descGpu" : "games.desc").replace("{n}", g.games.length)}</span></div>
         <div class="actions"><button class="btn ghost sm" id="gpAdd">${t("games.add")}</button>${g.games.length ? `<button class="btn ${pending ? "primary" : "ghost"} sm" id="gpAll" ${pending ? "" : "disabled"}>${pending ? t("games.all") : t("games.allDone")}</button>` : ""}</div></div>
       ${g.games.length ? `<div class="gp-list">${g.games.map((x) => html`<div class="gp-row">
         <div class="gp-n"><b>${esc(x.name)}</b><span class="chip">${t("games.src." + x.source)}</span><small title="${esc(x.exe)}">${esc(x.exe)}</small></div>
-        <div class="gp-ctl">${sw(x.qos, x.exe, "qos")}${g.twoGpus ? sw(x.gpu, x.exe, "gpu") : ""}${sw(x.priority, x.exe, "priority")}${x.added ? `<button class="icon-btn sm" data-rm="${esc(x.exe)}" title="${t("games.remove")}">${icon("x")}</button>` : ""}</div>
+        <div class="gp-ctl">${sw(x.qos, x.exe, "qos")}${g.twoGpus ? sw(x.gpu, x.exe, "gpu") : ""}${sw(x.noFso, x.exe, "noFso")}${sw(x.priority, x.exe, "priority")}${x.added ? `<button class="icon-btn sm" data-rm="${esc(x.exe)}" title="${t("games.remove")}">${icon("x")}</button>` : ""}</div>
       </div>`).join("")}</div>` : `<div class="gp-empty">${t("games.none")}</div>`}
     </div>`;
   };

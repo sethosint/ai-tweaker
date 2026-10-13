@@ -186,5 +186,19 @@
       { "type": "registry", "path": "HKU\\.DEFAULT\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" },
       { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" }
     ]
+  },
+  {
+    "id": "interface.dynamic-lighting.off",
+    "category": "interface",
+    "level": 2,
+    "when": "os.build >= 22631",
+    "name": { "ru": "Отключить Dynamic Lighting", "en": "Disable Dynamic Lighting" },
+    "description": {
+      "ru": "Windows перестаёт перехватывать управление RGB-подсветкой и больше не воюет с iCUE, Synapse и G HUB.",
+      "en": "Windows stops taking over RGB lighting and no longer fights iCUE, Synapse and G HUB."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Lighting", "name": "AmbientLightingEnabled", "kind": "dword", "value": 0 }
+    ]
   }
 ]

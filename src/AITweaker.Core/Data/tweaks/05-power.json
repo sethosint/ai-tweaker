@@ -216,5 +216,19 @@
       { "type": "powercfg", "alias": "USB 3 Link Power Management", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "d4e98f31-5ffe-4ce1-be31-1b38b384c009", "ac": 0 },
       { "type": "powercfg", "alias": "USB 3 Link Power Management (battery)", "subgroup": "2a737441-1930-4402-8d77-b2bebba308a3", "setting": "d4e98f31-5ffe-4ce1-be31-1b38b384c009", "dc": 0, "when": "system.desktop" }
     ]
+  },
+  {
+    "id": "power.wake-timers.off",
+    "category": "power",
+    "level": 2,
+    "name": { "ru": "Таймеры пробуждения выключены", "en": "Wake timers off" },
+    "description": {
+      "ru": "Задачи планировщика и автообслуживание больше не будят компьютер из сна посреди ночи; обслуживание выполнится при следующем включении.",
+      "en": "Scheduled tasks and automatic maintenance no longer wake the PC from sleep at night; maintenance runs the next time it's on."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Allow wake timers", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d", "ac": 0, "dc": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Task Scheduler\\Maintenance", "name": "WakeUp", "kind": "dword", "value": 0 }
+    ]
   }
 ]

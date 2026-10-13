@@ -139,11 +139,11 @@
   {
     "id": "gaming.priority-separation",
     "category": "gaming",
-    "level": 3,
+    "level": 0,
     "name": { "ru": "Win32PrioritySeparation: короткие кванты для игры", "en": "Win32PrioritySeparation: short quanta for the game" },
     "description": {
-      "ru": "Win32PrioritySeparation = 0x26: короткие переменные кванты с 3-кратным бустом активного окна. Игра чаще получает процессор, ввод обрабатывается быстрее.",
-      "en": "Win32PrioritySeparation = 0x26: short variable quanta with a 3× foreground boost. The game gets the CPU more often and input is processed sooner."
+      "ru": "Значение 0x26 (38) — короткие переменные кванты с бустом активного окна 3:1. В клиентских Windows это уже поведение по умолчанию (0x2), поэтому твик ничего не меняет; оставлен только для ручного применения. «Магические» большие значения Windows всё равно сводит к 6 битам.",
+      "en": "Value 0x26 (38) — short variable quanta with a 3:1 foreground boost. On client Windows that is already the default (0x2), so the tweak changes nothing; kept for manual use only. 'Magic' large values are folded back into 6 bits by Windows anyway."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl", "name": "Win32PrioritySeparation", "kind": "dword", "value": 38 }
@@ -285,6 +285,63 @@
     },
     "actions": [
       { "type": "nvidia", "settings": [{ "id": "0x00AC8497", "name": "Shader disk cache maximum size", "value": 4294967295, "default": 16384 }] }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-ansel.off",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: отключить Ansel", "en": "NVIDIA: disable Ansel" },
+    "description": {
+      "ru": "Драйвер перестаёт встраивать Ansel (фоторежим и фильтры) в каждую игру — меньше конфликтов с оверлеями и инжекторами. Рекомендация PC-Tuning; ID параметра — из заголовка NVAPI.",
+      "en": "The driver stops injecting Ansel (photo mode and filters) into every game — fewer clashes with overlays and injectors. Recommended by PC-Tuning; setting ID from the NVAPI header."
+    },
+    "confirmText": {
+      "ru": "Не будет фоторежима NVIDIA и игровых фильтров (Freestyle) по Alt+F3.",
+      "en": "No NVIDIA photo mode or game filters (Freestyle) on Alt+F3."
+    },
+    "gain": {
+      "ru": "Драйвер ничего лишнего не встраивает в игру.",
+      "en": "The driver injects nothing extra into the game."
+    },
+    "keep": {
+      "ru": "Работают фоторежим NVIDIA и фильтры Freestyle.",
+      "en": "NVIDIA photo mode and Freestyle filters keep working."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x1075D972", "name": "Ansel enable", "value": 0, "default": 1 }] }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-gsync-preset",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "keepByDefault": true,
+    "enables": true,
+    "hint": { "ru": "Включайте, только если G-SYNC или G-SYNC Compatible реально работает на вашем мониторе (NVIDIA App → Система → Дисплеи).", "en": "Only turn it on if G-SYNC or G-SYNC Compatible actually runs on your monitor (NVIDIA App → System → Displays)." },
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: пресет G-SYNC (V-Sync в драйвере + лимит частота − 3)", "en": "NVIDIA: G-SYNC preset (driver V-Sync + cap at refresh − 3)" },
+    "description": {
+      "ru": "Связка, которую Blur Busters по замерам называет лучшей для G-SYNC: вертикальная синхронизация включена в драйвере, а кадры ограничены на 3 ниже частоты вашего монитора (141 для 144 Гц). Кадры не выходят за диапазон G-SYNC — нет разрывов и нет задержки V-Sync. В играх с Reflex он ставит лимит сам.",
+      "en": "The combination Blur Busters measured as best for G-SYNC: vertical sync on in the driver and frames capped 3 below your monitor's refresh rate (141 at 144 Hz). Frames never leave the G-SYNC range — no tearing and no V-Sync lag. Reflex games set their own cap."
+    },
+    "confirmText": {
+      "ru": "Без включённого G-SYNC принудительный V-Sync добавит задержку. FPS будет ограничен чуть ниже частоты монитора.",
+      "en": "Without G-SYNC actually on, forced V-Sync adds lag. FPS is capped just below the refresh rate."
+    },
+    "gain": {
+      "ru": "Ровная картинка без разрывов и без задержки V-Sync — лучшее, что даёт G-SYNC.",
+      "en": "Smooth frames without tearing and without V-Sync lag — the best G-SYNC can give."
+    },
+    "keep": {
+      "ru": "FPS без ограничения; синхронизацию вы настраиваете сами.",
+      "en": "Uncapped FPS; you set up sync yourself."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x00A879CF", "name": "Vertical Sync", "value": 1199655232, "default": 1620202130 }, { "id": "0x10835002", "name": "Frame Rate Limiter", "value": 141, "default": 0, "valueFrom": "maxHz-3" }] }
     ]
   }
 ]

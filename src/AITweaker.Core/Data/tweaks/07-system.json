@@ -592,5 +592,46 @@
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\FTH", "name": "Enabled", "kind": "dword", "value": 0 }
     ]
+  },
+  {
+    "id": "system.wpbt.off",
+    "category": "system",
+    "level": 3,
+    "confirm": true,
+    "reboot": true,
+    "when": "!system.laptop",
+    "name": { "ru": "Запретить программам из BIOS ставиться в Windows (WPBT)", "en": "Stop the BIOS installing programs into Windows (WPBT)" },
+    "description": {
+      "ru": "Платы через таблицу WPBT при каждом запуске подсовывают Windows свои установщики: Armoury Crate, MSI Center и т. п. Значение DisableWpbtExecution это запрещает (используют WinUtil и FR33THY).",
+      "en": "Boards use the WPBT table to hand Windows their installers on every boot: Armoury Crate, MSI Center and the like. DisableWpbtExecution stops that (used by WinUtil and FR33THY)."
+    },
+    "confirmText": {
+      "ru": "Фирменные утилиты платы перестанут ставиться сами — если они нужны, ставьте их вручную с сайта производителя.",
+      "en": "The board's own utilities stop installing themselves — install them by hand from the vendor's site if you need them."
+    },
+    "gain": {
+      "ru": "Никаких Armoury Crate и MSI Center, которые возвращаются после каждой переустановки и висят в фоне.",
+      "en": "No Armoury Crate or MSI Center coming back after every reinstall and sitting in the background."
+    },
+    "keep": {
+      "ru": "Утилиты платы ставятся сами из BIOS.",
+      "en": "The board's utilities install themselves from the BIOS."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "name": "DisableWpbtExecution", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "system.bsod-details",
+    "category": "system",
+    "level": 1,
+    "name": { "ru": "Подробный синий экран", "en": "Detailed blue screen" },
+    "description": {
+      "ru": "На синем экране видны коды ошибки и параметры вместо одного смайлика — полезно при разгоне памяти и процессора, чтобы понять, что именно упало.",
+      "en": "The blue screen shows the stop code parameters instead of just a smiley — useful when overclocking RAM or the CPU to see what actually failed."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "name": "DisplayParameters", "kind": "dword", "value": 1 }
+    ]
   }
 ]

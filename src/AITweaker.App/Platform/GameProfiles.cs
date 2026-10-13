@@ -13,10 +13,13 @@ namespace AITweaker.App.Platform;
 /// </summary>
 public static partial class GameProfiles
 {
-    public sealed record Game(string Name, string Exe, string Source, bool Added, bool Priority, bool Gpu, bool Qos = false);
+    public sealed record Game(string Name, string Exe, string Source, bool Added, bool Priority, bool Gpu, bool Qos = false, bool NoFso = false);
 
     private const string Ifeo = @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
     private const string GpuPrefs = @"HKCU\Software\Microsoft\DirectX\UserGpuPreferences";
+    /// <summary>The exe's Properties → Compatibility flags; "Disable fullscreen optimizations" is this token.</summary>
+    private const string Layers = @"HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers";
+    private const string NoFsoFlag = "DISABLEDXMAXIMIZEDWINDOWEDMODE";
     private const string HighGpu = "GpuPreference=2;";
     private const int HighPriority = 3;
 
@@ -35,7 +38,7 @@ public static partial class GameProfiles
         var games = Detect().Concat(LoadAdded().Select(e => new Game(Path.GetFileNameWithoutExtension(e), e, "manual", true, false, false)))
             .Where(g => File.Exists(g.Exe))
             .GroupBy(g => g.Exe, StringComparer.OrdinalIgnoreCase).Select(g => g.First())
-            .Select(g => g with { Priority = HasPriority(g.Exe), Gpu = HasGpu(g.Exe), Qos = LoadQos().Contains(g.Exe, StringComparer.OrdinalIgnoreCase) })
+            .Select(g => g with { Priority = HasPriority(g.Exe), Gpu = HasGpu(g.Exe), Qos = LoadQos().Contains(g.Exe, StringComparer.OrdinalIgnoreCase), NoFso = Flags(g.Exe).Contains(NoFsoFlag) })
             .OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
         return new { twoGpus = TwoGpus(profile), games };
@@ -44,7 +47,7 @@ public static partial class GameProfiles
     /// <summary>Two graphics adapters (integrated + discrete): only then does the GPU choice mean anything.</summary>
     public static bool TwoGpus(SystemProfile profile) => profile.Gpus.Count >= 2;
 
-    public static async Task<bool> SetAsync(string exe, bool? priority, bool? gpu, bool? qos)
+    public static async Task<bool> SetAsync(string exe, bool? priority, bool? gpu, bool? qos, bool? noFso = null)
     {
         if (!File.Exists(exe) || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("not a program: " + exe);
         var perf = $@"{Ifeo}\{Path.GetFileName(exe)}\PerfOptions";
@@ -53,6 +56,7 @@ public static partial class GameProfiles
         if (gpu == true) RegistryHelper.Write(GpuPrefs, exe, HighGpu, RegistryValueKind.String);
         if (gpu == false && HasGpu(exe)) RegistryHelper.DeleteValue(GpuPrefs, exe);
         if (qos is { } q) await SetQosAsync([exe], q);
+        if (noFso is { } nf) SetFlag(exe, NoFsoFlag, nf);
         AppLog.Ok("games", $"{Path.GetFileName(exe)}: priority {Show(priority)}, GPU {Show(gpu)}, QoS {Show(qos)}");
         return true;
     }
@@ -111,7 +115,7 @@ public static partial class GameProfiles
         var list = LoadAdded();
         list.RemoveAll(e => e.Equals(exe, StringComparison.OrdinalIgnoreCase));
         File.WriteAllText(AddedFile, JsonSerializer.Serialize(list));
-        if (File.Exists(exe)) await SetAsync(exe, false, false, false);
+        if (File.Exists(exe)) await SetAsync(exe, false, false, false, false);
         return true;
     }
 
@@ -119,6 +123,18 @@ public static partial class GameProfiles
 
     private static bool HasPriority(string exe) =>
         RegistryHelper.Read($@"{Ifeo}\{Path.GetFileName(exe)}\PerfOptions", "CpuPriorityClass") is { Exists: true, Data: var d } && d == HighPriority.ToString();
+
+    /// <summary>Compatibility flags of the exe, the same list its Properties → Compatibility tab edits.</summary>
+    private static HashSet<string> Flags(string exe) =>
+        (RegistryHelper.Read(Layers, exe).Data ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(f => f != "~").ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    private static void SetFlag(string exe, string flag, bool on)
+    {
+        var flags = Flags(exe);
+        if (on ? !flags.Add(flag) : !flags.Remove(flag)) return;
+        if (flags.Count == 0) RegistryHelper.DeleteValue(Layers, exe);
+        else RegistryHelper.Write(Layers, exe, "~ " + string.Join(' ', flags), RegistryValueKind.String);
+    }
 
     private static bool HasGpu(string exe) =>
         RegistryHelper.Read(GpuPrefs, exe) is { Exists: true, Data: var d } && d?.Contains("GpuPreference=2", StringComparison.OrdinalIgnoreCase) == true;

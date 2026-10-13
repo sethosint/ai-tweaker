@@ -93,7 +93,7 @@ for path in sorted(glob.glob(os.path.join(DATA, "tweaks", "*.json"))):
             tweaks.append({
                 "id": t["id"], "category": t["category"], "name": t["name"], "description": t["description"],
                 "level": t.get("level", 2), "risk": t.get("risk", "low"), "confirm": t.get("confirm", False),
-                "confirmText": t.get("confirmText"), "gain": t.get("gain"), "keep": t.get("keep"), "reboot": t.get("reboot", False), "logoff": t.get("logoff", False),
+                "confirmText": t.get("confirmText"), "gain": t.get("gain"), "keep": t.get("keep"), "keepByDefault": t.get("keepByDefault", False), "enables": t.get("enables", False), "hint": t.get("hint"), "reboot": t.get("reboot", False), "logoff": t.get("logoff", False),
                 "restartExplorer": t.get("restartExplorer", False), "reversible": t.get("reversible", True),
                 "when": t.get("when"), "why": t.get("why"), "actions": [describe(a) for a in t["actions"]], "offline": offline(t),
             })

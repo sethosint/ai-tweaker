@@ -308,7 +308,7 @@
       ];
       return { twoGpus: profile.gpus.length >= 2, games: mock.games };
     },
-    "games.set": async (p) => { const g = mock.games.find((x) => x.exe === p.exe); if ("priority" in p) g.priority = p.priority; if ("gpu" in p) g.gpu = p.gpu; if ("qos" in p) g.qos = p.qos; return true; },
+    "games.set": async (p) => { const g = mock.games.find((x) => x.exe === p.exe); if ("priority" in p) g.priority = p.priority; if ("gpu" in p) g.gpu = p.gpu; if ("qos" in p) g.qos = p.qos; if ("noFso" in p) g.noFso = p.noFso; return true; },
     "games.all": async () => { await sleep(300); mock.games.forEach((g) => { g.qos = true; if (profile.gpus.length >= 2) g.gpu = true; }); return mock.games.length; },
     "games.add": async () => { toast("demo: file picker", "warn"); return false; },
     "games.remove": async (p) => { mock.games = mock.games.filter((x) => x.exe !== p.exe); return true; },

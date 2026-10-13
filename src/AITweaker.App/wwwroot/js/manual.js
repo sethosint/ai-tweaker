@@ -19,8 +19,10 @@
         f["gpu.nvidia"] ? { id: "nvapp", go: () => go("apps", { guide: "nvidia-app" }) } : null,
         f["gpu.amd"] ? { id: "amdapp", go: () => go("apps", { guide: "amd-software" }) } : null,
         { id: "vrr" },
+        { id: "undervolt" },
+        { id: "ddu", url: "https://www.wagnardsoft.com/display-driver-uninstaller-ddu-" },
       ] },
-      { id: "games", icon: "gamepad", items: [{ id: "reflex" }, { id: "cap" }, { id: "ingame" }, { id: "gamebar" }, { id: "overlays", go: () => go("apps", { guide: "discord" }) }] },
+      { id: "games", icon: "gamepad", items: [{ id: "reflex" }, { id: "cap" }, { id: "ingame" }, ...gameItems(), { id: "gamebar" }, { id: "overlays", go: () => go("apps", { guide: "discord" }) }] },
       { id: "windows", icon: "settings", items: [
         { id: "dnd", url: "ms-settings:notifications" },
         { id: "update", url: "ms-settings:windowsupdate" },
@@ -32,8 +34,18 @@
         { id: "mouse" },
         f["net.wifiOnly"] ? { id: "cable" } : null,
         { id: "router", url: "https://www.waveform.com/tools/bufferbloat" },
+        f["net.wifi"] ? { id: "wifi" } : null,
+        { id: "testufo", url: "https://www.testufo.com/frameskipping" },
+        { id: "stress" },
       ] },
     ].map((s) => ({ ...s, items: s.items.filter(Boolean) })).filter((s) => s.items.length || s.id === "bios");
+  };
+
+  /** Competitive settings for the popular games this PC actually has (found by the Games panel). */
+  const gameItems = () => {
+    const names = ((S.games && S.games.games) || []).map((g) => g.name.toLowerCase());
+    return [["cs2", /counter-strike 2|cs2/], ["valorant", /valorant/], ["fortnite", /fortnite/]]
+      .filter(([, rx]) => names.some((n) => rx.test(n))).map(([id]) => ({ id }));
   };
 
   const isDone = (it) => it.auto || done.has(it.id);
@@ -48,6 +60,7 @@
     const v = $("#v-manual");
     if (!S.scan) { v.innerHTML = `<div class="empty">${t("scanFirst")}</div>`; return; }
     if (!S.bios) { try { S.bios = await call("bios.list", {}, { silent: true }); } catch { S.bios = { advice: [], board: {}, cpu: {}, ram: {}, security: {} }; } }
+    if (!S.games && App.loadGames) await App.loadGames();
     const secs = App.manualSections();
     const all = secs.flatMap((s) => s.items);
     const n = all.filter(isDone).length;
