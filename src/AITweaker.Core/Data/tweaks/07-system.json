@@ -319,20 +319,19 @@
     "confirm": true,
     "reboot": true,
     "when": "!system.vm",
-    "confirmText": { "ru": "Перестанут работать WSL 2, Docker Desktop, эмуляторы Android на Hyper-V, «Песочница Windows» и виртуальные машины Hyper-V. Вместе с гипервизором выключится и изоляция ядра (VBS). Если игре или античиту понадобится VBS — откат в один клик.", "en": "WSL 2, Docker Desktop, Hyper-V-based Android emulators, Windows Sandbox and Hyper-V virtual machines stop working. Core isolation (VBS) goes off with the hypervisor. If a game or anti-cheat needs VBS, roll back in one click." },
+    "confirmText": { "ru": "Перестанут работать WSL 2, Docker Desktop, эмуляторы Android на Hyper-V, «Песочница Windows» и виртуальные машины Hyper-V. Если что-то из этого понадобится — откат в один клик.", "en": "WSL 2, Docker Desktop, Hyper-V-based Android emulators, Windows Sandbox and Hyper-V virtual machines stop working. If you need any of them, roll back in one click." },
     "name": { "ru": "Отключить Hyper-V и виртуализацию Windows", "en": "Turn off Hyper-V and Windows virtualization" },
-    "description": { "ru": "Выключает компоненты Hyper-V, «Платформа виртуальной машины», «Платформа гипервизора Windows», «Песочница» и запуск гипервизора при загрузке. Гипервизор больше не стоит между игрой и железом — меньше задержка и выше FPS, особенно на старых CPU.", "en": "Turns off the Hyper-V, Virtual Machine Platform, Windows Hypervisor Platform and Sandbox features and the hypervisor at boot. Nothing sits between games and the hardware — lower latency and higher FPS, especially on older CPUs." },
+    "description": { "ru": "Выключает компоненты Hyper-V, «Платформа виртуальной машины», «Платформа гипервизора Windows» и «Песочница». Меньше лишних служб и драйверов, эмуляторы и VirtualBox/VMware работают без конфликтов. Целостность памяти и другие функции безопасности остаются как были.", "en": "Turns off the Hyper-V, Virtual Machine Platform, Windows Hypervisor Platform and Sandbox features. Fewer services and drivers, and emulators and VirtualBox/VMware run without conflicts. Memory integrity and other security features stay as they are." },
     "gain": {
-      "ru": "Игра работает с железом напрямую, без гипервизора: ниже задержка и выше FPS, особенно на старых процессорах.",
-      "en": "Games run on the hardware directly, without a hypervisor: lower latency and higher FPS, especially on older CPUs."
+      "ru": "Меньше служб и драйверов в фоне; эмуляторы и VirtualBox/VMware не конфликтуют с Hyper-V.",
+      "en": "Fewer background services and drivers; emulators and VirtualBox/VMware don't clash with Hyper-V."
     },
     "keep": {
       "ru": "Работают WSL 2, Docker, эмуляторы Android, «Песочница Windows» и виртуальные машины.",
       "en": "WSL 2, Docker, Android emulators, Windows Sandbox and virtual machines keep working."
     },
     "actions": [
-      { "type": "powershell", "script": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; $names = 'Microsoft-Hyper-V-All','VirtualMachinePlatform','HypervisorPlatform','Containers-DisposableClientVM'; $on = @(); foreach ($n in $names) { $f = Get-WindowsOptionalFeature -Online -FeatureName $n -ErrorAction SilentlyContinue; if ($f -and $f.State -eq 'Enabled') { Disable-WindowsOptionalFeature -Online -FeatureName $n -NoRestart -WarningAction SilentlyContinue | Out-Null; $on += $n } }; if ($on.Count -gt 0) { Set-Content -Path $file -Value $on -Encoding UTF8 }", "undo": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; if (Test-Path $file) { foreach ($n in Get-Content $file) { if ($n) { Enable-WindowsOptionalFeature -Online -FeatureName $n -All -NoRestart -WarningAction SilentlyContinue | Out-Null } }; Remove-Item $file }" },
-      { "type": "bcd", "element": "hypervisorlaunchtype", "value": "off" }
+      { "type": "powershell", "script": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; $names = 'Microsoft-Hyper-V-All','VirtualMachinePlatform','HypervisorPlatform','Containers-DisposableClientVM'; $on = @(); foreach ($n in $names) { $f = Get-WindowsOptionalFeature -Online -FeatureName $n -ErrorAction SilentlyContinue; if ($f -and $f.State -eq 'Enabled') { Disable-WindowsOptionalFeature -Online -FeatureName $n -NoRestart -WarningAction SilentlyContinue | Out-Null; $on += $n } }; if ($on.Count -gt 0) { Set-Content -Path $file -Value $on -Encoding UTF8 }", "undo": "$file = Join-Path $env:ProgramData 'AITweaker\\backups\\hyperv-features.txt'; if (Test-Path $file) { foreach ($n in Get-Content $file) { if ($n) { Enable-WindowsOptionalFeature -Online -FeatureName $n -All -NoRestart -WarningAction SilentlyContinue | Out-Null } }; Remove-Item $file }" }
     ]
   },
   {

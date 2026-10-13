@@ -24,6 +24,7 @@ public static class SystemProfiler
         Section("machine", () => ScanMachine(p));
         Section("security", () => ScanSecurity(p));
         Section("devices", () => ScanDevices(p));
+        Section("drivers", () => ScanDrivers(p));
         Section("apps", () => p.Apps = DetectApps());
         Section("storage", () =>
         {
@@ -289,6 +290,27 @@ public static class SystemProfiler
         {
             p.Security.VbsRunning = L(o, "VirtualizationBasedSecurityStatus") == 2;
             p.Security.HvciRunning = o["SecurityServicesRunning"] is uint[] running && running.Contains(2u);
+        }
+    }
+
+    private static void ScanDrivers(SystemProfile p)
+    {
+        const string wql = "SELECT DeviceName, DeviceClass, DeviceID, HardWareID, Manufacturer, DriverProviderName, DriverVersion, DriverDate FROM Win32_PnPSignedDriver " +
+                           "WHERE DeviceClass='DISPLAY' OR DeviceClass='NET' OR DeviceClass='BLUETOOTH' OR DeviceClass='MEDIA' OR DeviceClass='SYSTEM'";
+        foreach (var o in Query(Cimv2, wql))
+        {
+            if (S(o, "DeviceID").Length == 0) continue;
+            p.Drivers.Add(new DeviceDriver
+            {
+                Class = S(o, "DeviceClass").ToUpperInvariant(),
+                Name = S(o, "DeviceName"),
+                DeviceId = S(o, "DeviceID"),
+                HardwareId = S(o, "HardWareID"),
+                Manufacturer = S(o, "Manufacturer"),
+                Provider = S(o, "DriverProviderName"),
+                Version = S(o, "DriverVersion"),
+                Date = Cim(o, "DriverDate"),
+            });
         }
     }
 

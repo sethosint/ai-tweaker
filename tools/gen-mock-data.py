@@ -104,6 +104,7 @@ data = {
     "apps": load("apps.json"),
     "guides": load("guides.json"),
     "bios": load("bios.json"),
+    "vendors": load("vendors.json"),
     "programs": load("programs.json"),
     "extensions": load("extensions.json"),
     "features": load("features.json"),

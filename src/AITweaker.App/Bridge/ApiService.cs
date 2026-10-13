@@ -7,6 +7,7 @@ using AITweaker.Core.Ai;
 using AITweaker.Core.Bios;
 using AITweaker.Core.Catalog;
 using AITweaker.Core.Conditions;
+using AITweaker.Core.Drivers;
 using AITweaker.Core.Engine;
 using AITweaker.Core.Image;
 using AITweaker.Core.Model;
@@ -53,7 +54,7 @@ public sealed class ApiService
         "appx.restore" => await Exclusive(() => Platform.Actions.AppxOps.RestoreAsync(Str(p, "name") ?? "",
             _catalog.Apps.FirstOrDefault(a => a.Package.Equals(Str(p, "name"), StringComparison.OrdinalIgnoreCase))?.StoreId, NewLongTask())),
         "appx.remove" => await Exclusive(() => Platform.Actions.AppxOps.RemoveAsync(Ids(p, "names") ?? [], n => _emit("appx.progress", n))),
-        "drivers.list" => DriverCenter.Build(await ProfileAsync()),
+        "drivers.list" => DriverAdvisor.Build(_catalog.Vendors, await ProfileAsync()),
         "drivers.rescan" => await DriverCenter.RescanAsync(),
         "nvidia.check" => _nvidia = await NvidiaTools.CheckAsync(await ProfileAsync()),
         "nvidia.install" => await Exclusive(async () =>
@@ -392,12 +393,21 @@ public sealed class ApiService
         };
     }
 
+    /// <summary>The maker whose BIOS and tools this PC has, and the exact model to look up on its site.</summary>
+    private object Firmware(SystemProfile p)
+    {
+        var v = BiosAdvisor.Vendor(_catalog.Vendors, p);
+        var model = p.Machine.IsLaptop || v.Laptop is null ? $"{p.Machine.Manufacturer} {p.Machine.Model}" : $"{p.Board.Manufacturer} {p.Board.Product}";
+        return new { v.Key, v.Name, v.Enter, v.Advanced, v.Defaults, v.Save, v.Hint, v.Support, v.Updater, v.App, laptop = p.Machine.IsLaptop, model = model.Trim() };
+    }
+
     private async Task<object> BiosAsync()
     {
         var p = await ProfileAsync();
         return new
         {
-            board = new { p.Board.Manufacturer, p.Board.Product, p.Board.BiosVersion, p.Board.BiosDate, vendor = p.Board.VendorKey },
+            board = new { p.Board.Manufacturer, p.Board.Product, p.Board.BiosVersion, p.Board.BiosDate },
+            firmware = Firmware(p),
             cpu = new { p.Cpu.Name, microcode = p.Cpu.MicrocodeRevision is { } m ? $"0x{m:X}" : null },
             ram = new { p.Memory.Type, speed = p.Memory.ConfiguredSpeed, rated = p.Memory.Modules.Count > 0 ? p.Memory.Modules.Max(x => x.Speed) : 0 },
             security = p.Security,

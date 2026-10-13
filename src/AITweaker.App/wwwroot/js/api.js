@@ -33,7 +33,7 @@
 
   // ------------------------------------------------------------------ simulator
 
-  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [], features: [] };
+  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], vendors: [], programs: [], extensions: [], features: [] };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
@@ -79,7 +79,6 @@
   const insights = [
     { id: "display.hz.1", severity: "critical", title: { ru: "Монитор работает на 60 Гц вместо 180 Гц", en: "Monitor runs at 60 Hz instead of 180 Hz" }, detail: { ru: "ASUS VG27AQ3A: включите максимальную частоту обновления — это самый заметный прирост плавности.", en: "ASUS VG27AQ3A: switch to the maximum refresh rate — the most noticeable smoothness upgrade." }, action: "tweak:display.maxhz", metric: "60→180 Hz" },
     { id: "ram.xmp", severity: "warning", title: { ru: "Память работает на 4800 МГц", en: "RAM runs at 4800 MHz" }, detail: { ru: "Похоже, профиль XMP/EXPO выключен в BIOS — вы теряете 5–15% FPS в CPU-зависимых играх.", en: "XMP/EXPO looks disabled in BIOS — that costs 5–15% FPS in CPU-bound games." }, action: "bios", metric: "4800 MHz" },
-    { id: "sec.hvci", severity: "warning", title: { ru: "Включена целостность памяти (HVCI/VBS)", en: "Memory integrity (HVCI/VBS) is on" }, detail: { ru: "Защита на уровне гипервизора стоит до 5–10% FPS. Можно отключить в TWEAKS → Безопасность (с подтверждением).", en: "Hypervisor-level protection costs up to 5–10% FPS. Can be disabled in TWEAKS → Security (asks first)." }, action: "tweak:security.vbs.off" },
     { id: "gpu.driver.old", severity: "warning", title: { ru: "Драйвер видеокарты от 02.03.2026", en: "GPU driver from 2026-03-02" }, detail: { ru: "Драйверу NVIDIA GeForce RTX 5070 Ti больше полугода. Свежие драйверы дают прирост FPS в новых играх.", en: "The NVIDIA GeForce RTX 5070 Ti driver is over six months old." }, action: "drivers", metric: "32.0.15.8157" },
   ];
 
@@ -156,9 +155,13 @@
       return r;
     },
     "drivers.list": async () => [
-      { category: "gpu", name: profile.gpus[0].name, vendor: "NVIDIA", version: "32.0.15.8157", date: "2026-03-02T00:00:00", status: "old", links: [{ title: "NVIDIA App", url: "https://www.nvidia.com/en-us/software/nvidia-app/" }, { title: "GeForce drivers", url: "https://www.nvidia.com/en-us/drivers/" }] },
-      { category: "chipset", name: profile.cpu.name, vendor: "AMD", status: "check", links: [{ title: "AMD Chipset Drivers", url: "https://www.amd.com/en/support/download/drivers.html" }] },
-      { category: "network", name: profile.network[0].description, vendor: "ethernet", status: "ok", links: [{ title: "ASUS Support", url: "https://www.asus.com/support/download-center/" }] },
+      { category: "oem", name: profile.board.manufacturer + " " + profile.board.product, vendor: "ASUS", status: "check", priority: "medium", note: { ru: "Звук, LAN и утилиты платы — с сайта производителя платы, раздел «Поддержка» для вашей модели.", en: "Audio, LAN and board utilities come from the board maker's support page for your model." }, links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }] },
+      { category: "chipset", name: profile.cpu.name, vendor: "AMD", status: "missing", priority: "medium", note: { ru: "Драйвер чипсета AMD управляет питанием и парковкой ядер Ryzen. Сейчас стоят только стандартные драйверы Windows.", en: "The AMD chipset driver handles Ryzen power management and core parking. Only Windows' generic drivers are installed now." }, links: [{ title: "AMD Chipset Drivers", url: "https://www.amd.com/en/support/download/drivers.html" }] },
+      { category: "ethernet", name: "Realtek Gaming 2.5GbE Family Controller", vendor: "Realtek", version: "1125.21.903.2024", date: "2024-09-03T00:00:00", provider: "Microsoft", status: "inbox", priority: "medium", note: { ru: "Стоит стандартный драйвер Windows. У производителя свежее, с полными настройками энергосбережения и буферов.", en: "Windows' generic driver is in use. The maker's is newer and exposes the full power-saving and buffer settings." }, links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "gpu", name: profile.gpus[0].name, vendor: "NVIDIA", version: "32.0.15.8157", date: "2026-03-02T00:00:00", provider: "NVIDIA", status: "old", priority: "medium", note: { ru: "Драйверу 7 мес. Свежие драйверы чинят фризы и дают FPS в новых играх.", en: "The driver is 7 months old. New drivers fix stutter and add FPS in new games." }, links: [{ title: "NVIDIA App", url: "https://www.nvidia.com/en-us/software/nvidia-app/" }, { title: "GeForce drivers", url: "https://www.nvidia.com/en-us/drivers/" }] },
+      { category: "wifi", name: "MediaTek Wi-Fi 7 MT7925", vendor: "MediaTek", version: "5.4.0.3290", date: "2026-05-14T00:00:00", provider: "MediaTek, Inc.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "bluetooth", name: "MediaTek Bluetooth Adapter", vendor: "MediaTek", version: "1.1037.0.410", date: "2026-05-14T00:00:00", provider: "MediaTek, Inc.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "audio", name: "Realtek USB Audio", vendor: "Realtek", version: "6.3.9600.2397", date: "2025-11-20T00:00:00", provider: "Realtek Semiconductor Corp.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
     ],
     "drivers.rescan": async () => { await sleep(900); return { exitCode: 0 }; },
     "reinstall.start": async ({ source }) => {
@@ -178,9 +181,10 @@
     },
     "guides.list": async () => D.guides.filter((g) => evalWhen(g.when)).map((g) => ({ ...g, installed: !g.detect || evalWhen(g.detect) })).sort((a, b) => b.installed - a.installed),
     "bios.list": async () => ({
-      board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate, vendor: "asus" },
+      board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate },
+      firmware: (() => { const v = D.vendors.find((x) => x.key === "asus") || {}; return { ...v, laptop: false, model: profile.board.manufacturer + " " + profile.board.product }; })(),
       cpu: { name: profile.cpu.name, microcode: "0xC0" }, ram: { type: "DDR5", speed: 4800, rated: 6000 }, security: profile.security,
-      advice: D.bios.filter((b) => evalWhen(b.when)).map((b) => ({ id: b.id, title: b.title, detail: b.detail, value: b.value, priority: b.priority, path: b.paths.asus || b.paths.other, status: b.id === "xmp" ? "fix" : ["secureboot", "tpm"].includes(b.id) ? "ok" : "check" }))
+      advice: D.bios.filter((b) => evalWhen(b.when)).map((b) => ({ id: b.id, title: b.title, detail: b.detail, value: b.value, priority: b.priority, path: b.paths.asus || b.paths.other || "", status: b.id === "xmp" ? "fix" : ["secureboot", "tpm"].includes(b.id) ? "ok" : "check" }))
         .sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority])),
     }),
     "bios.reboot": async () => { log("warn", "system", "demo: reboot into BIOS skipped"); return true; },
@@ -274,7 +278,7 @@
       return {
         summary: mock.settings.language === "en" ? "Strong gaming desktop held back by 60 Hz, disabled EXPO and HVCI." : "Мощный игровой ПК, которому мешают 60 Гц на мониторе, выключенный EXPO и HVCI.",
         recommendations: [{ id: "display.maxhz", reason: "180 Hz monitor at 60 Hz." }, { id: "devices.interrupt-affinity", reason: "8 cores: GPU/NIC/USB interrupts off core 0." }, { id: "gaming.hags", reason: "RTX 50: needed for DLSS frame generation." }],
-        avoid: [{ id: "security.cpu-mitigations.off", reason: "Zen 5 has near-zero mitigation overhead." }],
+        avoid: [],
         tips: ["Enable EXPO I in BIOS (Ai Tweaker → Ai Overclock Tuner).", "Cap FPS at 177 with G-SYNC + Reflex."],
         model: mock.settings.model,
       };

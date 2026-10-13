@@ -1,0 +1,169 @@
+[
+  {
+    "key": "asus",
+    "name": "ASUS",
+    "match": "asus",
+    "laptop": false,
+    "enter": "Del / F2",
+    "advanced": "F7",
+    "defaults": "F5",
+    "save": "F10",
+    "support": "https://www.asus.com/support/download-center/",
+    "updater": "Armoury Crate"
+  },
+  {
+    "key": "asus-laptop",
+    "name": "ASUS",
+    "match": "asus",
+    "laptop": true,
+    "enter": "F2",
+    "advanced": "F7",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://www.asus.com/support/download-center/",
+    "updater": "MyASUS",
+    "app": "Armoury Crate / G-Helper",
+    "hint": { "ru": "Зажмите F2 и только потом нажмите кнопку питания. G-Helper — лёгкая замена Armoury Crate с теми же режимами.", "en": "Hold F2, then press the power button. G-Helper is a lightweight Armoury Crate replacement with the same modes." }
+  },
+  {
+    "key": "msi",
+    "name": "MSI",
+    "match": "micro-star|\\bmsi\\b",
+    "laptop": false,
+    "enter": "Del",
+    "advanced": "F7",
+    "defaults": "F6",
+    "save": "F10",
+    "support": "https://www.msi.com/support/download",
+    "updater": "MSI Center"
+  },
+  {
+    "key": "msi-laptop",
+    "name": "MSI",
+    "match": "micro-star|\\bmsi\\b",
+    "laptop": true,
+    "enter": "Del",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://www.msi.com/support/download",
+    "updater": "MSI Center",
+    "app": "MSI Center"
+  },
+  {
+    "key": "gigabyte",
+    "name": "GIGABYTE",
+    "match": "gigabyte|aorus",
+    "laptop": false,
+    "enter": "Del",
+    "advanced": "F2",
+    "defaults": "F7",
+    "save": "F10",
+    "support": "https://www.gigabyte.com/Support",
+    "updater": "GIGABYTE Control Center"
+  },
+  {
+    "key": "gigabyte-laptop",
+    "name": "GIGABYTE / AORUS",
+    "match": "gigabyte|aorus",
+    "laptop": true,
+    "enter": "F2",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://www.gigabyte.com/Support",
+    "updater": "GIGABYTE Control Center",
+    "app": "GIGABYTE Control Center"
+  },
+  {
+    "key": "asrock",
+    "name": "ASRock",
+    "match": "asrock",
+    "enter": "Del / F2",
+    "advanced": "F6",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://www.asrock.com/support/index.asp"
+  },
+  {
+    "key": "lenovo",
+    "name": "Lenovo",
+    "match": "lenovo",
+    "enter": "F2 (Fn+F2) / Novo",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://pcsupport.lenovo.com/",
+    "updater": "Lenovo Vantage",
+    "app": "Legion Space / Lenovo Vantage",
+    "hint": { "ru": "Не получается клавишей — выключите ноутбук и нажмите кнопку Novo (маленькое отверстие или кнопка сбоку), там BIOS Setup. ThinkPad и ThinkCentre — F1.", "en": "If the key doesn't work, power off and press the Novo button (a pinhole or small button on the side), then BIOS Setup. ThinkPad and ThinkCentre use F1." }
+  },
+  {
+    "key": "hp",
+    "name": "HP",
+    "match": "^hp\\b|hewlett",
+    "enter": "Esc → F10",
+    "save": "F10",
+    "support": "https://support.hp.com/drivers",
+    "updater": "HP Support Assistant",
+    "app": "OMEN Gaming Hub",
+    "hint": { "ru": "Жмите Esc сразу после включения — откроется меню запуска, в нём F10 — BIOS Setup.", "en": "Tap Esc right after power-on to open the startup menu, then F10 for BIOS Setup." }
+  },
+  {
+    "key": "dell",
+    "name": "Dell / Alienware",
+    "match": "dell|alienware",
+    "enter": "F2",
+    "save": "Apply → Exit",
+    "support": "https://www.dell.com/support/home/",
+    "updater": "Dell SupportAssist / Dell Command | Update",
+    "app": "Alienware Command Center",
+    "hint": { "ru": "F12 при включении — меню загрузки, там тоже есть вход в BIOS Setup.", "en": "F12 at power-on opens the boot menu, which also has BIOS Setup." }
+  },
+  {
+    "key": "acer",
+    "name": "Acer",
+    "match": "\\bacer\\b",
+    "enter": "F2",
+    "defaults": "F9",
+    "save": "F10",
+    "support": "https://www.acer.com/us-en/support/drivers-and-manuals",
+    "updater": "Acer Care Center",
+    "app": "NitroSense / PredatorSense"
+  },
+  {
+    "key": "razer",
+    "name": "Razer",
+    "match": "razer",
+    "laptop": true,
+    "enter": "F1 / Del",
+    "save": "F10",
+    "support": "https://mysupport.razer.com/",
+    "updater": "Razer Synapse",
+    "app": "Razer Synapse"
+  },
+  {
+    "key": "microsoft",
+    "name": "Microsoft Surface",
+    "match": "microsoft",
+    "laptop": true,
+    "enter": "Громкость + / Volume Up + Power",
+    "updater": "Windows Update",
+    "hint": { "ru": "Выключите Surface, зажмите «Громкость +» и нажмите кнопку питания. Драйверы и прошивки приходят через Windows Update.", "en": "Power off, hold Volume Up and press Power. Drivers and firmware come through Windows Update." }
+  },
+  {
+    "key": "laptop",
+    "name": "",
+    "match": "^$",
+    "laptop": true,
+    "enter": "F2 / Del / Esc",
+    "defaults": "F9",
+    "save": "F10",
+    "updater": "Windows Update"
+  },
+  {
+    "key": "other",
+    "name": "",
+    "match": "^$",
+    "laptop": false,
+    "enter": "Del / F2",
+    "save": "F10"
+  }
+]

@@ -189,7 +189,8 @@ public class CatalogTests
     [Fact]
     public void BiosItemsHaveFallbackPath()
     {
-        foreach (var b in Catalog.Bios) Assert.True(b.Paths.ContainsKey("other"), b.Id);
+        // laptop-only items fall back to the generic laptop path instead (see BiosVendorTests)
+        foreach (var b in Catalog.Bios) Assert.True(b.Paths.ContainsKey("other") || b.Paths.ContainsKey("laptop"), b.Id);
     }
 
     [Fact]
@@ -274,7 +275,6 @@ public class CatalogTests
         // anything that disables a feature people use asks first
         foreach (var id in new[] { "system.hyperv.off", "system.smartcard.off", "system.remote.off", "system.biometrics.off" })
             Assert.True(Catalog.Find(id)!.Confirm, id);
-        Assert.True(Catalog.Features.Single(f => f.Id == "vbs").KeepByDefault);
     }
 
     [Fact]
@@ -295,7 +295,10 @@ public class CatalogTests
     public void NothingTurnsOffWindowsProtection()
     {
         // Antivirus and UAC prompts stay on: no tweak may switch them off.
-        string[] banned = ["DisableRealtimeMonitoring", "DisableAntiSpyware", "DisableAntiVirus", "DisableBehaviorMonitoring", "DisableIOAVProtection", "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop"];
+        // Neither do memory integrity / VBS, Credential Guard, CPU vulnerability mitigations, SmartScreen or the firewall.
+        string[] banned = ["DisableRealtimeMonitoring", "DisableAntiSpyware", "DisableAntiVirus", "DisableBehaviorMonitoring", "DisableIOAVProtection", "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop",
+            "EnableVirtualizationBasedSecurity", "HypervisorEnforcedCodeIntegrity", "LsaCfgFlags", "FeatureSettingsOverride", "DisableExceptionChainValidation", "hypervisorlaunchtype",
+            "EnableSmartScreen", "SmartScreenEnabled", "EnableFirewall", "Set-NetFirewallProfile", "Set-MpPreference -Disable"];
         string[] services = ["WinDefend", "WdNisSvc", "Sense", "SecurityHealthService", "wscsvc", "mpssvc"];
         foreach (var t in Catalog.Tweaks)
             foreach (var a in t.Actions)
@@ -305,6 +308,7 @@ public class CatalogTests
                     RegistryAction r => r.Path + " " + r.Name,
                     PowerShellAction ps => ps.Script,
                     CommandAction c => c.Describe(),
+                    BcdAction b => b.Element,
                     _ => a.Describe(),
                 };
                 foreach (var b in banned) Assert.False(text.Contains(b, StringComparison.OrdinalIgnoreCase), $"{t.Id}: {b}");

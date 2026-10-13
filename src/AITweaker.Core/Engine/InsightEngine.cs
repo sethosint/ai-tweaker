@@ -72,14 +72,6 @@ public static class InsightEngine
                 new("Для современных игр рекомендуется 16–32 ГБ. Службы предзагрузки (SysMain) оставлены включёнными.", "16–32 GB is recommended for modern games. Prefetch services (SysMain) are kept enabled.")));
         }
 
-        if (p.Security.HvciRunning)
-        {
-            list.Add(new("sec.hvci", InsightSeverity.Warning,
-                new("Включена целостность памяти (HVCI/VBS)", "Memory integrity (HVCI/VBS) is on"),
-                new("Защита на уровне гипервизора стоит до 5–10% FPS. Можно отключить в TWEAKS → Безопасность (с подтверждением).", "Hypervisor-level protection costs up to 5–10% FPS. Can be disabled in TWEAKS → Security (asks first)."),
-                "tweak:security.vbs.off"));
-        }
-
         if (IsVminAffected(p.Cpu))
         {
             bool patched = p.Cpu.MicrocodeRevision is >= 0x12B;

@@ -242,13 +242,16 @@
               <button class="btn ghost" data-guide="nvidia-app">${t("nv.appGuide")}${icon("arrow")}</button></div>
           </div></div>
       </div>` : ""}
-      <div class="cards">${S.drivers.map((d) => html`<div class="card" style="cursor:default">
+      ${drvSummary(S.drivers)}
+      <div class="cards">${S.drivers.map((d) => html`<div class="card drv ${d.category === "oem" ? "drv-oem" : ""}" style="cursor:default">
         <div class="cn">${t("drv." + d.category)}</div>
-        <div style="font-weight:700">${esc(d.name)}</div>
-        <div class="cs">${esc(d.vendor || "")}${d.version ? " · " + esc(d.version) : ""}${d.date ? " · " + fmtDate(d.date) : ""}</div>
-        <div class="cf"><span class="chip ${d.status === "ok" ? "ok" : d.status === "check" ? "info" : "crit"}">${t("drv." + d.status)}</span></div>
+        <div style="font-weight:700">${esc(d.name)}${d.category === "oem" ? ` <button class="btn sm ghost icon-only" data-copy="${esc(d.name)}" title="${t("man.copy")}">${icon("copy")}</button>` : ""}</div>
+        ${d.category === "oem" ? "" : `<div class="cs">${esc(d.vendor || "")}${d.version ? " · " + esc(d.version) : ""}${d.date ? " · " + fmtDate(d.date) : ""}</div>`}
+        ${d.category === "oem" ? "" : `<div class="cf"><span class="chip ${drvChip(d)}">${t("drv." + d.status)}</span>${d.provider && d.status === "inbox" ? `<span class="drv-by">${t("drv.by")} ${esc(d.provider)}</span>` : ""}</div>`}
+        ${d.note ? `<div class="drv-note">${esc(L(d.note))}</div>` : ""}
         <div class="cf">${d.links.map((l) => `<button class="btn sm" data-url="${esc(l.url)}">${esc(l.title)}${icon("external")}</button>`).join("")}</div>
       </div>`).join("")}</div>`;
+    v.querySelectorAll("[data-copy]").forEach((b) => (b.onclick = () => navigator.clipboard.writeText(b.dataset.copy).then(() => toast(t("man.copied")), () => {})));
     v.querySelectorAll("[data-url]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.url })));
     v.querySelectorAll("[data-guide]").forEach((b) => (b.onclick = () => go("apps", { guide: b.dataset.guide })));
     $("#drvRescan").onclick = async () => { await call("drivers.rescan"); S.drivers = null; await App.scan(true); V.drivers(); };
@@ -257,6 +260,17 @@
     $("#nvApply").onclick = () => App.apply(nvTweaks.filter((tw) => S.status[tw.id] !== "applied").map((tw) => tw.id));
     if (!S.nvidia) S.nvidia = await call("nvidia.check", {}, { silent: true }).catch((e) => ({ error: e.message }));
     if (S.view === "drivers" && $("#nvBody")) nvRender(nvTweaks);
+  };
+
+  /** ok = green, Windows' generic driver or "check" = neutral, low-priority "old" = amber, the rest = red. */
+  const drvChip = (d) => d.status === "ok" ? "ok" : d.status === "check" || (d.status === "inbox" && d.priority === "low") ? "info"
+    : d.priority === "high" || d.status === "missing" || d.status === "error" ? "crit" : "warn";
+
+  const drvSummary = (list) => {
+    const todo = list.filter((d) => d.category !== "oem" && d.status !== "ok" && d.priority !== "low");
+    return html`<div class="callout ${todo.length ? "warn" : ""}" style="margin-bottom:18px">${todo.length
+      ? t("drv.todo").replace("{n}", todo.length) + " " + todo.map((d) => `<b>${t("drv." + d.category)}</b>`).join(", ")
+      : t("drv.allGood")}</div>`;
   };
 
   const nvDate = (d) => { const x = d ? new Date(d) : null; return x && !isNaN(x) ? fmtDate(x) : esc(d || ""); };

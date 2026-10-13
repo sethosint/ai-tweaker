@@ -42,9 +42,8 @@ public class AmePlaybookTests
             if (page.Attribute("DefaultOption") is { } def)
                 Assert.Contains(options, o => o.Element("Name")!.Value == def.Value);
         }
-        // checkboxes start ticked unless IsChecked says otherwise; core isolation stays on by default
-        var vbs = pages.SelectMany(p => p.Descendants("CheckboxOption")).Single(o => o.Element("Name")!.Value == "off-vbs");
-        Assert.Equal("false", vbs.Attribute("IsChecked")!.Value);
+        // security features are never offered for switching off
+        Assert.DoesNotContain(pages.SelectMany(p => p.Descendants("Name")), n => n.Value == "off-vbs");
 
         // every option on a page drives a task, and every option a task uses is on a page
         var offered = pages.SelectMany(p => p.Descendants("Name")).Select(n => n.Value).ToHashSet();
@@ -74,7 +73,7 @@ public class AmePlaybookTests
         Assert.Contains(lines, l => l.Contains("value: 'ColorizationColor', type: REG_DWORD, data: '3290044954'"));
         Assert.Contains(lines, l => Regex.IsMatch(l, "value: 'AccentPalette', type: REG_BINARY, data: '[0-9A-F]{64}'"));
         Assert.Contains(lines, l => l.Contains(@"value: 'MenuItems7', type: REG_MULTI_SZ, data: 'Item1.Command=downloads\0Item1.Settings=NOEXPAND\0"));
-        Assert.Contains(lines, l => l.Contains("exe: 'bcdedit.exe', args: '/set hypervisorlaunchtype off'"));
+        Assert.DoesNotContain(lines, l => l.Contains("hypervisorlaunchtype"));
     }
 
     [Fact]

@@ -139,6 +139,29 @@ public sealed class BiosRecommendation
     public string? When { get; init; }
     /// <summary>high | medium | low</summary>
     public string Priority { get; init; } = "medium";
-    /// <summary>Menu path per board vendor: asus, msi, gigabyte, asrock, other.</summary>
+    /// <summary>Menu path per vendor key from vendors.json (asus, msi-laptop, lenovo…), then "laptop" for any laptop, then "other".</summary>
     public Dictionary<string, string> Paths { get; init; } = [];
+}
+
+/// <summary>A board or PC maker: how to get into its firmware setup and where its own tools live.</summary>
+public sealed class FirmwareVendor
+{
+    public required string Key { get; init; }
+    public required string Name { get; init; }
+    /// <summary>Regex (case-insensitive) matched against the system or board manufacturer.</summary>
+    public required string Match { get; init; }
+    /// <summary>true = laptops only, false = desktops only, null = both.</summary>
+    public bool? Laptop { get; init; }
+    /// <summary>Key(s) to press right after power-on to open the setup.</summary>
+    public string Enter { get; init; } = "Del / F2";
+    public string? Advanced { get; init; }
+    public string? Defaults { get; init; }
+    public string? Save { get; init; }
+    /// <summary>Official download page for BIOS and drivers.</summary>
+    public string? Support { get; init; }
+    /// <summary>The maker's own BIOS/driver update tool.</summary>
+    public string? Updater { get; init; }
+    /// <summary>Laptop utility that holds the performance and GPU (MUX) modes.</summary>
+    public string? App { get; init; }
+    public LocalizedText? Hint { get; init; }
 }

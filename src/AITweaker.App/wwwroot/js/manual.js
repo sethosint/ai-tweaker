@@ -12,7 +12,9 @@
   /** Sections and their items. BIOS items come from the firmware check; "auto" means the scan already sees it done. */
   App.manualSections = () => {
     const f = (S.scan && S.scan.facts) || {};
-    const bios = S.bios ? S.bios.advice.map((a) => ({ id: "bios." + a.id, bios: a, auto: a.status === "ok" })) : [];
+    const fw = (S.bios && S.bios.firmware) || {};
+    // the BIOS update item opens the maker's download page for this exact model
+    const bios = S.bios ? S.bios.advice.map((a) => ({ id: "bios." + a.id, bios: a, auto: a.status === "ok", url: a.id === "bios-update" && fw.support ? fw.support : undefined })) : [];
     return [
       { id: "bios", icon: "bios", items: bios },
       { id: "gpu", icon: "drivers", items: [
@@ -50,6 +52,16 @@
 
   const isDone = (it) => it.auto || done.has(it.id);
 
+  /** How to get into this maker's setup: keys, its own tools, and the exact model to look up. */
+  const firmwareKeys = (fw) => {
+    const keys = [["fw.enter", fw.enter], ["fw.advanced", fw.advanced], ["fw.defaults", fw.defaults], ["fw.save", fw.save]].filter(([, k]) => k);
+    return html`<div class="fw">
+      <div class="fw-keys">${fw.name ? `<b>${esc(fw.name)}</b>` : ""}${keys.map(([label, k]) => `<span><span class="kbd">${esc(k)}</span>${t(label)}</span>`).join("")}</div>
+      ${fw.hint ? `<div class="fw-hint">${esc(L(fw.hint))}</div>` : ""}
+      <div class="fw-hint">${t("fw.or")}${fw.app ? " " + t("fw.app").replace("{app}", `<b>${esc(fw.app)}</b>`) : ""}${fw.model ? ` <button class="btn sm ghost" data-copy="${esc(fw.model)}" title="${t("man.copy")}">${esc(fw.model)}${icon("copy")}</button>` : ""}</div>
+    </div>`;
+  };
+
   /** How many by-hand items are still open (for the Game setup card and the nav badge). */
   App.manualLeft = () => {
     const all = App.manualSections().flatMap((s) => s.items);
@@ -83,16 +95,20 @@
       <div class="page-h"><div><h1>${t("man.title")}</h1><p>${t("man.pageD")}</p></div></div>
       <div class="mn-progress"><div><b>${n}</b> ${t("man.of")} ${all.length} ${t("man.doneN")}</div><div class="mn-bar"><i style="width:${all.length ? (n / all.length) * 100 : 0}%"></i></div></div>
       ${secs.map((s) => html`<section class="mn-sec" id="mn-${s.id}">
-        <div class="mn-h">${icon(s.icon)}<div><b>${t("man.sec." + s.id)}</b><span>${t("man.sec." + s.id + "D")}</span></div>
+        <div class="mn-h">${icon(s.icon)}<div><b>${t("man.sec." + s.id + (s.id === "bios" && b.firmware && b.firmware.laptop ? "L" : ""))}</b><span>${t("man.sec." + s.id + (s.id === "bios" && b.firmware && b.firmware.laptop ? "LD" : "D"))}</span></div>
           <span class="n">${s.items.filter(isDone).length}/${s.items.length}</span>
           ${s.id === "bios" ? `<button class="btn sm danger" id="toBios">${icon("power")}${t("bios.reboot")}</button>` : ""}</div>
         ${s.id === "bios" && b.board && b.board.manufacturer ? html`<div class="mn-board">
           <span><b>${esc(b.board.manufacturer)}</b> ${esc(b.board.product || "")} · BIOS ${esc(b.board.biosVersion || "")}${b.board.biosDate ? " · " + fmtDate(b.board.biosDate) : ""}</span>
           <span>${esc(b.ram.type || "")} ${b.ram.speed || ""} / ${b.ram.rated || ""} MHz</span>
           <span>Secure Boot ${b.security.secureBoot ? t("bios.on") : t("bios.off")} · TPM ${b.security.tpm ? t("bios.on") : t("bios.off")}</span></div>` : ""}
+        ${s.id === "bios" && b.firmware ? firmwareKeys(b.firmware) : ""}
         <div class="mn-list">${s.items.map(row).join("") || `<div class="mn-d" style="padding:12px 0">${t("man.none")}</div>`}</div>
       </section>`).join("")}`;
 
+    v.querySelectorAll("[data-copy]").forEach((btn) => (btn.onclick = () => {
+      navigator.clipboard.writeText(btn.dataset.copy).then(() => toast(t("man.copied")), () => {});
+    }));
     v.querySelectorAll("[data-done]").forEach((cb) => (cb.onchange = () => {
       cb.checked ? done.add(cb.dataset.done) : done.delete(cb.dataset.done);
       saveDone(done);

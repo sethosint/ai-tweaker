@@ -16,6 +16,8 @@ public sealed class SystemProfile
     public MachineInfo Machine { get; set; } = new();
     public SecurityInfo Security { get; set; } = new();
     public List<ProblemDevice> ProblemDevices { get; set; } = [];
+    /// <summary>Installed drivers of the devices that matter for games: display, network, Bluetooth, audio, chipset.</summary>
+    public List<DeviceDriver> Drivers { get; set; } = [];
     public bool HasBluetooth { get; set; }
     public bool HasPrinter { get; set; }
     /// <summary>Ids of detected applications: steam, discord, chrome, edge, firefox, brave, obs, spotify, epic, nvidiaApp, amdSoftware, exitlag, xbox, store, onedrive, teams.</summary>
@@ -54,6 +56,7 @@ public sealed class SystemProfile
             ["gpu.amd"] = Gpus.Any(g => g.Vendor == "AMD"),
             ["gpu.intel"] = Gpus.Any(g => g.Vendor == "Intel"),
             ["gpu.discrete"] = Gpus.Any(g => g.IsDiscrete),
+            ["gpu.hybrid"] = Gpus.Any(g => g.IsDiscrete) && Gpus.Any(g => !g.IsDiscrete),
             ["gpu.vendor"] = PrimaryGpu?.Vendor,
             ["gpu.name"] = PrimaryGpu?.Name,
 
@@ -226,7 +229,7 @@ public sealed class BoardInfo
     public string BiosVersion { get; set; } = "";
     public DateTime? BiosDate { get; set; }
 
-    /// <summary>asus | msi | gigabyte | asrock | other</summary>
+    /// <summary>Board maker only: asus | msi | gigabyte | asrock | other. BIOS advice uses the vendor table instead.</summary>
     public string VendorKey
     {
         get
@@ -257,6 +260,21 @@ public sealed class SecurityInfo
     public bool VbsRunning { get; set; }
     public bool HvciRunning { get; set; }
     public bool HypervisorPresent { get; set; }
+}
+
+public sealed class DeviceDriver
+{
+    /// <summary>Windows device class as WMI reports it: DISPLAY, NET, BLUETOOTH, MEDIA, SYSTEM.</summary>
+    public string Class { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string DeviceId { get; set; } = "";
+    public string HardwareId { get; set; } = "";
+    /// <summary>Hardware maker from the driver (e.g. "Realtek", "Intel Corporation"); "(Standard …)" for Windows' own.</summary>
+    public string Manufacturer { get; set; } = "";
+    /// <summary>Who wrote the driver: "Microsoft" means Windows' built-in one.</summary>
+    public string Provider { get; set; } = "";
+    public string Version { get; set; } = "";
+    public DateTime? Date { get; set; }
 }
 
 public sealed class ProblemDevice
