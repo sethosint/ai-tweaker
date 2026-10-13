@@ -197,6 +197,27 @@
       },
       {
         "title": {
+          "ru": "Клипы",
+          "en": "Clips"
+        },
+        "path": "User Settings → Voice & Video → Clips",
+        "settings": [
+          {
+            "name": "Enable Clipping",
+            "value": "OFF",
+            "note": {
+              "ru": "Discord не держит фоновую запись экрана: не занимает кодировщик видеокарты и память. Повторы пишет OBS Replay Buffer.",
+              "en": "Discord doesn't keep a background screen recording: no GPU encoder or memory used. OBS Replay Buffer handles replays."
+            }
+          },
+          {
+            "name": "Clipping Keybind",
+            "value": "ALT + C"
+          }
+        ]
+      },
+      {
+        "title": {
           "ru": "Диагностика (Voice → Advanced)",
           "en": "Diagnostics (Voice → Advanced)"
         },
@@ -382,6 +403,31 @@
           {
             "name": "Enable persistent verification codes",
             "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Активность",
+          "en": "Activity"
+        },
+        "path": "User Settings → Activity Privacy → What Activity I Share",
+        "settings": [
+          {
+            "name": "Share my activity",
+            "value": "OFF",
+            "note": {
+              "ru": "Друзья не видят, во что и сколько вы играете.",
+              "en": "Friends don't see what or how long you play."
+            }
+          },
+          {
+            "name": "Share when I come online",
+            "value": "ON"
+          },
+          {
+            "name": "Share when I start streaming",
+            "value": "ON"
           }
         ]
       }
