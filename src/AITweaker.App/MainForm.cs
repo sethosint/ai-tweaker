@@ -30,7 +30,12 @@ public sealed class MainForm : Form
             .ToDictionary(n => n.Replace('\\', '/')[4..], n => n, StringComparer.OrdinalIgnoreCase);
 
         Load += async (_, _) => await InitAsync();
-        FormClosed += (_, _) => _telemetry?.Dispose();
+        FormClosed += (_, _) =>
+        {
+            _telemetry?.Dispose();
+            // Game Mode only lasts while AI Tweaker is open: closing it puts the paused services and closed apps back.
+            if (GameSession.Active) Task.Run(GameSession.StopAsync).Wait(TimeSpan.FromSeconds(30));
+        };
     }
 
     protected override void OnHandleCreated(EventArgs e)

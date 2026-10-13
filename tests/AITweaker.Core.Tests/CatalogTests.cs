@@ -143,6 +143,13 @@ public class CatalogTests
                 case DeviceAction d:
                     Assert.All(d.Match, m => Assert.EndsWith("\\", m));
                     break;
+                case FileSettingAction f:
+                    // per-user program settings: always under the user's profile, never a system path
+                    Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", f.Path);
+                    Assert.Contains(f.Format, new[] { "json", "prefs" });
+                    Assert.NotEmpty(f.Set);
+                    Assert.True(t.When is not null && t.When.StartsWith("app.", StringComparison.Ordinal), $"{t.Id}: a program's settings file only when the program is installed");
+                    break;
             }
         }
     }
@@ -171,6 +178,8 @@ public class CatalogTests
             {
                 Assert.False(string.IsNullOrWhiteSpace(s.Path), $"{g.Id}: section without a path");
                 Assert.NotEmpty(s.Settings);
+                if (s.Image is not null)
+                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", s.Image)), $"missing guide screenshot {s.Image}");
             }
             foreach (var id in g.AutoTweaks)
                 Assert.NotNull(Catalog.Find(id));
@@ -180,24 +189,51 @@ public class CatalogTests
     [Fact]
     public void BiosItemsHaveFallbackPath()
     {
-        foreach (var b in Catalog.Bios) Assert.True(b.Paths.ContainsKey("other"), b.Id);
+        // laptop-only items fall back to the generic laptop path instead (see BiosVendorTests)
+        foreach (var b in Catalog.Bios) Assert.True(b.Paths.ContainsKey("other") || b.Paths.ContainsKey("laptop"), b.Id);
     }
 
     [Fact]
     public void ProgramsAreInstallable()
     {
-        var groups = new[] { "browsers", "communication", "gaming", "media", "tools", "runtimes", "look" };
+        var groups = new[] { "browsers", "communication", "gaming", "media", "tools", "runtimes", "look", "store" };
         Assert.Equal(Catalog.Programs.Count, Catalog.Programs.Select(p => p.Id).Distinct().Count());
         foreach (var p in Catalog.Programs)
         {
             Assert.Contains(p.Group, groups);
-            Assert.True(p.Winget is not null || p.Download is not null || p.Url is not null, $"{p.Id}: no way to install");
+            Assert.True(p.Winget is not null || p.Download is not null || p.Url is not null || p.Store is not null, $"{p.Id}: no way to install");
+            if (p.Page is not null)
+            {
+                Assert.StartsWith("https://", p.Page);
+                Assert.NotNull(p.Asset);
+                _ = new System.Text.RegularExpressions.Regex(p.Asset!);
+            }
+            // Store-only apps sit in their own group, are found by package name and have nothing else to install from
+            Assert.Equal(p.Store is not null, p.Group == "store");
+            if (p.Store is not null)
+            {
+                Assert.Matches("^[0-9A-Z]{12}$", p.Store);
+                Assert.Matches(@"^[\w.]+_$", p.Detect ?? "");
+                Assert.True(p.Installer is null && p.Github is null && p.Page is null && p.Download is null, p.Id);
+            }
             if (p.Winget is not null) Assert.Matches(@"^[A-Za-z0-9][\w+-]*(\.[\w+-]+)+$", p.Winget);
             if (p.Download is not null) Assert.StartsWith("https://", p.Download);
             if (p.Url is not null) Assert.StartsWith("https://", p.Url);
             if (p.Download is not null) Assert.NotNull(p.Url); // fallback when the direct link moves
+            if (p.Installer is not null) Assert.StartsWith("https://", p.Installer);
+            if (p.Github is not null)
+            {
+                Assert.Matches(@"^[\w.-]+/[\w.-]+$", p.Github);
+                Assert.NotNull(p.Asset);
+                _ = new System.Text.RegularExpressions.Regex(p.Asset!); // compiles
+            }
+            // installers that refuse to run elevated must be run as the signed-in user, and that path needs silent switches
+            if (p.User && (p.Installer ?? p.Github) is not null && !(p.Installer ?? "").Contains(".msi")) Assert.NotNull(p.Silent);
             Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
         }
+        // the main programs come from their vendors' own installers, not winget
+        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "vlc", "everything", "mpv" })
+            Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github ?? x.Page) is not null, id);
         // the apps from the user's own setup are there
         foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
             Assert.Contains(Catalog.Programs, p => p.Id == id);
@@ -239,6 +275,44 @@ public class CatalogTests
         // anything that disables a feature people use asks first
         foreach (var id in new[] { "system.hyperv.off", "system.smartcard.off", "system.remote.off", "system.biometrics.off" })
             Assert.True(Catalog.Find(id)!.Confirm, id);
-        Assert.True(Catalog.Features.Single(f => f.Id == "vbs").KeepByDefault);
+    }
+
+    [Fact]
+    public void EveryQuestionHasBothSides()
+    {
+        // Game setup asks about these one by one: "switch off" (gain, and what is lost) against "keep".
+        var featureTweaks = Catalog.Features.SelectMany(f => f.Tweaks).ToHashSet();
+        foreach (var t in Catalog.Tweaks.Where(t => t.Confirm || t.Risk == RiskLevel.High || featureTweaks.Contains(t.Id)))
+        {
+            Assert.True(t.Gain is { Ru.Length: > 0, En.Length: > 0 }, $"{t.Id} needs gain");
+            Assert.True(t.Keep is { Ru.Length: > 0, En.Length: > 0 }, $"{t.Id} needs keep");
+        }
+        foreach (var id in new[] { "system.update.manual", "system.update.defer-feature", "system.store-autoupdate.off", "gaming.gamebar.off" })
+            Assert.True(Catalog.Find(id) is { Confirm: true }, id);
+    }
+
+    [Fact]
+    public void NothingTurnsOffWindowsProtection()
+    {
+        // Antivirus and UAC prompts stay on: no tweak may switch them off.
+        // Neither do memory integrity / VBS, Credential Guard, CPU vulnerability mitigations, SmartScreen or the firewall.
+        string[] banned = ["DisableRealtimeMonitoring", "DisableAntiSpyware", "DisableAntiVirus", "DisableBehaviorMonitoring", "DisableIOAVProtection", "EnableLUA", "ConsentPromptBehaviorAdmin", "PromptOnSecureDesktop",
+            "EnableVirtualizationBasedSecurity", "HypervisorEnforcedCodeIntegrity", "LsaCfgFlags", "FeatureSettingsOverride", "DisableExceptionChainValidation", "hypervisorlaunchtype",
+            "EnableSmartScreen", "SmartScreenEnabled", "EnableFirewall", "Set-NetFirewallProfile", "Set-MpPreference -Disable"];
+        string[] services = ["WinDefend", "WdNisSvc", "Sense", "SecurityHealthService", "wscsvc", "mpssvc"];
+        foreach (var t in Catalog.Tweaks)
+            foreach (var a in t.Actions)
+            {
+                var text = a switch
+                {
+                    RegistryAction r => r.Path + " " + r.Name,
+                    PowerShellAction ps => ps.Script,
+                    CommandAction c => c.Describe(),
+                    BcdAction b => b.Element,
+                    _ => a.Describe(),
+                };
+                foreach (var b in banned) Assert.False(text.Contains(b, StringComparison.OrdinalIgnoreCase), $"{t.Id}: {b}");
+                if (a is ServiceAction sv) Assert.DoesNotContain(sv.Name, services, StringComparer.OrdinalIgnoreCase);
+            }
     }
 }

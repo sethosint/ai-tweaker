@@ -1,12 +1,11 @@
 /* Views 02–10. */
 (function () {
   const V = (window.Views ||= {});
-  const PROFILES = ["Safe", "Balanced", "Performance", "Extreme"];
   const catName = (id) => L((S.init.categories.find((c) => c.id === id) || {}).name) || id;
   const needScan = (el) => { if (S.scan) return false; el.innerHTML = `<div class="empty">${t("scanFirst")}<br><br><button class="btn primary" onclick="App.scan()">${t("radar.scan")}</button></div>`; return true; };
   const statusChip = (id) => { const st = S.status[id] || "n/a"; return `<span class="status ${st}">${t(st === "n/a" ? "st.na" : "st." + st)}</span>`; };
 
-  // ------------------------------------------------------------------ [02] auto-tune
+  // ------------------------------------------------------------------ [02] game setup
 
   V.tune = () => {
     const v = $("#v-tune");
@@ -14,36 +13,76 @@
     const items = S.plan.items;
     const groups = S.init.categories.map((c) => ({ c, list: items.filter((i) => S.byId[i.id] && S.byId[i.id].category === c.id) })).filter((g) => g.list.length);
     const sel = [...S.selected].filter((id) => items.some((i) => i.id === id));
-    const confirmN = sel.filter((id) => { const tw = S.byId[id]; return tw && (tw.confirm || tw.risk === "high"); }).length;
-    const counts = Object.fromEntries(PROFILES.map((p, i) => [p, items.filter((x) => { const tw = S.byId[x.id]; return tw.level > 0 && tw.level <= i + 1; }).length]));
+    const feats = new Map();
+    (S.features || []).forEach((f) => f.tweaks.forEach((id) => feats.set(id, f)));
+    const asks = sel.filter((id) => App.questionFor(S.byId[id], feats)).length;
+    const applied = items.filter((i) => S.status[i.id] === "applied").length;
+    const man = App.manualLeft();
 
     v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div>
+      <div class="page-h"><div><h1>${t("tune.title")}</h1><p>${t("tune.desc")}</p></div></div>
+      <div class="tune-hero">
+        <div class="th-l">
+          <div class="th-k">${t("tune.heroK")}</div>
+          <div class="th-t">${t("tune.heroT")}</div>
+          <div class="th-d">${t("tune.heroD")}</div>
+          <div class="th-stats">
+            <div><b>${sel.length}</b><span>${t("tune.changes")}</span></div>
+            <div><b>${asks}</b><span>${t("tune.questions")}</span></div>
+            <div><b>${applied}</b><span>${t("tune.done")}</span></div>
+          </div>
+        </div>
+        <div class="th-r">
+          <button class="btn hazard th-go" id="gameSetup" ${sel.length ? "" : "disabled"}><span>${sel.length ? t("tune.go") : t("tune.allDone")}</span></button>
+          <label class="check"><input type="checkbox" id="rpCheck" ${S.init.settings.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("tune.rp")}</label>
+          <div class="th-note">${t("tune.goNote")}</div>
+        </div>
+      </div>
+      <div class="tune-cards">
+        <div class="gm-card ${S.gameMode ? "on" : ""}">
+          <div class="gm-ico">${icon("gamepad")}</div>
+          <div class="gm-t">${t("gm.title")}<span class="chip ${S.gameMode ? "ok dot" : ""}">${S.gameMode ? t("gm.on") : t("gm.off")}</span></div>
+          <div class="gm-d">${t("gm.cardD")}</div>
+          <button class="btn ${S.gameMode ? "danger" : "primary"}" id="gmCard">${S.gameMode ? t("gm.stop") : t("gm.start")}</button>
+        </div>
+        <div class="mt-card">
+          <div class="gm-ico">${icon("manual")}</div>
+          <div class="gm-t">${t("man.title")}<span class="chip ${man.left ? "warn" : "ok"}">${man.left ? t("man.leftN").replace("{n}", man.left) : t("man.allDone")}</span></div>
+          <div class="gm-d">${t("man.teaser")}</div>
+          <button class="btn ghost" id="toManual">${t("man.openTab")}${icon("arrow")}</button>
+        </div>
+      </div>
+      <div id="tuneGames">${App.gamesPanel()}</div>
+      <div class="tune-list-h"><div><b>${t("tune.listT")}</b><span>${t("tune.listD")}</span></div>
         <div class="actions"><button class="btn ghost sm" id="selRec">${t("tune.selectRec")}</button><button class="btn ghost sm" id="selNone">${t("tune.selectNone")}</button></div></div>
-      <div class="callout unused-callout"><div><b>${t("tune.unusedTitle")}</b><div>${t("tune.unusedDesc")}</div></div><button class="btn sm" id="disableUnused">${t("tune.unusedBtn")}</button></div>
-      <div class="profiles">${PROFILES.map((p, i) => `<div class="prof ${S.profileName === p ? "on" : ""}" data-p="${p}"><div class="pc">L${i + 1}</div><div class="pn">${t("prof." + p)}</div><div class="pd">${t("prof." + p + ".d")}</div><div class="pk">${t("tune.tweaksN")}: ${counts[p]}</div></div>`).join("")}</div>
       ${groups.map(({ c, list }) => html`<div class="cat-group">
         <div class="cat-h">${esc(L(c.name))}<span class="n">${list.filter((i) => S.selected.has(i.id)).length}/${list.length}</span></div>
-        ${list.map((i) => { const tw = S.byId[i.id]; return html`<div class="trow">
+        ${list.map((i) => { const tw = S.byId[i.id]; const ask = App.questionFor(tw, feats); return html`<div class="trow">
           <label class="check"><input type="checkbox" data-id="${tw.id}" ${S.selected.has(tw.id) ? "checked" : ""}><span class="box"></span></label>
-          <div><div class="tt">${esc(L(tw.name))} ${i.needsConfirm ? `<span class="chip warn">${t("needsConfirm")}</span>` : ""}</div>
+          <div><div class="tt">${esc(L(tw.name))} ${ask ? `<span class="chip warn">${t("tune.asks")}</span>` : ""}</div>
             <div class="td">${esc(L(tw.description))}</div>
-            <div class="why">${esc(L(i.reason))}</div>
+            ${tw.gain ? `<div class="why">${esc(L(tw.gain))}</div>` : `<div class="why">${esc(L(i.reason))}</div>`}
             <div class="tm">${badges(tw)}<span class="tid">${tw.id}</span></div></div>
           <div class="tr">${statusChip(tw.id)}</div></div>`; }).join("")}
       </div>`).join("")}
       <div class="sticky-apply">
-        <button class="btn hazard" id="applyPlan" ${sel.length ? "" : "disabled"}><span>${t("tune.apply")}</span></button>
-        <div class="sum"><b>${sel.length}</b> ${t("tune.selected")} · <b>${confirmN}</b> ${t("tune.confirmCount")}</div>
-        <label class="check" style="margin-left:auto"><input type="checkbox" id="rpCheck" ${S.init.settings.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("tune.rp")}</label>
+        <button class="btn hazard" id="applyPlan" ${sel.length ? "" : "disabled"}><span>${t("tune.go")}</span></button>
+        <div class="sum"><b>${sel.length}</b> ${t("tune.selected")} · <b>${asks}</b> ${t("tune.confirmCount")}</div>
       </div>`;
 
-    v.querySelectorAll(".prof").forEach((el) => (el.onclick = () => App.setProfile(el.dataset.p)));
-    $("#disableUnused").onclick = () => App.disableUnused();
+    const run = () => App.gameSetup({ restorePoint: $("#rpCheck").checked });
+    $("#gameSetup").onclick = run;
+    $("#applyPlan").onclick = run;
+    $("#gmCard").onclick = () => App.gameMode();
+    $("#toManual").onclick = () => go("manual");
+    const gamesBox = $("#tuneGames");
+    const drawGames = () => { gamesBox.innerHTML = App.gamesPanel(); App.bindGames(gamesBox, drawGames); };
+    App.bindGames(gamesBox, drawGames);
+    if (!S.games) App.loadGames().then(() => { if (S.view === "tune" && document.body.contains(gamesBox)) drawGames(); });
+    if (!S.bios) call("bios.list", {}, { silent: true }).then((b) => { S.bios = b; if (S.view === "tune") V.tune(); }).catch(() => {});
     v.querySelectorAll("input[data-id]").forEach((cb) => (cb.onchange = () => { cb.checked ? S.selected.add(cb.dataset.id) : S.selected.delete(cb.dataset.id); V.tune(); }));
-    $("#selRec").onclick = () => { S.selected = new Set(items.filter((i) => i.recommended).map((i) => i.id)); V.tune(); };
+    $("#selRec").onclick = async () => { await App.buildPlan(); V.tune(); };
     $("#selNone").onclick = () => { S.selected.clear(); V.tune(); };
-    $("#applyPlan").onclick = () => App.apply([...S.selected], { restorePoint: $("#rpCheck").checked });
   };
 
   // ------------------------------------------------------------------ [03] tweaks catalog
@@ -200,16 +239,19 @@
           <div class="panel-b" style="display:grid;gap:12px"><div class="td" style="color:var(--muted)">${t("nv.settingsD")}</div>
             <div>${nvTweaks.map((tw) => `<div class="tool-row"><div><div class="tn">${esc(L(tw.name))}</div><div class="td" style="color:var(--muted);font-size:12px">${t("nv.sub." + tw.id)}</div></div><span class="status ${S.status[tw.id] === "applied" ? "applied" : "off"}">${t(S.status[tw.id] === "applied" ? "st.applied" : "st.off")}</span></div>`).join("")}</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="nvApply" ${nvTweaks.every((tw) => S.status[tw.id] === "applied") ? "disabled" : ""}>${t("nv.applySettings")}</button>
-              <button class="btn ghost" data-guide="nvidia-app">NVIDIA App${icon("arrow")}</button><button class="btn ghost" data-guide="nvidia-control-panel">${t("nv.cpl")}${icon("arrow")}</button></div>
+              <button class="btn ghost" data-guide="nvidia-app">${t("nv.appGuide")}${icon("arrow")}</button></div>
           </div></div>
       </div>` : ""}
-      <div class="cards">${S.drivers.map((d) => html`<div class="card" style="cursor:default">
+      ${drvSummary(S.drivers)}
+      <div class="cards">${S.drivers.map((d) => html`<div class="card drv ${d.category === "oem" ? "drv-oem" : ""}" style="cursor:default">
         <div class="cn">${t("drv." + d.category)}</div>
-        <div style="font-weight:700">${esc(d.name)}</div>
-        <div class="cs">${esc(d.vendor || "")}${d.version ? " · " + esc(d.version) : ""}${d.date ? " · " + fmtDate(d.date) : ""}</div>
-        <div class="cf"><span class="chip ${d.status === "ok" ? "ok" : d.status === "check" ? "info" : "crit"}">${t("drv." + d.status)}</span></div>
+        <div style="font-weight:700">${esc(d.name)}${d.category === "oem" ? ` <button class="btn sm ghost icon-only" data-copy="${esc(d.name)}" title="${t("man.copy")}">${icon("copy")}</button>` : ""}</div>
+        ${d.category === "oem" ? "" : `<div class="cs">${esc(d.vendor || "")}${d.version ? " · " + esc(d.version) : ""}${d.date ? " · " + fmtDate(d.date) : ""}</div>`}
+        ${d.category === "oem" ? "" : `<div class="cf"><span class="chip ${drvChip(d)}">${t("drv." + d.status)}</span>${d.provider && d.status === "inbox" ? `<span class="drv-by">${t("drv.by")} ${esc(d.provider)}</span>` : ""}</div>`}
+        ${d.note ? `<div class="drv-note">${esc(L(d.note))}</div>` : ""}
         <div class="cf">${d.links.map((l) => `<button class="btn sm" data-url="${esc(l.url)}">${esc(l.title)}${icon("external")}</button>`).join("")}</div>
       </div>`).join("")}</div>`;
+    v.querySelectorAll("[data-copy]").forEach((b) => (b.onclick = () => navigator.clipboard.writeText(b.dataset.copy).then(() => toast(t("man.copied")), () => {})));
     v.querySelectorAll("[data-url]").forEach((b) => (b.onclick = () => call("shell.open", { url: b.dataset.url })));
     v.querySelectorAll("[data-guide]").forEach((b) => (b.onclick = () => go("apps", { guide: b.dataset.guide })));
     $("#drvRescan").onclick = async () => { await call("drivers.rescan"); S.drivers = null; await App.scan(true); V.drivers(); };
@@ -218,6 +260,17 @@
     $("#nvApply").onclick = () => App.apply(nvTweaks.filter((tw) => S.status[tw.id] !== "applied").map((tw) => tw.id));
     if (!S.nvidia) S.nvidia = await call("nvidia.check", {}, { silent: true }).catch((e) => ({ error: e.message }));
     if (S.view === "drivers" && $("#nvBody")) nvRender(nvTweaks);
+  };
+
+  /** ok = green, Windows' generic driver or "check" = neutral, low-priority "old" = amber, the rest = red. */
+  const drvChip = (d) => d.status === "ok" ? "ok" : d.status === "check" || (d.status === "inbox" && d.priority === "low") ? "info"
+    : d.priority === "high" || d.status === "missing" || d.status === "error" ? "crit" : "warn";
+
+  const drvSummary = (list) => {
+    const todo = list.filter((d) => d.category !== "oem" && d.status !== "ok" && d.priority !== "low");
+    return html`<div class="callout ${todo.length ? "warn" : ""}" style="margin-bottom:18px">${todo.length
+      ? t("drv.todo").replace("{n}", todo.length) + " " + todo.map((d) => `<b>${t("drv." + d.category)}</b>`).join(", ")
+      : t("drv.allGood")}</div>`;
   };
 
   const nvDate = (d) => { const x = d ? new Date(d) : null; return x && !isNaN(x) ? fmtDate(x) : esc(d || ""); };
@@ -283,46 +336,12 @@
 
   // ------------------------------------------------------------------ [06] app guides
 
-  // Each program's settings window, drawn by AI Tweaker from the guide itself in the program's own colours.
-  const SKIN = {
-    discord: { bg: "#313338", side: "#2b2d31", ink: "#f2f3f5", muted: "#b5bac1", accent: "#5865f2", on: "#23a55a" },
-    steam: { bg: "#1f2229", side: "#171a21", ink: "#dcdedf", muted: "#8b929a", accent: "#1a9fff" },
-    "nvidia-app": { bg: "#1c1c1c", side: "#121212", ink: "#eeeeee", muted: "#9a9a9a", accent: "#76b900" },
-    "amd-software": { bg: "#1b1c1e", side: "#111214", ink: "#eeeeee", muted: "#9b9b9b", accent: "#e3262d" },
-    obs: { bg: "#272a33", side: "#1f2128", ink: "#e6e6e6", muted: "#9aa0ad", accent: "#476be6" },
-    spotify: { bg: "#121212", side: "#000000", ink: "#ffffff", muted: "#b3b3b3", accent: "#1ed760" },
-    epic: { bg: "#18181c", side: "#101014", ink: "#f5f5f5", muted: "#a0a0a6", accent: "#26bbff" },
-    exitlag: { bg: "#141821", side: "#0d1017", ink: "#eef1f6", muted: "#8d96a8", accent: "#ff6a13" },
-    "nvidia-control-panel": { bg: "#f3f3f3", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#76b900", light: true },
-    "windows-graphics": { bg: "#272727", side: "#202020", ink: "#ffffff", muted: "#a9a9a9", accent: "#4cc2ff" },
-    openshell: { bg: "#f0f0f0", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#0067c0", light: true },
-    startallback: { bg: "#f9f9f9", side: "#f0f0f0", ink: "#1b1b1b", muted: "#616161", accent: "#0067c0", light: true },
-    cru: { bg: "#f0f0f0", side: "#ffffff", ink: "#1b1b1b", muted: "#5f5f5f", accent: "#0067c0", light: true },
-    chrome: { bg: "#202124", side: "#292a2d", ink: "#e8eaed", muted: "#9aa0a6", accent: "#8ab4f8" },
-    lightshot: { bg: "#f6f5f8", side: "#ffffff", ink: "#202020", muted: "#666666", accent: "#8b3ff0", light: true },
-    telegram: { bg: "#17212b", side: "#0e1621", ink: "#f5f5f5", muted: "#7f91a4", accent: "#2ea6ff" },
-    ea: { bg: "#1d1d2b", side: "#12121c", ink: "#f2f2f7", muted: "#9b9bb0", accent: "#ff4747" },
-    battlenet: { bg: "#16181d", side: "#0e0f12", ink: "#f0f2f5", muted: "#8d94a0", accent: "#148eff" },
-  };
-  const skinOf = (id) => SKIN[id] || { bg: "#1e1f22", side: "#151618", ink: "#eeeeee", muted: "#9a9a9a", accent: "var(--accent)" };
-  const crumbs = (path) => path.split("→").map((x) => x.replace(/\s*\([^)]*\)/g, "").trim()).filter(Boolean);
-  const isToggle = (v) => v === "ON" || v === "OFF";
+  // Brand colour of each program's badge in the list.
+  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff", autoruns: "#00a4ef" };
 
-  function mockWindow(g, si) {
-    const sk = skinOf(g.id), sec = g.sections[si], cr = crumbs(sec.path);
-    const side = [...new Set(g.sections.map((s) => crumbs(s.path).slice(-1)[0] || L(s.title)))];
-    const here = cr.slice(-1)[0] || L(sec.title);
-    return html`<div class="mock ${sk.light ? "light" : ""}" style="--mock-bg:${sk.bg};--mock-side:${sk.side};--mock-ink:${sk.ink};--mock-muted:${sk.muted};--mock-accent:${sk.accent};--mock-on:${sk.on || sk.accent}">
-      <div class="mock-top"><span class="mock-logo">${esc(g.name.slice(0, 1))}</span><span>${esc(g.name)}</span><span class="wc"><i>—</i><i>☐</i><i>✕</i></span></div>
-      <div class="mock-body">
-        <div class="mock-side">${side.map((x) => `<div class="${x === here ? "on" : ""}">${esc(x)}</div>`).join("")}</div>
-        <div class="mock-main">
-          ${cr.length > 1 ? `<div class="mock-crumb">${cr.slice(0, -1).map(esc).join(" › ")}</div>` : ""}
-          <h4>${esc(here)}</h4>
-          ${sec.settings.map((st, i) => { const v = String(st.value); return `<div class="mock-row" style="animation-delay:${60 + i * 45}ms"><span class="mn">${esc(st.name)}</span>${isToggle(v) ? `<span class="mock-tog ${v === "ON" ? "on" : ""}"></span>` : `<span class="mv" title="${esc(v)}">${esc(v)}</span>`}</div>`; }).join("")}
-        </div>
-      </div></div>`;
-  }
+  const autoOf = (g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "n/a");
+  const pendingOf = (g) => autoOf(g).filter((id) => S.status[id] !== "applied");
+  const manualN = (g) => g.sections.reduce((a, s) => a + s.settings.length, 0);
 
   V.apps = async (opts = {}) => {
     const v = $("#v-apps");
@@ -330,60 +349,51 @@
     if (!S.guides) S.guides = await call("guides.list");
     const g = opts.guide && S.guides.find((x) => x.id === opts.guide);
     if (!g) {
+      const installed = S.guides.filter((x) => x.installed);
+      const allPending = [...new Set(installed.flatMap(pendingOf))];
       v.innerHTML = html`
-        <div class="page-h"><div><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div></div>
-        <div class="cards">${S.guides.map((x) => html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
-          <div class="cn"><span class="app-ico" style="--app-c:${skinOf(x.id).accent}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
+        <div class="page-h"><div><h1>${t("apps.title")}</h1><p>${t("apps.desc")}</p></div>
+          <div class="actions">${allPending.length ? `<button class="btn primary" id="appsAuto">${t("apps.autoAll")} (${allPending.length})</button>` : `<button class="btn done" disabled>${icon("check")}${t("apps.autoAllDone")}</button>`}</div></div>
+        <div class="apps-legend"><span><i class="lg-auto"></i>${t("apps.legendAuto")}</span><span><i class="lg-man"></i>${t("apps.legendManual")}</span></div>
+        <div class="cards">${S.guides.map((x) => { const a = autoOf(x), pend = pendingOf(x); return html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
+          <div class="cn"><span class="app-ico" style="--app-c:${BRAND[x.id] || "var(--accent)"}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
-          <div class="cf"><span class="chip ${x.installed ? "ok" : ""}">${x.installed ? t("apps.installed") : t("apps.notInstalled")}</span><span class="chip">${x.sections.reduce((a, s) => a + s.settings.length, 0)} ${t("apps.settingsN")}</span>${(x.autoTweaks || []).length ? `<span class="chip info">${t("apps.hasAuto")}</span>` : ""}</div>
-        </div>`).join("")}</div>`;
+          <div class="cf">${x.installed ? "" : `<span class="chip">${t("apps.notInstalled")}</span>`}
+            ${a.length ? `<span class="chip ${pend.length ? "info" : "ok"}">${t("apps.autoN")} ${a.length - pend.length}/${a.length}</span>` : ""}
+            <span class="chip">${t("apps.manualN")} ${manualN(x)}</span></div>
+        </div>`; }).join("")}</div>`;
       v.querySelectorAll("[data-g]").forEach((c) => (c.onclick = () => V.apps({ guide: c.dataset.g })));
+      if ($("#appsAuto")) $("#appsAuto").onclick = () => App.apply(allPending);
       return;
     }
-    const auto = (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "applied" && S.status[id] !== "n/a");
+    const auto = autoOf(g), pend = pendingOf(g);
     v.innerHTML = html`
       <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
-        <div class="actions"><button class="btn ghost sm" id="gBack">${t("apps.back")}</button>${auto.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${auto.length})</button>` : ""}</div></div>
-      ${g.sections.map((s, si) => html`<div class="guide-sec">
+        <div class="actions">${!g.installed && (S.init.programIds || []).includes(g.id) ? `<button class="btn primary sm" id="gInstall">${icon("download")}${t("apps.install")}</button>` : ""}<button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
+      ${auto.length ? html`<div class="app-block auto">
+        <div class="ab-h">${icon("tune")}<div><b>${t("apps.autoT")}</b><span>${t("apps.autoD")}</span></div>
+          ${pend.length ? `<button class="btn primary sm" id="gAuto">${t("apps.auto")} (${pend.length})</button>` : `<span class="chip ok">${icon("check")}${t("apps.autoDone")}</span>`}</div>
+        ${auto.map((id) => { const tw = S.byId[id]; return html`<div class="ab-row"><div><div class="tt">${esc(L(tw.name))}</div><div class="td">${esc(L(tw.description))}</div></div>${statusChip(id)}</div>`; }).join("")}
+      </div>` : ""}
+      <div class="app-block man">
+        <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t(auto.length ? "apps.manualD" : "apps.manualD0").replaceAll("{app}", esc(g.name))}</span></div></div>
+      </div>
+      ${g.sections.map((s, si) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
         <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
           ${s.settings.map((st) => { const vv = String(st.value); const cls = vv === "ON" ? "on" : vv === "OFF" ? "off" : ""; return html`<div class="setting"><div><div class="sn">${esc(st.name)}</div>${st.note ? `<div class="snote">${esc(L(st.note))}</div>` : ""}</div><span class="val ${cls}" title="${esc(vv)}">${esc(vv)}</span></div>`; }).join("")}
           ${s.note ? `<div class="note-box">${esc(L(s.note))}</div>` : ""}</div>
-        <div class="gs-r">${mockWindow(g, si)}</div>
+        ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" loading="lazy"></div>` : ""}
       </div>`).join("")}`;
     $("#gBack").onclick = () => V.apps();
-    if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(auto);
-  };
-
-  // ------------------------------------------------------------------ [07] BIOS
-
-  const onOff = (v) => (v ? t("bios.on") : t("bios.off"));
-
-  V.bios = async () => {
-    const v = $("#v-bios");
-    if (needScan(v)) return;
-    if (!S.bios) S.bios = await call("bios.list");
-    const b = S.bios;
-    v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("bios.title")}</h1><p>${t("bios.desc")}</p></div>
-        <div class="actions"><button class="btn danger" id="toBios">${icon("power")}${t("bios.reboot")}</button></div></div>
-      <div class="grid cols-3" style="margin-bottom:14px">
-        <div class="panel"><div class="panel-h">${esc(b.board.manufacturer)}</div><div class="panel-b kv"><b>${t("bios.k.model")}</b><span>${esc(b.board.product)}</span><b>BIOS</b><span>${esc(b.board.biosVersion)} · ${fmtDate(b.board.biosDate)}</span></div></div>
-        <div class="panel"><div class="panel-h">${esc(b.cpu.name.split(" ").slice(0, 4).join(" "))}</div><div class="panel-b kv"><b>${t("bios.k.microcode")}</b><span>${esc(b.cpu.microcode || "—")}</span><b>${t("bios.k.ram")}</b><span>${esc(b.ram.type)} ${b.ram.speed} / ${b.ram.rated} MHz</span></div></div>
-        <div class="panel"><div class="panel-h">${t("bios.k.security")}</div><div class="panel-b kv"><b>Secure Boot</b><span>${onOff(b.security.secureBoot)}</span><b>TPM</b><span>${onOff(b.security.tpm)}</span><b>VBS / HVCI</b><span>${onOff(b.security.vbsRunning)} / ${onOff(b.security.hvciRunning)}</span></div></div>
-      </div>
-      ${b.advice.map((a) => html`<div class="trow">
-        <span class="led ${a.status === "ok" ? "" : a.status === "fix" ? "crit" : "warn"}" style="margin-top:5px"></span>
-        <div><div class="tt">${esc(L(a.title))} <span class="chip ${a.priority === "high" ? "crit" : a.priority === "medium" ? "warn" : ""}">${t("bios.p." + a.priority)}</span></div>
-          <div class="td">${esc(L(a.detail))}</div>
-          <div class="tm"><code style="color:var(--accent)">${esc(a.path)}</code></div></div>
-        <div class="tr"><span class="val">${esc(a.value)}</span><span class="status ${a.status === "ok" ? "applied" : a.status === "fix" ? "partial" : ""}">${t("bios." + a.status)}</span></div></div>`).join("")}`;
-    $("#toBios").onclick = async () => { if (await confirmBox(t("bios.reboot"), t("bios.rebootQ"), t("bios.reboot"), "danger", true)) call("bios.reboot"); };
+    if ($("#gInstall")) $("#gInstall").onclick = () => go("install", { focus: g.id });
+    if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(pend);
   };
 
   // ------------------------------------------------------------------ [09] image (own AI Tweaker image + USB)
 
   const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
-  const rein = { source: "dl", mode: "clean" };
+  // Without a USB stick the English Windows 11 is offered; files and apps can only be kept with an image in the system's own language.
+  const rein = { source: "dl", mode: "clean", lang: "English" };
   const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
   const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
@@ -448,11 +458,8 @@
       <div class="panel" style="margin-top:16px"><div class="panel-h">${t("rufus.title")}<span class="right"><button class="btn sm ghost" id="rufusSite">${icon("external")}rufus.ie</button></span></div>
         <div class="panel-b" style="display:grid;gap:12px">
           <div class="td" style="color:var(--muted)">${t("rufus.desc")}</div>
-          <ol class="ame-steps">${[1, 2, 3, 4, 5].map((i) => `<li>${t("rufus.s" + i)}</li>`).join("")}</ol>
-          <div class="callout"><b>${t("rufus.optsT")}</b><ul class="rufus-opts">${[1, 2, 3, 4, 5, 6].map((i) => `<li>${t("rufus.o" + i)}</li>`).join("")}</ul></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" id="rufusOpen">${t("rufus.open")}</button><button class="btn" id="rufusCopy">${t("rufus.copy")}</button>
             <span class="tid" style="word-break:break-all">${usb.iso ? "ISO: " + esc(usb.iso) : t("rufus.noIso")}</span></div>
-          <div class="td" style="color:var(--muted)">${t("rufus.note")}</div>
         </div>
       </div>
 
@@ -534,6 +541,9 @@
   function reinstallPanel() {
     if (rein.source === "built" && !usb.built) rein.source = "dl";
     if (rein.source === "iso" && !usb.iso) rein.source = "dl";
+    const osLang = (S.scan && S.scan.profile.os.language) || "";
+    const keepBlocked = rein.source === "dl" && osLang && !/^en/i.test(osLang);
+    if (keepBlocked && rein.mode !== "clean") rein.mode = "clean";
     const opt = (name, value, label, desc, on, dis) => `<label class="rein-opt ${on ? "on" : ""} ${dis ? "dis" : ""}"><input type="radio" name="${name}" value="${value}" ${on ? "checked" : ""} ${dis ? "disabled" : ""}><span><b>${label}</b>${desc ? `<span>${desc}</span>` : ""}</span></label>`;
     return html`<div class="panel rein" style="margin-bottom:30px">
       <div class="panel-h">${t("rein.title")}<span class="right"><button class="btn sm ghost" id="reinUsb">${t("rein.usbBtn")}${icon("arrow")}</button></span></div>
@@ -541,12 +551,12 @@
         <div class="td" style="color:var(--muted);margin-bottom:16px;max-width:900px">${t("rein.desc")}</div>
         <div class="grid cols-2" style="gap:22px">
           <div><div class="rein-k">${t("rein.src")}</div><div class="rein-list">
-            ${opt("reinsrc", "dl", t("rein.srcDl").replace("{lang}", esc(usb.lang)), t("rein.srcDlD"), rein.source === "dl")}
+            ${opt("reinsrc", "dl", t("rein.srcDl"), t("rein.srcDlD"), rein.source === "dl")}
             ${opt("reinsrc", "built", t("rein.srcBuilt"), usb.built ? esc(usb.built.folder) : t("rein.srcBuiltNo"), rein.source === "built", !usb.built)}
             ${opt("reinsrc", "iso", t("rein.srcIso"), usb.iso ? esc(usb.iso) : t("rein.srcIsoNo"), rein.source === "iso", !usb.iso)}
           </div></div>
           <div><div class="rein-k">${t("rein.mode")}</div><div class="rein-list">
-            ${["clean", "dataonly", "upgrade"].map((m) => opt("reinmode", m, t("rein.m." + m), t("rein.m." + m + "D"), rein.mode === m)).join("")}
+            ${["clean", "dataonly", "upgrade"].map((m) => opt("reinmode", m, t("rein.m." + m), m !== "clean" && keepBlocked ? t("rein.langNote").replace("{lang}", esc(osLang)) : t("rein.m." + m + "D"), rein.mode === m, m !== "clean" && keepBlocked)).join("")}
           </div></div>
         </div>
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px">
@@ -573,7 +583,7 @@
     const off = [API.on("reinstall.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : { fido: 0.03, mount: 0.88, check: 0.92, setup: 0.97 }[p.step] || 0.5, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : ""))),
       API.on("usb.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : 0.03, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : "")))];
     let r = null;
-    try { r = await call("reinstall.start", { source: rein.source, iso: usb.iso, mode: rein.mode, language: usb.lang }); } catch { /* toast */ } finally { off.forEach((f) => f()); b.done(); }
+    try { r = await call("reinstall.start", { source: rein.source, iso: usb.iso, mode: rein.mode, language: rein.lang }); } catch { /* toast */ } finally { off.forEach((f) => f()); b.done(); }
     if (!r) return;
     await modal({ title: t("rein.startedT"), body: html`<div>${t("rein.started")}</div><div class="callout">${t("rein.after")}</div><div class="tid">${esc(r.setup)} ${esc(r.arguments)}</div>`, buttons: [{ label: t("ok"), cls: "primary" }] });
   }

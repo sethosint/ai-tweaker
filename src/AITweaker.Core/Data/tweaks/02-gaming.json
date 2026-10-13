@@ -18,7 +18,7 @@
     "id": "gaming.gamemode.on",
     "category": "gaming",
     "level": 1,
-    "name": { "ru": "Включить «Игровой режим»", "en": "Enable Game Mode" },
+    "name": { "ru": "Включить игровой режим Windows", "en": "Enable Windows Game Mode" },
     "description": {
       "ru": "Windows отдаёт игре приоритет по CPU/GPU и не ставит обновления драйверов во время игры. На двухчиплетных Ryzen X3D обязателен для правильного выбора кэш-ядер.",
       "en": "Windows prioritizes the game for CPU/GPU and holds driver updates while you play. Required on dual-CCD Ryzen X3D for correct cache-core selection."
@@ -33,10 +33,10 @@
     "category": "gaming",
     "level": 1,
     "when": "gpu.nvidia",
-    "name": { "ru": "Панель NVIDIA: минимальная задержка", "en": "NVIDIA panel: lowest latency" },
+    "name": { "ru": "NVIDIA: Low Latency Mode и Prefer max performance", "en": "NVIDIA: Low Latency Mode and Prefer max performance" },
     "description": {
-      "ru": "Глобальные параметры 3D (то же, что «Панель управления NVIDIA → Управление параметрами 3D» и NVIDIA App → Графика): режим низкой задержки «Вкл.», предпочтительная частота обновления «Наивысшая доступная», а на ПК — режим питания «Максимальная производительность». Значения, которые были до этого, сохраняются и возвращаются при откате. Нужен драйвер NVIDIA; NVIDIA Profile Inspector скачивается с GitHub автора.",
-      "en": "Global 3D settings (the same as NVIDIA Control Panel → Manage 3D settings and NVIDIA App → Graphics): Low Latency Mode On, preferred refresh rate Highest available and, on desktops, Power management Prefer maximum performance. The previous values are saved and restored on rollback. Needs the NVIDIA driver; NVIDIA Profile Inspector is downloaded from its author's GitHub."
+      "ru": "Глобальные настройки графики NVIDIA (то же, что NVIDIA App → «Графика» → «Глобальные настройки»): режим низкой задержки «Вкл.», предпочтительная частота обновления «Наивысшая доступная», а на ПК — режим питания «Максимальная производительность». Значения, которые были до этого, сохраняются и возвращаются при откате. Нужен драйвер NVIDIA; NVIDIA Profile Inspector скачивается с GitHub автора.",
+      "en": "NVIDIA global graphics settings (the same as NVIDIA App → Graphics → Global settings): Low Latency Mode On, preferred refresh rate Highest available and, on desktops, Power management Prefer maximum performance. The previous values are saved and restored on rollback. Needs the NVIDIA driver; NVIDIA Profile Inspector is downloaded from its author's GitHub."
     },
     "actions": [
       { "type": "nvidia", "settings": [
@@ -52,7 +52,7 @@
     "category": "gaming",
     "level": 2,
     "when": "gpu.nvidia",
-    "name": { "ru": "Панель NVIDIA: фильтрация текстур — производительность", "en": "NVIDIA panel: texture filtering for performance" },
+    "name": { "ru": "NVIDIA: фильтрация текстур — производительность", "en": "NVIDIA: texture filtering for performance" },
     "description": {
       "ru": "«Фильтрация текстур — качество» → «Высокая производительность». Прирост небольшой, картинка почти не меняется; в играх с собственными настройками анизотропии решает игра.",
       "en": "Texture filtering - Quality → High performance. A small gain with hardly any visible change; games with their own anisotropic setting still decide for themselves."
@@ -122,15 +122,14 @@
   {
     "id": "gaming.mmcss",
     "category": "gaming",
-    "level": 2,
-    "name": { "ru": "Приоритет игр в планировщике мультимедиа", "en": "Game priority in the multimedia scheduler" },
+    "level": 0,
+    "name": { "ru": "MMCSS: профиль «Games» (по замерам почти без эффекта)", "en": "MMCSS 'Games' profile (barely any measured effect)" },
     "description": {
-      "ru": "MMCSS резервирует меньше CPU для фоновых задач (10% вместо 20%), снимает ограничение сетевых пакетов и даёт играм высокий приоритет GPU и ввода-вывода.",
-      "en": "MMCSS reserves less CPU for background tasks (10% instead of 20%), lifts network packet throttling and gives games high GPU and I/O priority."
+      "ru": "Старый популярный твик планировщика мультимедиа (MMCSS). Замеры (djdallmann) показали, что игры не регистрируются в задаче «Games», поэтому её параметры почти ни на что не влияют. Снятие сетевого ограничения (NetworkThrottlingIndex) убрано: по замерам оно повышало задержку сетевого драйвера. Оставлен только для ручного применения.",
+      "en": "An old, popular multimedia scheduler (MMCSS) tweak. Measurements (djdallmann) found games don't register with the 'Games' task, so its values hardly matter. Lifting the network throttle (NetworkThrottlingIndex) was removed: measured, it raised network driver latency. Kept for manual use only."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "SystemResponsiveness", "kind": "dword", "value": 10 },
-      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile", "name": "NetworkThrottlingIndex", "kind": "dword", "value": 4294967295 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "GPU Priority", "kind": "dword", "value": 8 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Priority", "kind": "dword", "value": 6 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games", "name": "Scheduling Category", "kind": "string", "value": "High" },
@@ -140,11 +139,11 @@
   {
     "id": "gaming.priority-separation",
     "category": "gaming",
-    "level": 3,
-    "name": { "ru": "Короткие кванты CPU для активного окна", "en": "Short CPU quanta for the foreground app" },
+    "level": 0,
+    "name": { "ru": "Win32PrioritySeparation: короткие кванты для игры", "en": "Win32PrioritySeparation: short quanta for the game" },
     "description": {
-      "ru": "Win32PrioritySeparation = 0x26: короткие переменные кванты с 3-кратным бустом активного окна. Игра чаще получает процессор, ввод обрабатывается быстрее.",
-      "en": "Win32PrioritySeparation = 0x26: short variable quanta with a 3× foreground boost. The game gets the CPU more often and input is processed sooner."
+      "ru": "Значение 0x26 (38) — короткие переменные кванты с бустом активного окна 3:1. В клиентских Windows это уже поведение по умолчанию (0x2), поэтому твик ничего не меняет; оставлен только для ручного применения. «Магические» большие значения Windows всё равно сводит к 6 битам.",
+      "en": "Value 0x26 (38) — short variable quanta with a 3:1 foreground boost. On client Windows that is already the default (0x2), so the tweak changes nothing; kept for manual use only. 'Magic' large values are folded back into 6 bits by Windows anyway."
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl", "name": "Win32PrioritySeparation", "kind": "dword", "value": 38 }
@@ -156,7 +155,7 @@
     "level": 2,
     "when": "os.win11",
     "reboot": true,
-    "name": { "ru": "Глобальное разрешение таймера", "en": "Global timer resolution" },
+    "name": { "ru": "Глобальный таймер (GlobalTimerResolutionRequests)", "en": "Global timer (GlobalTimerResolutionRequests)" },
     "description": {
       "ru": "Начиная с Windows 11 игры в фоне теряют точный таймер. Параметр возвращает глобальное поведение — стабильнее время кадра в играх и лимитерах FPS.",
       "en": "Since Windows 11 background games lose the precise timer. This restores global behavior — steadier frame times in games and FPS limiters."
@@ -186,7 +185,7 @@
     "level": 2,
     "when": "!system.vm",
     "reboot": true,
-    "name": { "ru": "Не форсировать HPET как источник времени", "en": "Don't force HPET as the clock source" },
+    "name": { "ru": "HPET не форсируется (useplatformclock)", "en": "HPET not forced (useplatformclock)" },
     "description": {
       "ru": "Удаляет параметр useplatformclock, если его включили «оптимизаторы»: принудительный HPET увеличивает задержку и снижает FPS.",
       "en": "Removes useplatformclock if an 'optimizer' set it: forcing HPET increases latency and lowers FPS."
@@ -201,7 +200,7 @@
     "level": 3,
     "when": "system.desktop && !system.vm",
     "reboot": true,
-    "name": { "ru": "Отключить динамический тик ядра", "en": "Disable dynamic kernel tick" },
+    "name": { "ru": "Отключить dynamic tick", "en": "Disable dynamic tick" },
     "description": {
       "ru": "Ядро не пропускает тики таймера ради экономии энергии — меньше джиттер прерываний. Только для ПК (на ноутбуке сократит время работы от батареи).",
       "en": "The kernel stops skipping timer ticks to save power — less interrupt jitter. Desktops only (it would cost battery life on laptops)."
@@ -238,6 +237,111 @@
     "reboot": true,
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "kind": "dword", "value": 5 }
+    ]
+  },
+  {
+    "id": "gaming.gamebar.off",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "restartExplorer": true,
+    "when": "!cpu.x3dMultiCcd",
+    "name": { "ru": "Отключить оверлей Xbox Game Bar", "en": "Disable the Xbox Game Bar overlay" },
+    "description": {
+      "ru": "Win+G и кнопка Xbox на геймпаде больше не открывают Game Bar поверх игры, его подсказки не всплывают. Игровой режим Windows продолжает работать. На двухчиплетных Ryzen X3D не предлагается: там Game Bar нужен драйверу для выбора кэш-ядер.",
+      "en": "Win+G and the Xbox button on a controller no longer open Game Bar over the game, and its tips stop popping up. Windows Game Mode keeps working. Not offered on dual-CCD Ryzen X3D, where the driver needs Game Bar to pick the cache cores."
+    },
+    "confirmText": {
+      "ru": "Не будет оверлея Game Bar: счётчика FPS, записи клипов по Win+Alt+R, виджетов и чата Xbox поверх игры.",
+      "en": "No Game Bar overlay: no FPS counter, no Win+Alt+R clip recording, no widgets or Xbox chat over the game."
+    },
+    "gain": {
+      "ru": "Поверх игры ничего не всплывает от случайного нажатия Win+G или кнопки Xbox, и Game Bar не запускается.",
+      "en": "Nothing pops up over the game from a stray Win+G or Xbox button press, and Game Bar doesn't start."
+    },
+    "keep": {
+      "ru": "Game Bar открывается по Win+G: запись клипов, счётчик FPS, виджеты.",
+      "en": "Game Bar opens with Win+G: clip recording, FPS counter, widgets."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "UseNexusForGameBarEnabled", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "ShowStartupPanel", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "DisabledHotkeys", "kind": "string", "value": "G" }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-shader-cache",
+    "category": "gaming",
+    "level": 2,
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: кэш шейдеров без ограничения", "en": "NVIDIA: unlimited shader cache" },
+    "description": {
+      "ru": "Размер кэша шейдеров → «Без ограничений» (как в NVIDIA App). Большие игры перестают вытеснять уже скомпилированные шейдеры и снова статтерить при их пересборке. Кэш может занять десятки гигабайт на системном диске.",
+      "en": "Shader cache size → Unlimited (as in NVIDIA App). Big games stop evicting shaders they already compiled and stuttering again while rebuilding them. The cache can take tens of gigabytes on the system drive."
+    },
+    "why": {
+      "ru": "Рекомендация PC-Tuning; ID параметра — из официального заголовка NVAPI.",
+      "en": "Recommended by PC-Tuning; the setting ID is from NVIDIA's official NVAPI header."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x00AC8497", "name": "Shader disk cache maximum size", "value": 4294967295, "default": 16384 }] }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-ansel.off",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: отключить Ansel", "en": "NVIDIA: disable Ansel" },
+    "description": {
+      "ru": "Драйвер перестаёт встраивать Ansel (фоторежим и фильтры) в каждую игру — меньше конфликтов с оверлеями и инжекторами. Рекомендация PC-Tuning; ID параметра — из заголовка NVAPI.",
+      "en": "The driver stops injecting Ansel (photo mode and filters) into every game — fewer clashes with overlays and injectors. Recommended by PC-Tuning; setting ID from the NVAPI header."
+    },
+    "confirmText": {
+      "ru": "Не будет фоторежима NVIDIA и игровых фильтров (Freestyle) по Alt+F3.",
+      "en": "No NVIDIA photo mode or game filters (Freestyle) on Alt+F3."
+    },
+    "gain": {
+      "ru": "Драйвер ничего лишнего не встраивает в игру.",
+      "en": "The driver injects nothing extra into the game."
+    },
+    "keep": {
+      "ru": "Работают фоторежим NVIDIA и фильтры Freestyle.",
+      "en": "NVIDIA photo mode and Freestyle filters keep working."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x1075D972", "name": "Ansel enable", "value": 0, "default": 1 }] }
+    ]
+  },
+  {
+    "id": "gaming.nvidia-gsync-preset",
+    "category": "gaming",
+    "level": 3,
+    "confirm": true,
+    "keepByDefault": true,
+    "enables": true,
+    "hint": { "ru": "Включайте, только если G-SYNC или G-SYNC Compatible реально работает на вашем мониторе (NVIDIA App → Система → Дисплеи).", "en": "Only turn it on if G-SYNC or G-SYNC Compatible actually runs on your monitor (NVIDIA App → System → Displays)." },
+    "when": "gpu.nvidia",
+    "name": { "ru": "NVIDIA: пресет G-SYNC (V-Sync в драйвере + лимит частота − 3)", "en": "NVIDIA: G-SYNC preset (driver V-Sync + cap at refresh − 3)" },
+    "description": {
+      "ru": "Связка, которую Blur Busters по замерам называет лучшей для G-SYNC: вертикальная синхронизация включена в драйвере, а кадры ограничены на 3 ниже частоты вашего монитора (141 для 144 Гц). Кадры не выходят за диапазон G-SYNC — нет разрывов и нет задержки V-Sync. В играх с Reflex он ставит лимит сам.",
+      "en": "The combination Blur Busters measured as best for G-SYNC: vertical sync on in the driver and frames capped 3 below your monitor's refresh rate (141 at 144 Hz). Frames never leave the G-SYNC range — no tearing and no V-Sync lag. Reflex games set their own cap."
+    },
+    "confirmText": {
+      "ru": "Без включённого G-SYNC принудительный V-Sync добавит задержку. FPS будет ограничен чуть ниже частоты монитора.",
+      "en": "Without G-SYNC actually on, forced V-Sync adds lag. FPS is capped just below the refresh rate."
+    },
+    "gain": {
+      "ru": "Ровная картинка без разрывов и без задержки V-Sync — лучшее, что даёт G-SYNC.",
+      "en": "Smooth frames without tearing and without V-Sync lag — the best G-SYNC can give."
+    },
+    "keep": {
+      "ru": "FPS без ограничения; синхронизацию вы настраиваете сами.",
+      "en": "Uncapped FPS; you set up sync yourself."
+    },
+    "actions": [
+      { "type": "nvidia", "settings": [{ "id": "0x00A879CF", "name": "Vertical Sync", "value": 1199655232, "default": 1620202130 }, { "id": "0x10835002", "name": "Frame Rate Limiter", "value": 141, "default": 0, "valueFrom": "maxHz-3" }] }
     ]
   }
 ]

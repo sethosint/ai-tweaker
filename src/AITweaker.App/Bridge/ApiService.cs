@@ -4,9 +4,11 @@ using System.Security.Principal;
 using System.Text.Json;
 using AITweaker.App.Platform;
 using AITweaker.Core.Ai;
+using AITweaker.Core.Bench;
 using AITweaker.Core.Bios;
 using AITweaker.Core.Catalog;
 using AITweaker.Core.Conditions;
+using AITweaker.Core.Drivers;
 using AITweaker.Core.Engine;
 using AITweaker.Core.Image;
 using AITweaker.Core.Model;
@@ -39,7 +41,7 @@ public sealed class ApiService
 
     public async Task<object?> InvokeAsync(string method, JsonElement p) => method switch
     {
-        "app.init" => Init(),
+        "app.init" => await InitAsync(),
         "system.scan" => await ScanAsync(),
         "plan.build" => BuildPlan(Str(p, "profile") ?? SettingsStore.Current.Profile),
         "tweaks.catalog" => Catalog(),
@@ -53,7 +55,7 @@ public sealed class ApiService
         "appx.restore" => await Exclusive(() => Platform.Actions.AppxOps.RestoreAsync(Str(p, "name") ?? "",
             _catalog.Apps.FirstOrDefault(a => a.Package.Equals(Str(p, "name"), StringComparison.OrdinalIgnoreCase))?.StoreId, NewLongTask())),
         "appx.remove" => await Exclusive(() => Platform.Actions.AppxOps.RemoveAsync(Ids(p, "names") ?? [], n => _emit("appx.progress", n))),
-        "drivers.list" => DriverCenter.Build(await ProfileAsync()),
+        "drivers.list" => DriverAdvisor.Build(_catalog.Vendors, await ProfileAsync()),
         "drivers.rescan" => await DriverCenter.RescanAsync(),
         "nvidia.check" => _nvidia = await NvidiaTools.CheckAsync(await ProfileAsync()),
         "nvidia.install" => await Exclusive(async () =>
@@ -99,7 +101,7 @@ public sealed class ApiService
         "usb.downloadIso" => await Exclusive(() => UsbCreator.DownloadIsoAsync(Str(p, "language") ?? "Russian", (s, v) => _emit("usb.progress", new { step = s, value = v }), NewLongTask())),
         "reinstall.start" => await Exclusive(async () => await LocalReinstall.StartAsync(await ProfileAsync(),
             Str(p, "source") switch { "built" => ImageBuilder.OutputFolder, "iso" => Str(p, "iso"), _ => null },
-            Str(p, "mode") ?? "clean", Str(p, "language") ?? "Russian", (s, v) => _emit("reinstall.progress", new { step = s, value = v }), NewLongTask())),
+            Str(p, "mode") ?? "clean", Str(p, "language") ?? "English", (s, v) => _emit("reinstall.progress", new { step = s, value = v }), NewLongTask())),
         "usb.preview" => UnattendGenerator.Generate(Unattend(p)),
         "usb.create" => await Exclusive(async () =>
         {
@@ -112,7 +114,7 @@ public sealed class ApiService
         "report.export" => await ExportReportAsync(),
         "shell.open" => Do(() => ProcessRunner.OpenUrl(Str(p, "url") ?? "")),
         "shell.reveal" => Do(() => ProcessRunner.Reveal(Str(p, "path") ?? "")),
-        "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, _ => AppPaths.Logs })),
+        "shell.folder" => Do(() => ProcessRunner.OpenFolder(Str(p, "name") switch { "backups" => AppPaths.Backups, "downloads" => AppPaths.Downloads, "bench" => AppPaths.Bench, _ => AppPaths.Logs })),
         "window.theme" => Do(() => ThemeChanged?.Invoke(Str(p, "theme") ?? "day")),
         "system.theme" => SystemThemeReader.Read(),
         "net.test" => await Exclusive(() => NetworkTest.RunAsync(Targets(p), Int(p, "count") ?? 30, (h, i, n) => _emit("net.progress", new { host = h, i, n }), NewLongTask())),
@@ -125,19 +127,37 @@ public sealed class ApiService
         "services.run" => await ServiceManager.StartAsync(Str(p, "name") ?? "", Bool(p, "start") ?? true),
         "services.restore" => await ServiceManager.RestoreAsync(Str(p, "name") ?? ""),
         "net.reset" => await Exclusive(async () => { await NetworkTest.ResetStackAsync(); SettingsStore.MarkRebootPending(); return true; }),
+        "bench.list" => BenchList(),
+        "bench.system" => await Exclusive(async () => BenchStore.Add("system", Str(p, "label") ?? "manual",
+            await SystemBench.RunAsync((s, v) => _emit("bench.progress", new { step = s, value = v }), NewLongTask()), null)),
+        "bench.capture" => await Exclusive(async () => BenchStore.Add("game", Str(p, "label") ?? "manual", null,
+            await PresentMonTool.CaptureAsync(Math.Clamp(Int(p, "seconds") ?? 60, 10, 600), Math.Clamp(Int(p, "delay") ?? 10, 0, 60),
+                (s, v) => _emit("bench.progress", new { step = s, value = v }), NewLongTask()))),
+        "bench.remove" => Do(() => BenchStore.Remove(Str(p, "id") ?? "")),
+        "bench.clear" => Do(BenchStore.Clear),
         "startup.list" => StartupManager.List(),
         "startup.set" => Do(() => StartupManager.SetEnabled(Str(p, "id") ?? "", Bool(p, "enabled") ?? true)),
+        "startup.cleanup" => StartupManager.DisableUnneeded(),
         "clean.analyze" => await Task.Run(Cleaner.Analyze),
         "clean.run" => await Exclusive(() => Cleaner.CleanAsync(Ids(p) ?? [])),
         "memory.purge" => MemoryTools.PurgeStandby(),
+        "games.list" => await Task.Run(async () => GameProfiles.List(await ProfileAsync())),
+        "games.set" => await GameProfiles.SetAsync(Str(p, "exe") ?? "", Bool(p, "priority"), Bool(p, "gpu"), Bool(p, "qos"), Bool(p, "noFso")),
+        "games.all" => await GameProfiles.SetAllAsync(await ProfileAsync()),
+        "games.add" => await _onUi(PickGame) is string exe && GameProfiles.Add(exe),
+        "games.remove" => await GameProfiles.RemoveAsync(Str(p, "exe") ?? ""),
+        "gamemode.state" => GameSession.Describe(await ProfileAsync()),
+        "gamemode.start" => await Exclusive(async () => await GameSession.StartAsync(Ids(p, "groups") ?? [], await ProfileAsync())),
+        "gamemode.stop" => await GameSession.StopAsync(),
         "explorer.restart" => await RestartExplorer(),
         _ => throw new InvalidOperationException($"Unknown method {method}"),
     };
 
     // ------------------------------------------------------------------ app & scan
 
-    private object Init()
+    private async Task<object> InitAsync()
     {
+        await GameSession.RestoreLeftoverAsync();
         var s = SettingsStore.Current;
         return new
         {
@@ -165,6 +185,7 @@ public sealed class ApiService
                 && (Environment.GetCommandLineArgs().Contains("--first-run", StringComparer.OrdinalIgnoreCase) || InstalledImage() is not null),
             models = ClaudeAdvisor.Models,
             categories = _catalog.Categories,
+            programIds = _catalog.Programs.Select(x => x.Id),
             log = AppLog.Snapshot().TakeLast(100),
         };
     }
@@ -226,6 +247,11 @@ public sealed class ApiService
         risk = t.Risk.ToString().ToLowerInvariant(),
         t.Confirm,
         t.ConfirmText,
+        t.Gain,
+        t.Keep,
+        t.KeepByDefault,
+        t.Enables,
+        t.Hint,
         t.Reboot,
         t.Logoff,
         t.RestartExplorer,
@@ -346,11 +372,20 @@ public sealed class ApiService
             {
                 f.Id,
                 f.Name,
-                used = f.KeepByDefault || (f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts)),
+                used = f.UsedWhen is not null && ConditionEvaluator.Evaluate(f.UsedWhen, facts),
+                keep = f.KeepByDefault,
                 tweaks = f.Tweaks.Where(id => _catalog.Find(id) is { } t && ConditionEvaluator.Evaluate(t.When, facts)).ToList(),
             })
             .Where(f => f.tweaks.Count > 0);
     }
+
+    /// <summary>Where the installer comes from, as shown next to the program: the vendor's site or GitHub repository.</summary>
+    private static string? Source(InstallProgram p) =>
+        p.Store is not null ? "Microsoft Store"
+        : p.Github is not null ? "github.com/" + p.Github
+        : (p.Installer ?? p.Page) is { } link && Uri.TryCreate(link, UriKind.Absolute, out var u) ? u.Host
+        : p.Download is not null && Uri.TryCreate(p.Download, UriKind.Absolute, out var d) ? d.Host
+        : null;
 
     private object Programs()
     {
@@ -359,11 +394,27 @@ public sealed class ApiService
         return new
         {
             winget = ProgramInstaller.FindWinget() is not null,
+            store = ProgramInstaller.StoreAvailable(),
             programs = _catalog.Programs
                 .Where(x => facts is null || ConditionEvaluator.Evaluate(x.When, facts))
-                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, installed = installed.GetValueOrDefault(x.Id) }),
+                .Select(x => new { x.Id, x.Name, x.Group, x.Winget, x.Url, x.Note, x.Recommended, x.Paid, x.User, direct = x.Download is not null, source = Source(x), x.Store, silent = x.Silent is not null || (x.Installer ?? "").Contains(".msi"), installed = installed.GetValueOrDefault(x.Id) }),
             extensions = _catalog.Extensions.Select(e => new { e.Id, e.Name, e.ExtensionId, e.MinVersion, e.Note, e.StoreUrl }),
         };
+    }
+
+    private static object BenchList()
+    {
+        var entries = BenchStore.List();
+        var (system, games) = BenchCompare.Summarize(entries);
+        return new { entries, presentMon = PresentMonTool.Ready, system, games };
+    }
+
+    /// <summary>The maker whose BIOS and tools this PC has, and the exact model to look up on its site.</summary>
+    private object Firmware(SystemProfile p)
+    {
+        var v = BiosAdvisor.Vendor(_catalog.Vendors, p);
+        var model = p.Machine.IsLaptop || v.Laptop is null ? $"{p.Machine.Manufacturer} {p.Machine.Model}" : $"{p.Board.Manufacturer} {p.Board.Product}";
+        return new { v.Key, v.Name, v.Enter, v.Advanced, v.Defaults, v.Save, v.Hint, v.Support, v.Updater, v.App, laptop = p.Machine.IsLaptop, model = model.Trim() };
     }
 
     private async Task<object> BiosAsync()
@@ -371,7 +422,8 @@ public sealed class ApiService
         var p = await ProfileAsync();
         return new
         {
-            board = new { p.Board.Manufacturer, p.Board.Product, p.Board.BiosVersion, p.Board.BiosDate, vendor = p.Board.VendorKey },
+            board = new { p.Board.Manufacturer, p.Board.Product, p.Board.BiosVersion, p.Board.BiosDate },
+            firmware = Firmware(p),
             cpu = new { p.Cpu.Name, microcode = p.Cpu.MicrocodeRevision is { } m ? $"0x{m:X}" : null },
             ram = new { p.Memory.Type, speed = p.Memory.ConfiguredSpeed, rated = p.Memory.Modules.Count > 0 ? p.Memory.Modules.Max(x => x.Speed) : 0 },
             security = p.Security,
@@ -441,6 +493,17 @@ public sealed class ApiService
     }
 
     // ------------------------------------------------------------------ image
+
+    private static object? PickGame()
+    {
+        using var dlg = new OpenFileDialog
+        {
+            Filter = "Game (*.exe)|*.exe",
+            Title = SettingsStore.Current.Language == "en" ? "Choose the game's .exe" : "Выберите .exe игры",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+        };
+        return dlg.ShowDialog() == DialogResult.OK ? dlg.FileName : null;
+    }
 
     private static object? PickIso()
     {

@@ -29,7 +29,9 @@ public class OfflineImagePlanTests
         Assert.DoesNotContain("network.nagle.off", plan.TweakIds);        // per-interface wildcard
         Assert.DoesNotContain("system.ntfs", plan.TweakIds);              // command
         Assert.Contains(plan.Skipped, s => s.Id == "gaming.hags" && s.Reason == "hardware");
-        Assert.Contains(plan.Skipped, s => s.Id == "network.nagle.off" && s.Reason == "per-device");
+        // chosen by hand, a per-interface wildcard still waits for the installed system
+        var chosen = OfflineImagePlan.Build(Catalog, new OfflineImageOptions { TweakIds = ["network.nagle.off"] });
+        Assert.Contains(chosen.Skipped, s => s.Id == "network.nagle.off" && s.Reason == "per-device");
     }
 
     [Fact]
@@ -53,7 +55,7 @@ public class OfflineImagePlanTests
         var plan = OfflineImagePlan.Build(Catalog, new OfflineImageOptions { MaxLevel = 2 });
         Assert.All(plan.Registry, r => Assert.False(string.IsNullOrWhiteSpace(r.SubKey)));
         Assert.Contains(plan.Registry, r => r.Hive == OfflineHive.DefaultUser && r.Name == "MouseSpeed" && r.Data == "0");
-        Assert.Contains(plan.Registry, r => r.Name == "NetworkThrottlingIndex" && r.Data == "-1"); // 0xFFFFFFFF bit pattern
+        Assert.Contains(plan.Registry, r => r.TweakId == "look.accent" && r.Kind == RegistryValueKind2.Dword && r.Data.StartsWith('-')); // 0xFFxxxxxx colours keep their bit pattern
     }
 
     [Fact]

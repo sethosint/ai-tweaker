@@ -38,6 +38,21 @@ public sealed class TweakDefinition
     /// <summary>What the user loses if they say yes. Shown in the confirmation dialog.</summary>
     public LocalizedText? ConfirmText { get; init; }
 
+    /// <summary>What the user gains by saying yes — the "switch it off" side of the question.</summary>
+    public LocalizedText? Gain { get; init; }
+
+    /// <summary>What keeps working if the user says no — the "leave it" side of the question.</summary>
+    public LocalizedText? Keep { get; init; }
+
+    /// <summary>The question suggests "keep" (e.g. it only helps with hardware the scan can't see, like a G-SYNC monitor).</summary>
+    public bool KeepByDefault { get; init; }
+
+    /// <summary>The tweak turns something on rather than off: the question says "turn on" instead of "switch off".</summary>
+    public bool Enables { get; init; }
+
+    /// <summary>Shown under the question instead of the generic advice.</summary>
+    public LocalizedText? Hint { get; init; }
+
     public bool Reboot { get; init; }
     public bool Logoff { get; init; }
     public bool RestartExplorer { get; init; }

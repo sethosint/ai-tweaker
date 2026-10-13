@@ -75,5 +75,19 @@
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB\\*\\*\\Device Parameters", "name": "AllowIdleIrpInD3", "kind": "dword", "value": 0, "onlyIfKeyExists": true },
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB\\*\\*\\Device Parameters", "name": "SelectiveSuspendEnabled", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
     ]
+  },
+  {
+    "id": "input.raw-mouse-throttle.off",
+    "category": "input",
+    "level": 0,
+    "logoff": true,
+    "name": { "ru": "Без ограничения raw input для фоновых окон", "en": "No raw input throttle for background windows" },
+    "description": {
+      "ru": "С 2023 года Windows ограничивает raw input мыши до 125 Гц для окон не на переднем плане. Отключение помогает играм, которые читают мышь «из фона» (известны проблемы в Minecraft Bedrock и части шутеров). Цена — нагрузка на CPU от фоновых программ, слушающих мышь, при мышках 4–8 кГц, поэтому только вручную.",
+      "en": "Since 2023 Windows throttles raw mouse input to 125 Hz for windows that aren't in the foreground. Turning it off helps games that read the mouse 'from the background' (known issues in Minecraft Bedrock and some shooters). The cost is CPU load from background apps listening to a 4–8 kHz mouse, so manual only."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Control Panel\\Mouse", "name": "RawMouseThrottleEnabled", "kind": "dword", "value": 0 }
+    ]
   }
 ]

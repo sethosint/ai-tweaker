@@ -4,7 +4,7 @@ using AITweaker.Core.Model;
 
 namespace AITweaker.Core.Catalog;
 
-/// <summary>Loads the embedded data files (tweaks, debloat apps, app guides, BIOS advice, programs, browser extensions).</summary>
+/// <summary>Loads the embedded data files (tweaks, debloat apps, app guides, BIOS advice and vendors, programs, browser extensions).</summary>
 public sealed class TweakCatalog
 {
     private const string Prefix = "AITweaker.Data.";
@@ -17,13 +17,14 @@ public sealed class TweakCatalog
     public IReadOnlyList<InstallProgram> Programs { get; }
     public IReadOnlyList<BrowserExtension> Extensions { get; }
     public IReadOnlyList<FeatureQuestion> Features { get; }
+    public IReadOnlyList<FirmwareVendor> Vendors { get; }
 
     private readonly Dictionary<string, TweakDefinition> _byId;
 
     private TweakCatalog(
         List<TweakCategory> categories, List<TweakDefinition> tweaks, List<AppPackage> apps,
         List<AppGuide> guides, List<BiosRecommendation> bios, List<InstallProgram> programs, List<BrowserExtension> extensions,
-        List<FeatureQuestion> features)
+        List<FeatureQuestion> features, List<FirmwareVendor> vendors)
     {
         Categories = categories;
         Tweaks = tweaks;
@@ -33,6 +34,7 @@ public sealed class TweakCatalog
         Programs = programs;
         Extensions = extensions;
         Features = features;
+        Vendors = vendors;
         _byId = new Dictionary<string, TweakDefinition>(StringComparer.Ordinal);
         foreach (var t in tweaks)
         {
@@ -64,7 +66,8 @@ public sealed class TweakCatalog
             Read<List<BiosRecommendation>>(asm, Prefix + "bios.json"),
             Read<List<InstallProgram>>(asm, Prefix + "programs.json"),
             Read<List<BrowserExtension>>(asm, Prefix + "extensions.json"),
-            Read<List<FeatureQuestion>>(asm, Prefix + "features.json"));
+            Read<List<FeatureQuestion>>(asm, Prefix + "features.json"),
+            Read<List<FirmwareVendor>>(asm, Prefix + "vendors.json"));
     }
 
     private static T Read<T>(Assembly asm, string resource)

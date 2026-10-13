@@ -72,7 +72,7 @@ public class EngineTests
     {
         var plan = Engine.BuildPlan(TestProfiles.Desktop(), TuneProfile.Extreme);
         Assert.DoesNotContain(plan.Recommended, i => i.Tweak.Level == 0);
-        Assert.Contains(plan.Items, i => i.Tweak.Id == "security.cpu-mitigations.off" && !i.Recommended && i.NeedsConfirm);
+        Assert.Contains(plan.Items, i => i.Tweak.Id == "system.scanner.off" && !i.Recommended && i.NeedsConfirm);
     }
 
     [Fact]
@@ -89,12 +89,10 @@ public class EngineTests
     [Fact]
     public void ConfirmTweaksAreFlagged()
     {
-        var p = TestProfiles.Desktop();
-        p.Security.HvciRunning = true;
-        var plan = Engine.BuildPlan(p, TuneProfile.Extreme);
-        var vbs = plan.Items.Single(i => i.Tweak.Id == "security.vbs.off");
-        Assert.True(vbs.NeedsConfirm);
-        Assert.True(vbs.Recommended);
+        var plan = Engine.BuildPlan(TestProfiles.Desktop(), TuneProfile.Extreme);
+        var hyperv = plan.Items.Single(i => i.Tweak.Id == "system.hyperv.off");
+        Assert.True(hyperv.NeedsConfirm);
+        Assert.True(hyperv.Recommended);
     }
 
     [Fact]

@@ -21,6 +21,7 @@ namespace AITweaker.Core.Model;
 [JsonDerivedType(typeof(DisplayRefreshAction), "display")]
 [JsonDerivedType(typeof(WallpaperAction), "wallpaper")]
 [JsonDerivedType(typeof(NvidiaProfileAction), "nvidia")]
+[JsonDerivedType(typeof(FileSettingAction), "file")]
 public abstract class TweakAction
 {
     /// <summary>Optional per-action condition (e.g. different values on laptops).</summary>
@@ -199,6 +200,24 @@ public sealed class DisplayRefreshAction : TweakAction
     public override string Describe() => "display -> max refresh rate";
 }
 
+/// <summary>
+/// Settings inside a program's own settings file: JSON (Discord's settings.json) or key=value lines (Spotify's prefs).
+/// A missing file means the program isn't installed or set up yet: nothing to do.
+/// </summary>
+public sealed class FileSettingAction : TweakAction
+{
+    /// <summary>Environment variables such as %APPDATA% are expanded.</summary>
+    public required string Path { get; init; }
+    /// <summary>json | prefs</summary>
+    public string Format { get; init; } = "json";
+    /// <summary>Key → value. For prefs files the JSON literal is written as is (strings keep their quotes, like Spotify's).</summary>
+    public required Dictionary<string, JsonElement> Set { get; init; }
+    /// <summary>A program that rewrites the file when it exits: it is closed first and started again afterwards.</summary>
+    public string? Process { get; init; }
+
+    public override string Describe() => $"file {Path}: " + string.Join(", ", Set.Select(kv => $"{kv.Key}={kv.Value.GetRawText()}"));
+}
+
 /// <summary>Sets the desktop to solid black or one of AI Tweaker's own wallpapers (shipped inside the app), or the lock-screen image.</summary>
 public sealed class WallpaperAction : TweakAction
 {
@@ -235,6 +254,15 @@ public sealed class NvidiaSetting
     public uint Default { get; init; }
     /// <summary>Optional condition for this one setting (e.g. maximum performance only on desktops).</summary>
     public string? When { get; init; }
+    /// <summary>A value that depends on this PC: <c>maxHz-3</c> = the fastest display's refresh rate minus 3 (the G-SYNC frame cap).</summary>
+    public string? ValueFrom { get; init; }
 
     public uint SettingId => Convert.ToUInt32(Id, 16);
+
+    /// <summary>The value to write on this PC (<see cref="Value"/> unless <see cref="ValueFrom"/> says otherwise).</summary>
+    public uint Resolve(Profile.SystemProfile profile) => ValueFrom switch
+    {
+        "maxHz-3" => (uint)Math.Max(30, (profile.Displays.Select(d => Math.Max(d.MaxRefreshHz, d.RefreshHz)).DefaultIfEmpty(60).Max()) - 3),
+        _ => Value,
+    };
 }

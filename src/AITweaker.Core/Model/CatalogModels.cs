@@ -40,6 +40,8 @@ public sealed class GuideSection
     public required LocalizedText Title { get; init; }
     /// <summary>Settings path inside the app, e.g. "User Settings → Game Overlay".</summary>
     public string Path { get; init; } = "";
+    /// <summary>Optional screenshot in wwwroot/guides, shown as is next to the text.</summary>
+    public string? Image { get; init; }
     public List<GuideSetting> Settings { get; init; } = [];
     public LocalizedText? Note { get; init; }
 }
@@ -71,6 +73,25 @@ public sealed class InstallProgram
     public string? Override { get; init; }
     /// <summary>Direct link to an official portable zip (used when there is no winget package).</summary>
     public string? Download { get; init; }
+    /// <summary>Which program in the portable zip the Start menu shortcut opens (default: the one named like the id).</summary>
+    public string? Exe { get; init; }
+    /// <summary>The program in the portable zip must carry a valid digital signature, or nothing is installed.</summary>
+    public bool Signed { get; init; }
+    /// <summary>
+    /// Direct link to the vendor's own installer (.exe or .msi), downloaded and run when the user clicks Install.
+    /// <c>{lang}</c> is replaced with the interface language (ru / en-US).
+    /// </summary>
+    public string? Installer { get; init; }
+    /// <summary>GitHub repository whose latest release holds the installer (owner/name), with <see cref="Asset"/>.</summary>
+    public string? Github { get; init; }
+    /// <summary>Regular expression for the installer's file name in the latest GitHub release, or on <see cref="Page"/>.</summary>
+    public string? Asset { get; init; }
+    /// <summary>The vendor's own download page or folder listing: the newest link whose file name matches <see cref="Asset"/> is downloaded.</summary>
+    public string? Page { get; init; }
+    /// <summary>Microsoft Store product id for apps that only exist in the Store (installed through the Store, own group in the Install tab).</summary>
+    public string? Store { get; init; }
+    /// <summary>Silent switches for the installer; null = the installer opens normally and the user clicks through it.</summary>
+    public string? Silent { get; init; }
     /// <summary>Official page, opened when neither winget nor the direct download works.</summary>
     public string? Url { get; init; }
     /// <summary>DisplayName fragments in "Apps &amp; features" ("|" = any of them) that mean it is already installed.</summary>
@@ -118,6 +139,29 @@ public sealed class BiosRecommendation
     public string? When { get; init; }
     /// <summary>high | medium | low</summary>
     public string Priority { get; init; } = "medium";
-    /// <summary>Menu path per board vendor: asus, msi, gigabyte, asrock, other.</summary>
+    /// <summary>Menu path per vendor key from vendors.json (asus, msi-laptop, lenovo…), then "laptop" for any laptop, then "other".</summary>
     public Dictionary<string, string> Paths { get; init; } = [];
+}
+
+/// <summary>A board or PC maker: how to get into its firmware setup and where its own tools live.</summary>
+public sealed class FirmwareVendor
+{
+    public required string Key { get; init; }
+    public required string Name { get; init; }
+    /// <summary>Regex (case-insensitive) matched against the system or board manufacturer.</summary>
+    public required string Match { get; init; }
+    /// <summary>true = laptops only, false = desktops only, null = both.</summary>
+    public bool? Laptop { get; init; }
+    /// <summary>Key(s) to press right after power-on to open the setup.</summary>
+    public string Enter { get; init; } = "Del / F2";
+    public string? Advanced { get; init; }
+    public string? Defaults { get; init; }
+    public string? Save { get; init; }
+    /// <summary>Official download page for BIOS and drivers.</summary>
+    public string? Support { get; init; }
+    /// <summary>The maker's own BIOS/driver update tool.</summary>
+    public string? Updater { get; init; }
+    /// <summary>Laptop utility that holds the performance and GPU (MUX) modes.</summary>
+    public string? App { get; init; }
+    public LocalizedText? Hint { get; init; }
 }

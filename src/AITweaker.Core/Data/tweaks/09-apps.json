@@ -120,5 +120,34 @@
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "ShoppingListEnabled", "kind": "dword", "value": 0 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Google\\Chrome", "name": "HardwareAccelerationModeEnabled", "kind": "dword", "value": 1 }
     ]
+  },
+  {
+    "id": "apps.discord.startup",
+    "category": "apps",
+    "level": 2,
+    "when": "app.discord",
+    "name": { "ru": "Discord: не запускаться вместе с Windows", "en": "Discord: don't start with Windows" },
+    "description": {
+      "ru": "В настройках самого Discord выключается «Автоматически открывать Discord при запуске компьютера», а закрытие окна сворачивает его в трей. Без этого Discord при каждом запуске сам возвращает себя в автозагрузку. Открытый Discord не закрывается — изменения подхватятся при следующем запуске.",
+      "en": "In Discord's own settings, 'Automatically open Discord when your computer starts up' is turned off and closing the window minimizes it to the tray. Otherwise Discord puts itself back into startup every time it runs. An open Discord isn't closed — the change is picked up on its next start."
+    },
+    "actions": [
+      { "type": "file", "path": "%APPDATA%\\discord\\settings.json", "format": "json", "set": { "OPEN_ON_STARTUP": false, "MINIMIZE_TO_TRAY": true } }
+    ]
+  },
+  {
+    "id": "apps.spotify.startup",
+    "category": "apps",
+    "level": 2,
+    "when": "app.spotify",
+    "name": { "ru": "Spotify: не запускаться вместе с Windows", "en": "Spotify: don't start with Windows" },
+    "description": {
+      "ru": "В настройках самого Spotify «Открывать Spotify автоматически после входа в систему» → «Нет». Без этого Spotify сам возвращает себя в автозагрузку. Если Spotify открыт, он закроется и откроется снова.",
+      "en": "In Spotify's own settings, 'Open Spotify automatically after you log into the computer' → No. Otherwise Spotify puts itself back into startup. If Spotify is open, it closes and opens again."
+    },
+    "actions": [
+      { "type": "file", "path": "%APPDATA%\\Spotify\\prefs", "format": "prefs", "set": { "app.autostart-mode": "off", "app.autostart-configured": true }, "process": "Spotify" },
+      { "type": "file", "path": "%LOCALAPPDATA%\\Packages\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0\\LocalState\\Spotify\\prefs", "format": "prefs", "set": { "app.autostart-mode": "off", "app.autostart-configured": true }, "process": "Spotify" }
+    ]
   }
 ]

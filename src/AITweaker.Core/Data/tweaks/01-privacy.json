@@ -193,6 +193,14 @@
       "ru": "Полностью запрещает приложениям и Windows доступ к геопозиции.",
       "en": "Completely denies apps and Windows access to your location."
     },
+    "gain": {
+      "ru": "Приложения и Windows больше не узнают, где вы находитесь: меньше фоновых запросов и слежки.",
+      "en": "Apps and Windows stop finding out where you are: fewer background requests and less tracking."
+    },
+    "keep": {
+      "ru": "Продолжают работать погода и карты по геопозиции, «Найти устройство» и автоматический часовой пояс.",
+      "en": "Weather and maps by location, Find My Device and the automatic time zone keep working."
+    },
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "name": "Value", "kind": "string", "value": "Deny" },
       { "type": "service", "name": "lfsvc", "startup": "disabled" }

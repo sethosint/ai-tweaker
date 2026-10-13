@@ -12,6 +12,5 @@
   { "id": "location", "name": { "ru": "Местоположение: карты, погода, «Найти устройство»", "en": "Location: maps, weather, Find My Device" }, "usedWhen": "system.laptop", "tweaks": ["privacy.location"] },
   { "id": "phone", "name": { "ru": "Звонки с компьютера через «Связь с телефоном»", "en": "Calls from the PC through Phone Link" }, "tweaks": ["system.phone.off"] },
   { "id": "hotspot", "name": { "ru": "Раздача Wi-Fi с компьютера", "en": "Sharing Wi-Fi from the PC" }, "tweaks": ["system.hotspot.off"] },
-  { "id": "background", "name": { "ru": "Приложения из Microsoft Store в фоне", "en": "Microsoft Store apps in the background" }, "tweaks": ["system.background-apps.off"] },
-  { "id": "vbs", "name": { "ru": "Изоляция ядра (защита памяти)", "en": "Core isolation (memory integrity)" }, "keepByDefault": true, "tweaks": ["security.vbs.off"] }
+  { "id": "background", "name": { "ru": "Приложения из Microsoft Store в фоне", "en": "Microsoft Store apps in the background" }, "tweaks": ["system.background-apps.off"] }
 ]

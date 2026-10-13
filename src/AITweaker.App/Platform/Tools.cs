@@ -1,5 +1,6 @@
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using AITweaker.Core.Engine;
 using Microsoft.Win32;
 
 namespace AITweaker.App.Platform;
@@ -126,7 +127,8 @@ public static class NetworkTest
 
 // ====================================================================== startup apps
 
-public sealed record StartupEntry(string Id, string Name, string Command, string Location, bool Enabled, string Scope);
+/// <param name="Suggest">"off" (not needed at boot), "keep" (drivers' helpers, audio, peripherals, anti-cheat, security) or null.</param>
+public sealed record StartupEntry(string Id, string Name, string Command, string Location, bool Enabled, string Scope, string? Suggest);
 
 /// <summary>Enables/disables startup apps exactly like Task Manager does (Explorer\StartupApproved flags), so changes are reversible there too.</summary>
 public static class StartupManager
@@ -162,7 +164,10 @@ public static class StartupManager
             using var run = s.Hive.OpenSubKey(s.RunPath);
             if (run is null) continue;
             foreach (var name in run.GetValueNames().Where(n => n.Length > 0))
-                list.Add(new StartupEntry($"{s.HiveName}|{s.ApprovedKey}|{name}", name, run.GetValue(name)?.ToString() ?? "", s.Location, IsEnabled(s.Hive, s.ApprovedKey, name), s.HiveName == "HKCU" ? "user" : "all users"));
+                {
+                var cmd = run.GetValue(name)?.ToString() ?? "";
+                list.Add(new StartupEntry($"{s.HiveName}|{s.ApprovedKey}|{name}", name, cmd, s.Location, IsEnabled(s.Hive, s.ApprovedKey, name), s.HiveName == "HKCU" ? "user" : "all users", StartupAdvisor.Suggest(name, cmd)));
+            }
         }
         foreach (var (folder, hive, hiveName, scope) in Folders())
         {
@@ -170,10 +175,19 @@ public static class StartupManager
             foreach (var file in Directory.EnumerateFiles(folder).Where(f => !f.EndsWith("desktop.ini", StringComparison.OrdinalIgnoreCase)))
             {
                 var name = Path.GetFileName(file);
-                list.Add(new StartupEntry($"{hiveName}|StartupFolder|{name}", Path.GetFileNameWithoutExtension(file), file, "Startup folder", IsEnabled(hive, "StartupFolder", name), scope));
+                list.Add(new StartupEntry($"{hiveName}|StartupFolder|{name}", Path.GetFileNameWithoutExtension(file), file, "Startup folder", IsEnabled(hive, "StartupFolder", name), scope, StartupAdvisor.Suggest(name, file)));
             }
         }
         return list.OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>Switches off every enabled entry marked "off" — the same reversible switch as Task Manager's Startup tab.</summary>
+    public static int DisableUnneeded()
+    {
+        var targets = List().Where(e => e.Enabled && e.Suggest == "off").ToList();
+        foreach (var e in targets) SetEnabled(e.Id, false);
+        AppLog.Ok("startup", $"{targets.Count} startup entries switched off");
+        return targets.Count;
     }
 
     public static void SetEnabled(string id, bool enabled)

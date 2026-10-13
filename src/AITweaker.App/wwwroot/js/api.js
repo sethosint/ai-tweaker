@@ -33,11 +33,17 @@
 
   // ------------------------------------------------------------------ simulator
 
-  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], programs: [], extensions: [], features: [] };
+  const D = window.MOCK_DATA || { categories: [], tweaks: [], apps: [], guides: [], bios: [], vendors: [], programs: [], extensions: [], features: [] };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const now = () => new Date().toISOString();
   const log = (level, source, text) => emit("log", { time: now(), level, source, text });
-  const mock = { applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Performance", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+  const mockSnap = { cpuIdlePercent: 3.4, dpcPercent: 0.38, interruptPercent: 0.21, dpcPerSec: 1480, interruptsPerSec: 9200, contextSwitchesPerSec: 14800, processes: 214, threads: 3120, services: 126, startupItems: 11,
+    ramUsedGb: 6.84, timerMs: 15.625, sleepAvgMs: 1.62, sleepP99Ms: 2.94, routerPingMs: 2.4, routerJitterMs: 1.9, pingMs: 14.2, jitterMs: 2.6, lossPercent: 0, bootSeconds: 31.4 };
+  const mock = { bench: [
+      { id: "b1", at: "2026-10-12T19:02:00", kind: "system", label: "before", frames: null, system: mockSnap },
+      { id: "g1", at: "2026-10-12T19:10:00", kind: "game", label: "manual", system: null, frames: { app: "cs2.exe", frames: 14820, seconds: 60, avgFps: 247.0, low1Fps: 148.3, low01Fps: 96.1, avgFrameMs: 4.05, p99FrameMs: 6.74, stuttersPerMin: 3.4, latencyMs: 11.2, pcLatencyMs: null, gpuBusyPercent: 68.2, bound: "cpu" } },
+      { id: "b2", at: "2026-10-12T19:48:00", kind: "system", label: "after", frames: null, system: { ...mockSnap, cpuIdlePercent: 1.1, dpcPercent: 0.22, interruptPercent: 0.12, dpcPerSec: 690, interruptsPerSec: 5100, contextSwitchesPerSec: 8300, processes: 131, threads: 1890, services: 84, startupItems: 4, ramUsedGb: 3.92, timerMs: 0.5, sleepAvgMs: 1.04, sleepP99Ms: 1.21, routerPingMs: 1.8, routerJitterMs: 0.6, pingMs: 13.9, jitterMs: 1.1, bootSeconds: 18.7 } },
+    ], applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Extreme", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
     services: [
       ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
       ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
@@ -52,7 +58,7 @@
     ].map(([name, displayName, description, state, start, essential, tweaks]) => ({ name, displayName, description, state, start, essential, changed: false, tweaks: tweaks || [] })) };
 
   const profile = {
-    os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2" },
+    os: { caption: "Microsoft Windows 11 Pro", build: 26200, ubr: 6584, edition: "Professional", displayVersion: "25H2", language: "ru-RU" },
     cpu: { name: "AMD Ryzen 7 9850X3D 8-Core Processor", vendor: "AMD", cores: 8, threads: 16, maxClockMhz: 4700, isHybrid: false, pCores: 8, eCores: 0, isX3D: true, microcodeRevision: 192, topology: [] },
     gpus: [{ name: "NVIDIA GeForce RTX 5070 Ti", vendor: "NVIDIA", driverVersion: "32.0.15.8157", driverDate: "2026-03-02T00:00:00", vramMb: 16303, isDiscrete: true }],
     memory: { totalGb: 32, type: "DDR5", configuredSpeed: 4800, xmpLikelyOff: true, modules: [{ capacityGb: 16, speed: 6000, configuredSpeed: 4800 }, { capacityGb: 16, speed: 6000, configuredSpeed: 4800 }] },
@@ -79,7 +85,6 @@
   const insights = [
     { id: "display.hz.1", severity: "critical", title: { ru: "Монитор работает на 60 Гц вместо 180 Гц", en: "Monitor runs at 60 Hz instead of 180 Hz" }, detail: { ru: "ASUS VG27AQ3A: включите максимальную частоту обновления — это самый заметный прирост плавности.", en: "ASUS VG27AQ3A: switch to the maximum refresh rate — the most noticeable smoothness upgrade." }, action: "tweak:display.maxhz", metric: "60→180 Hz" },
     { id: "ram.xmp", severity: "warning", title: { ru: "Память работает на 4800 МГц", en: "RAM runs at 4800 MHz" }, detail: { ru: "Похоже, профиль XMP/EXPO выключен в BIOS — вы теряете 5–15% FPS в CPU-зависимых играх.", en: "XMP/EXPO looks disabled in BIOS — that costs 5–15% FPS in CPU-bound games." }, action: "bios", metric: "4800 MHz" },
-    { id: "sec.hvci", severity: "warning", title: { ru: "Включена целостность памяти (HVCI/VBS)", en: "Memory integrity (HVCI/VBS) is on" }, detail: { ru: "Защита на уровне гипервизора стоит до 5–10% FPS. Можно отключить в TWEAKS → Безопасность (с подтверждением).", en: "Hypervisor-level protection costs up to 5–10% FPS. Can be disabled in TWEAKS → Security (asks first)." }, action: "tweak:security.vbs.off" },
     { id: "gpu.driver.old", severity: "warning", title: { ru: "Драйвер видеокарты от 02.03.2026", en: "GPU driver from 2026-03-02" }, detail: { ru: "Драйверу NVIDIA GeForce RTX 5070 Ti больше полугода. Свежие драйверы дают прирост FPS в новых играх.", en: "The NVIDIA GeForce RTX 5070 Ti driver is over six months old." }, action: "drivers", metric: "32.0.15.8157" },
   ];
 
@@ -96,7 +101,7 @@
   const statusOf = (t) => (mock.applied.has(t.id) ? "applied" : evalWhen(t.when) ? "off" : "n/a");
 
   const handlers = {
-    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
+    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, programIds: D.programs.map((p) => p.id), log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
     "system.scan": async () => {
       log("info", "scan", "scanning hardware and Windows configuration…");
       await sleep(1400);
@@ -156,9 +161,13 @@
       return r;
     },
     "drivers.list": async () => [
-      { category: "gpu", name: profile.gpus[0].name, vendor: "NVIDIA", version: "32.0.15.8157", date: "2026-03-02T00:00:00", status: "old", links: [{ title: "NVIDIA App", url: "https://www.nvidia.com/en-us/software/nvidia-app/" }, { title: "GeForce drivers", url: "https://www.nvidia.com/en-us/drivers/" }] },
-      { category: "chipset", name: profile.cpu.name, vendor: "AMD", status: "check", links: [{ title: "AMD Chipset Drivers", url: "https://www.amd.com/en/support/download/drivers.html" }] },
-      { category: "network", name: profile.network[0].description, vendor: "ethernet", status: "ok", links: [{ title: "ASUS Support", url: "https://www.asus.com/support/download-center/" }] },
+      { category: "oem", name: profile.board.manufacturer + " " + profile.board.product, vendor: "ASUS", status: "check", priority: "medium", note: { ru: "Звук, LAN и утилиты платы — с сайта производителя платы, раздел «Поддержка» для вашей модели.", en: "Audio, LAN and board utilities come from the board maker's support page for your model." }, links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }] },
+      { category: "chipset", name: profile.cpu.name, vendor: "AMD", status: "missing", priority: "medium", note: { ru: "Драйвер чипсета AMD управляет питанием и парковкой ядер Ryzen. Сейчас стоят только стандартные драйверы Windows.", en: "The AMD chipset driver handles Ryzen power management and core parking. Only Windows' generic drivers are installed now." }, links: [{ title: "AMD Chipset Drivers", url: "https://www.amd.com/en/support/download/drivers.html" }] },
+      { category: "ethernet", name: "Realtek Gaming 2.5GbE Family Controller", vendor: "Realtek", version: "1125.21.903.2024", date: "2024-09-03T00:00:00", provider: "Microsoft", status: "inbox", priority: "medium", note: { ru: "Стоит стандартный драйвер Windows. У производителя свежее, с полными настройками энергосбережения и буферов.", en: "Windows' generic driver is in use. The maker's is newer and exposes the full power-saving and buffer settings." }, links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "gpu", name: profile.gpus[0].name, vendor: "NVIDIA", version: "32.0.15.8157", date: "2026-03-02T00:00:00", provider: "NVIDIA", status: "old", priority: "medium", note: { ru: "Драйверу 7 мес. Свежие драйверы чинят фризы и дают FPS в новых играх.", en: "The driver is 7 months old. New drivers fix stutter and add FPS in new games." }, links: [{ title: "NVIDIA App", url: "https://www.nvidia.com/en-us/software/nvidia-app/" }, { title: "GeForce drivers", url: "https://www.nvidia.com/en-us/drivers/" }] },
+      { category: "wifi", name: "MediaTek Wi-Fi 7 MT7925", vendor: "MediaTek", version: "5.4.0.3290", date: "2026-05-14T00:00:00", provider: "MediaTek, Inc.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "bluetooth", name: "MediaTek Bluetooth Adapter", vendor: "MediaTek", version: "1.1037.0.410", date: "2026-05-14T00:00:00", provider: "MediaTek, Inc.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
+      { category: "audio", name: "Realtek USB Audio", vendor: "Realtek", version: "6.3.9600.2397", date: "2025-11-20T00:00:00", provider: "Realtek Semiconductor Corp.", status: "ok", priority: "low", links: [{ title: "ASUS", url: "https://www.asus.com/support/download-center/" }, { title: "Windows Update", url: "ms-settings:windowsupdate-optionalupdates" }] },
     ],
     "drivers.rescan": async () => { await sleep(900); return { exitCode: 0 }; },
     "reinstall.start": async ({ source }) => {
@@ -178,9 +187,10 @@
     },
     "guides.list": async () => D.guides.filter((g) => evalWhen(g.when)).map((g) => ({ ...g, installed: !g.detect || evalWhen(g.detect) })).sort((a, b) => b.installed - a.installed),
     "bios.list": async () => ({
-      board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate, vendor: "asus" },
+      board: { manufacturer: profile.board.manufacturer, product: profile.board.product, biosVersion: profile.board.biosVersion, biosDate: profile.board.biosDate },
+      firmware: (() => { const v = D.vendors.find((x) => x.key === "asus") || {}; return { ...v, laptop: false, model: profile.board.manufacturer + " " + profile.board.product }; })(),
       cpu: { name: profile.cpu.name, microcode: "0xC0" }, ram: { type: "DDR5", speed: 4800, rated: 6000 }, security: profile.security,
-      advice: D.bios.filter((b) => evalWhen(b.when)).map((b) => ({ id: b.id, title: b.title, detail: b.detail, value: b.value, priority: b.priority, path: b.paths.asus || b.paths.other, status: b.id === "xmp" ? "fix" : ["secureboot", "tpm"].includes(b.id) ? "ok" : "check" }))
+      advice: D.bios.filter((b) => evalWhen(b.when)).map((b) => ({ id: b.id, title: b.title, detail: b.detail, value: b.value, priority: b.priority, path: b.paths.asus || b.paths.other || "", status: b.id === "xmp" ? "fix" : ["secureboot", "tpm"].includes(b.id) ? "ok" : "check" }))
         .sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority])),
     }),
     "bios.reboot": async () => { log("warn", "system", "demo: reboot into BIOS skipped"); return true; },
@@ -189,7 +199,8 @@
       await sleep(250);
       return {
         winget: true,
-        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, installed: mock.installed.has(p.id) })),
+        store: !mock.removedApps.has("Microsoft.WindowsStore"),
+        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, source: p.store ? "Microsoft Store" : p.github ? "github.com/" + p.github : (p.installer || p.page) ? new URL(p.installer || p.page).host : p.download ? new URL(p.download).host : null, silent: !!p.silent || /\.msi/.test(p.installer || ""), installed: mock.installed.has(p.id) })),
         extensions: D.extensions.map((e) => ({ ...e, storeUrl: "https://chromewebstore.google.com/detail/" + e.extensionId })),
       };
     },
@@ -231,7 +242,7 @@
     "display.keep": async () => true,
     "display.revert": async () => true,
     "features.list": async () => D.features
-      .map((f) => ({ id: f.id, name: f.name, used: !!f.keepByDefault || (f.usedWhen ? evalWhen(f.usedWhen) : false), tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
+      .map((f) => ({ id: f.id, name: f.name, used: f.usedWhen ? evalWhen(f.usedWhen) : false, keep: !!f.keepByDefault, tweaks: f.tweaks.filter((id) => { const tw = D.tweaks.find((x) => x.id === id); return tw && evalWhen(tw.when); }) }))
       .filter((f) => f.tweaks.length),
     "image.preview": async ({ options }) => {
       const o = options || {};
@@ -273,7 +284,7 @@
       return {
         summary: mock.settings.language === "en" ? "Strong gaming desktop held back by 60 Hz, disabled EXPO and HVCI." : "Мощный игровой ПК, которому мешают 60 Гц на мониторе, выключенный EXPO и HVCI.",
         recommendations: [{ id: "display.maxhz", reason: "180 Hz monitor at 60 Hz." }, { id: "devices.interrupt-affinity", reason: "8 cores: GPU/NIC/USB interrupts off core 0." }, { id: "gaming.hags", reason: "RTX 50: needed for DLSS frame generation." }],
-        avoid: [{ id: "security.cpu-mitigations.off", reason: "Zen 5 has near-zero mitigation overhead." }],
+        avoid: [],
         tips: ["Enable EXPO I in BIOS (Ai Tweaker → Ai Overclock Tuner).", "Cap FPS at 177 with G-SYNC + Reflex."],
         model: mock.settings.model,
       };
@@ -292,19 +303,88 @@
     },
     "net.flushdns": async () => ({ exitCode: 0 }),
     "net.reset": async () => { await sleep(700); mock.rebootPending = true; log("warn", "network", "demo: Winsock/TCP-IP reset skipped"); return true; },
+    "bench.list": async () => {
+      // demo copy of BenchCompare.Summarize: first vs newest, a flat 1% noise floor
+      const SYS = Object.keys(mockSnap), FR = ["avgFps", "low1Fps", "low01Fps", "p99FrameMs", "stuttersPerMin", "latencyMs", "pcLatencyMs"];
+      const higher = new Set(["avgFps", "low1Fps", "low01Fps"]);
+      const rows = (keys, b, a) => keys.filter((k) => b[k] != null || (a && a[k] != null)).map((k) => {
+        const before = b[k], after = a ? a[k] : null, delta = before != null && after != null ? +(after - before).toFixed(2) : null;
+        const better = delta == null || delta === 0 || k === "timerMs" || Math.abs(delta) < Math.abs(before) * 0.01 ? null : (delta < 0) !== higher.has(k);
+        return { key: k, before, after, delta, deltaPercent: delta != null && before ? +((delta / Math.abs(before)) * 100).toFixed(1) : null, better };
+      });
+      const sys = mock.bench.filter((e) => e.kind === "system");
+      const system = sys.length ? { title: "system", before: sys[0], after: sys.length > 1 ? sys[sys.length - 1] : null, rows: rows(SYS, sys[0].system, sys.length > 1 ? sys[sys.length - 1].system : null) } : null;
+      const byApp = new Map();
+      for (const e of mock.bench.filter((x) => x.kind === "game")) byApp.set(e.frames.app.toLowerCase(), [...(byApp.get(e.frames.app.toLowerCase()) || []), e]);
+      const games = [...byApp.values()].map((l) => ({ title: l[0].frames.app, before: l[0], after: l.length > 1 ? l[l.length - 1] : null, rows: rows(FR, l[0].frames, l.length > 1 ? l[l.length - 1].frames : null) })).reverse();
+      return { entries: mock.bench, presentMon: byApp.size > 0, system, games };
+    },
+    "bench.system": async ({ label }) => {
+      for (const [step, v] of [["counters", 10], ["counters", 40], ["network", 62], ["timer", 78], ["boot", 92]]) { emit("bench.progress", { step, value: v }); await sleep(260); }
+      const prev = mock.bench.filter((e) => e.kind === "system").pop();
+      const k = prev ? 0.8 : 1;
+      const e = { id: "b" + Date.now(), at: new Date().toISOString(), kind: "system", label, frames: null, system: { ...mockSnap, cpuIdlePercent: +(mockSnap.cpuIdlePercent * k).toFixed(1), services: Math.round(mockSnap.services * k), dpcPercent: +(mockSnap.dpcPercent * k).toFixed(2) } };
+      mock.bench.push(e); return e;
+    },
+    "bench.capture": async ({ seconds }) => {
+      for (let i = 0; i <= 10; i++) { emit("bench.progress", { step: i < 3 ? "waiting" : "recording", value: 35 + i * 6 }); await sleep(200); }
+      const e = { id: "g" + Date.now(), at: new Date().toISOString(), kind: "game", label: "manual", system: null, frames: { app: "cs2.exe", frames: seconds * 268, seconds, avgFps: 268.4, low1Fps: 171.2, low01Fps: 118.6, avgFrameMs: 3.73, p99FrameMs: 5.84, stuttersPerMin: 1.2, latencyMs: 9.8, pcLatencyMs: null, gpuBusyPercent: 71.5, bound: "cpu" } };
+      mock.bench.push(e); return e;
+    },
+    "bench.remove": async ({ id }) => { mock.bench = mock.bench.filter((e) => e.id !== id); return true; },
+    "bench.clear": async () => { mock.bench = []; return true; },
     "startup.list": async () => mock.startup,
+    "startup.cleanup": async () => { const list = mock.startup.filter((e) => e.enabled && e.suggest === "off"); list.forEach((e) => (e.enabled = false)); log("ok", "startup", `${list.length} startup entries switched off`); return list.length; },
     "startup.set": async ({ id, enabled }) => { const e = mock.startup.find((x) => x.id === id); if (e) e.enabled = enabled; log("info", "startup", `${id} -> ${enabled}`); return true; },
     "clean.analyze": async () => { await sleep(500); return [["temp-user", 912e6, 4210], ["temp-windows", 214e6, 388], ["shader-nvidia", 1.9e9, 1630], ["shader-amd", 0, 0], ["shader-directx", 640e6, 2210], ["windows-update", 3.1e9, 77], ["crash-dumps", 88e6, 12]].map(([id, bytes, files]) => ({ id, path: "", bytes, files })); },
     "clean.run": async ({ ids }) => { await sleep(900); return ids.length * 3.2e8; },
+    "games.list": async () => {
+      await sleep(300);
+      mock.games ||= [
+        { name: "Counter-Strike 2", exe: "D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive\\game\\bin\\win64\\cs2.exe", source: "steam", added: false, priority: false, gpu: false, qos: false },
+        { name: "Dota 2", exe: "D:\\SteamLibrary\\steamapps\\common\\dota 2 beta\\game\\bin\\win64\\dota2.exe", source: "steam", added: false, priority: true, gpu: false, qos: true },
+        { name: "Fortnite", exe: "C:\\Program Files\\Epic Games\\Fortnite\\FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping.exe", source: "epic", added: false, priority: false, gpu: false, qos: false },
+        { name: "Valorant", exe: "C:\\Riot Games\\VALORANT\\live\\ShooterGame\\Binaries\\Win64\\VALORANT-Win64-Shipping.exe", source: "manual", added: true, priority: false, gpu: false, qos: false },
+      ];
+      return { twoGpus: profile.gpus.length >= 2, games: mock.games };
+    },
+    "games.set": async (p) => { const g = mock.games.find((x) => x.exe === p.exe); if ("priority" in p) g.priority = p.priority; if ("gpu" in p) g.gpu = p.gpu; if ("qos" in p) g.qos = p.qos; if ("noFso" in p) g.noFso = p.noFso; return true; },
+    "games.all": async () => { await sleep(300); mock.games.forEach((g) => { g.qos = true; if (profile.gpus.length >= 2) g.gpu = true; }); return mock.games.length; },
+    "games.add": async () => { toast("demo: file picker", "warn"); return false; },
+    "games.remove": async (p) => { mock.games = mock.games.filter((x) => x.exe !== p.exe); return true; },
+    "gamemode.state": async () => mock.game || {
+      active: false,
+      options: [
+        { id: "updates", items: ["Windows Update", "Delivery Optimization", "Background Intelligent Transfer Service", "Microsoft Edge Update Service (edgeupdate)"] },
+        { id: "indexing", items: ["Windows Search", "SysMain"] },
+        { id: "telemetry", items: ["Connected User Experiences and Telemetry", "Program Compatibility Assistant Service"] },
+        { id: "print", items: ["Print Spooler"] },
+        { id: "apps", items: ["OneDrive", "Microsoft Teams", "Widgets"] },
+        { id: "power", items: ["high"] },
+        { id: "wifi", items: ["Wi-Fi"] },
+        { id: "memory", items: [] },
+        { id: "timer", items: [] },
+      ],
+    },
+    "gamemode.start": async ({ groups }) => {
+      await sleep(900);
+      log("ok", "game", `game mode on: ${groups.join(", ")}`);
+      mock.game = { active: true, started: new Date().toISOString(), groups, services: ["wuauserv", "DoSvc", "BITS", "WSearch", "SysMain", "DiagTrack", "Spooler"], apps: ["OneDrive", "ms-teams", "Widgets"], freedMb: 2650 };
+      return mock.game;
+    },
+    "gamemode.stop": async () => { await sleep(700); mock.game = null; log("ok", "game", "game mode off: everything restored"); return true; },
     "memory.purge": async () => { await sleep(300); log("ok", "memory", "standby list purged"); return { freedBytes: 2.7e9, availableBytes: 24e9 }; },
     "explorer.restart": async () => true,
   };
 
   mock.startup = [
-    { id: "HKCU|Run|Discord", name: "Discord", command: "C:\\Users\\demo\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU Run", enabled: true, scope: "user" },
-    { id: "HKCU|Run|Steam", name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", location: "HKCU Run", enabled: true, scope: "user" },
-    { id: "HKLM|Run|RtkAudUService", name: "RtkAudUService", command: "C:\\Windows\\System32\\RtkAudUService64.exe -background", location: "HKLM Run", enabled: true, scope: "all users" },
-    { id: "HKCU|Run|OneDrive", name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU Run", enabled: false, scope: "user" },
+    { id: "HKCU|Run|Discord", name: "Discord", command: "C:\\Users\\demo\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKCU|Run|Steam", name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKCU|Run|MicrosoftEdgeAutoLaunch_0F2A", name: "MicrosoftEdgeAutoLaunch_0F2A", command: "\"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe\" --no-startup-window", location: "HKCU Run", enabled: true, scope: "user", suggest: "off" },
+    { id: "HKLM|Run|RtkAudUService", name: "RtkAudUService", command: "C:\\Windows\\System32\\RtkAudUService64.exe -background", location: "HKLM Run", enabled: true, scope: "all users", suggest: "keep" },
+    { id: "HKLM|Run|SecurityHealth", name: "SecurityHealth", command: "%windir%\\system32\\SecurityHealthSystray.exe", location: "HKLM Run", enabled: true, scope: "all users", suggest: "keep" },
+    { id: "HKCU|StartupFolder|Lightshot.lnk", name: "Lightshot", command: "C:\\Users\\demo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Lightshot.lnk", location: "Startup folder", enabled: true, scope: "user", suggest: null },
+    { id: "HKCU|Run|OneDrive", name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU Run", enabled: false, scope: "user", suggest: "off" },
   ];
 
   function startMockTelemetry() {

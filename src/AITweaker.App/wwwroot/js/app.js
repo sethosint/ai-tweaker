@@ -6,9 +6,11 @@
     S.status = await call("tweaks.status", {}, { silent: true }).catch(() => S.status);
   };
 
+  /** The one plan: everything that suits this PC, plus every "What do you use?" feature (each gets its own question). */
   App.buildPlan = async () => {
     S.plan = await call("plan.build", { profile: S.profileName });
-    S.selected = new Set(S.plan.items.filter((i) => i.recommended && S.status[i.id] !== "applied").map((i) => i.id));
+    const feats = await App.loadFeatures();
+    S.selected = new Set(S.plan.items.filter((i) => (i.recommended || feats.has(i.id)) && S.status[i.id] !== "applied").map((i) => i.id));
   };
 
   App.scan = async (quiet) => {
@@ -17,19 +19,11 @@
       b && b.progress(0.2, "WMI · CPU · GPU · RAM · DISK · NET");
       S.scan = await call("system.scan");
       b && b.progress(0.7, "status");
-      S.guides = S.bios = S.drivers = S.appx = null;
+      S.guides = S.bios = S.drivers = S.appx = S.features = null;
       await App.refreshStatus();
       await App.buildPlan();
     } catch { /* toast shown */ } finally { b && b.done(); }
     updateBadges();
-    go(S.view);
-  };
-
-  App.setProfile = async (p) => {
-    S.profileName = p;
-    $("#profileChip").textContent = t("prof." + p);
-    call("settings.set", { profile: p }, { silent: true }).catch(() => {});
-    await App.buildPlan();
     go(S.view);
   };
 
@@ -140,7 +134,6 @@
     S.themeMode = S.init.settings.theme || "auto";
     S.accentMode = S.init.settings.accent || "industrial";
     if (S.init.system) S.system = S.init.system;
-    S.profileName = S.init.settings.profile || "Performance";
     S.rebootPending = !!S.init.rebootPending;
     (S.init.log || []).reverse().forEach((e) => S.log.push(e));
     S.catalog = await API.call("tweaks.catalog");
@@ -148,17 +141,17 @@
     renderShell();
     go("dashboard");
     API.start();
+    App.gmRefresh();
     await App.scan();
     if (S.init.firstRun) App.firstRun();
   }
 
   /**
    * First launch after a clean install (autounattend starts us with --first-run, or Windows came from our image):
-   * scan → auto-tune for this exact hardware → AI Tweaker look → automatic restart.
+   * scan → game setup for this exact hardware → AI Tweaker look → automatic restart.
    */
   App.firstRun = async () => {
     const img = S.init.image;
-    const prof = { v: "Performance" };
     const go1 = await modal({
       title: t("fr.title"),
       wide: true,
@@ -171,21 +164,16 @@
           <li><b>${t("fr.s2")}</b><span>${t("fr.s2d")}</span></li>
           <li><b>${t("fr.s3")}</b><span>${t("fr.s3d")}</span></li>
           <li><b>${t("fr.s4")}</b><span>${t("fr.s4d")}</span></li>
-        </ol>
-        <label class="field">${t("fr.profile")}<select class="input" id="frProf">${["Balanced", "Performance", "Extreme"].map((p) => `<option value="${p}" ${p === prof.v ? "selected" : ""}>${t("prof." + p)}${p === "Performance" ? " — " + t("fr.rec") : ""}</option>`).join("")}</select></label>`,
+        </ol>`,
       buttons: [{ label: t("fr.later"), value: "later", cls: "ghost" }, { label: t("fr.never"), value: "never", cls: "ghost" }, { label: t("fr.start"), value: "go", cls: "primary" }],
-      onOpen: (ov) => { $("#frProf", ov).onchange = (e) => (prof.v = e.target.value); },
     });
     if (go1 === "never") { call("firstrun.done", {}, { silent: true }).catch(() => {}); return; }
     if (go1 !== "go") return;
     call("firstrun.done", {}, { silent: true }).catch(() => {});
-    await App.setProfile(prof.v);
-    // Ask which Windows features are actually used, so everything else can be switched off too.
-    const unused = (await App.featureWizard()) || [];
-    // Everything recommended for this machine that isn't applied yet (the image already carries the offline part), plus the look.
-    const ids = S.plan.items.filter((i) => { const tw = S.byId[i.id]; return (i.recommended || (tw.category === "look" && tw.level >= 1)) && S.status[i.id] !== "applied"; }).map((i) => i.id);
+    // The same one plan as the Game setup tab (the image already carries the offline part), plus the AI Tweaker look.
+    const look = S.plan.items.filter((i) => { const tw = S.byId[i.id]; return tw.category === "look" && tw.level >= 1; }).map((i) => i.id);
     go("tune");
-    await App.apply([...new Set([...ids, ...unused])], { restorePoint: true, preconfirmed: new Set(unused) });
+    await App.gameSetup({ extra: look, restorePoint: true });
   };
 
   document.addEventListener("DOMContentLoaded", boot);

@@ -62,6 +62,8 @@ public class NvidiaProfileFileTests
         {
             [0x1057EB71] = "PREFERRED_PSTATE", [0x007BA09E] = "PRERENDERLIMIT", [0x0005F543] = "ULL CPL state",
             [0x10835000] = "ULL enabled", [0x0064B541] = "REFRESH_RATE_OVERRIDE", [0x00CE2691] = "QUALITY_ENHANCEMENTS",
+            [0x00AC8497] = "PS_SHADERDISKCACHE_MAX_SIZE", [0x1075D972] = "ANSEL_ENABLE", [0x00A879CF] = "VSYNCMODE",
+            [0x10835002] = "FRL_FPS",
         };
         var actions = TweakCatalog.LoadEmbedded().Tweaks.SelectMany(t => t.Actions).OfType<NvidiaProfileAction>().ToList();
         Assert.NotEmpty(actions);
@@ -108,5 +110,17 @@ public class NvidiaProfileMergeTests
         var empty = """<?xml version="1.0" encoding="utf-16"?><ArrayOfProfile />""";
         Assert.Equal(20u, NvidiaProfileFile.ReadDwords(NvidiaProfileFile.WithSettings(empty, [new(0x00CE2691, "Texture filtering - Quality", 20)]))[0x00CE2691]);
         Assert.Equal(20u, NvidiaProfileFile.ReadDwords(NvidiaProfileFile.WithSettings(null, [new(0x00CE2691, "Texture filtering - Quality", 20)]))[0x00CE2691]);
+    }
+
+    [Fact]
+    public void FrameCapFollowsTheFastestDisplay()
+    {
+        var cap = new NvidiaSetting { Id = "0x10835002", Value = 141, ValueFrom = "maxHz-3" };
+        var p = new AITweaker.Core.Profile.SystemProfile();
+        p.Displays.Add(new AITweaker.Core.Profile.DisplayInfo { RefreshHz = 60, MaxRefreshHz = 60 });
+        p.Displays.Add(new AITweaker.Core.Profile.DisplayInfo { RefreshHz = 144, MaxRefreshHz = 240 });
+        Assert.Equal(237u, cap.Resolve(p));
+        Assert.Equal(57u, cap.Resolve(new AITweaker.Core.Profile.SystemProfile())); // no display info: 60 Hz
+        Assert.Equal(1u, new NvidiaSetting { Id = "0x0005F543", Value = 1 }.Resolve(p));
     }
 }

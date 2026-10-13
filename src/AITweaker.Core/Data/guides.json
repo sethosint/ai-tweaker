@@ -8,7 +8,7 @@
       "ru": "Оверлей выключен, без автозапуска, минимум анимаций и фоновой активности, приватность данных.",
       "en": "Overlay off, no autostart, minimal animations and background activity, data privacy."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": ["apps.discord.startup", "apps.autostart.cleanup"],
     "sections": [
       {
         "title": { "ru": "Игровой оверлей", "en": "Game Overlay" },
@@ -231,6 +231,7 @@
       "ru": "Глобальная графика на минимальную задержку, G-SYNC, без автооптимизации игр, оверлея статистики и телеметрии.",
       "en": "Global graphics for the lowest latency, G-SYNC, no automatic game optimization, statistics overlay or telemetry."
     },
+    "autoTweaks": ["gaming.nvidia-3d", "gaming.nvidia-texture", "gaming.nvidia-shader-cache", "gaming.nvidia-ansel.off", "gaming.nvidia-gsync-preset", "privacy.nvidia-telemetry"],
     "sections": [
       {
         "title": { "ru": "Графика — глобальные настройки", "en": "Graphics — global settings" },
@@ -242,11 +243,11 @@
           { "name": "Vertical Sync", "value": "Off", "note": { "ru": "С G-SYNC: On + ограничение FPS ниже частоты экрана.", "en": "With G-SYNC: On + an FPS cap below the refresh rate." } },
           { "name": "Max Frame Rate", "value": "Off", "note": { "ru": "С G-SYNC — частота экрана минус 3 (например 177 для 180 Гц).", "en": "With G-SYNC — refresh rate minus 3 (e.g. 177 for 180 Hz)." } },
           { "name": "Background Application Max Frame Rate", "value": "Off" },
-          { "name": "Shader Cache Size", "value": "Driver Default" },
+          { "name": "Shader Cache Size", "value": "Unlimited", "note": { "ru": "AI Tweaker выставляет сам.", "en": "AI Tweaker sets it itself." } },
           { "name": "Threaded Optimization", "value": "Auto" },
           { "name": "Image Scaling", "value": "Off" }
         ],
-        "note": { "ru": "Первые три пункта AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки панели» (с откатом).", "en": "AI Tweaker sets the first three itself: Drivers → NVIDIA · panel settings (with rollback)." }
+        "note": { "ru": "Первые три пункта AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки драйвера» (с откатом).", "en": "AI Tweaker sets the first three itself: Drivers → NVIDIA · driver settings (with rollback)." }
       },
       {
         "title": { "ru": "Автооптимизация игр", "en": "Automatic game optimization" },
@@ -335,7 +336,7 @@
         "path": "Gaming → Graphics",
         "settings": [
           { "name": "Radeon Anti-Lag", "value": "ON" },
-          { "name": "Radeon Boost", "value": "ON" },
+          { "name": "Radeon Boost", "value": "OFF" },
           { "name": "Performance Mode", "value": "Performance" },
           { "name": "Radeon Chill", "value": "OFF" },
           { "name": "Radeon Image Sharpening", "value": "OFF" },
@@ -478,7 +479,7 @@
       "ru": "Без автозапуска, видео-фонов и оверлеев; высокое качество без автоподстройки.",
       "en": "No autostart, video canvases or overlays; high quality without auto-adjust."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": ["apps.spotify.startup", "apps.autostart.cleanup"],
     "sections": [
       {
         "title": { "ru": "Качество и библиотека", "en": "Quality & library" },
@@ -602,43 +603,6 @@
     ]
   },
   {
-    "id": "nvidia-control-panel",
-    "name": "NVIDIA Control Panel",
-    "icon": "nvidia",
-    "when": "gpu.nvidia",
-    "summary": {
-      "ru": "Глобальные параметры 3D для минимальной задержки.",
-      "en": "Global 3D settings for the lowest latency."
-    },
-    "sections": [
-      {
-        "title": { "ru": "Управление параметрами 3D → Глобальные", "en": "Manage 3D settings → Global" },
-        "path": "NVIDIA Control Panel → 3D Settings → Manage 3D settings",
-        "settings": [
-          { "name": "Low Latency Mode", "value": "On", "note": { "ru": "В играх с NVIDIA Reflex включайте Reflex в самой игре — он важнее этого параметра.", "en": "In games with NVIDIA Reflex enable Reflex in-game — it matters more than this setting." } },
-          { "name": "Power management mode", "value": "Prefer maximum performance" },
-          { "name": "Preferred refresh rate", "value": "Highest available" },
-          { "name": "Texture filtering - Quality", "value": "High performance" },
-          { "name": "Shader Cache Size", "value": "Driver Default" },
-          { "name": "Threaded optimization", "value": "Auto" },
-          { "name": "Vertical sync", "value": "Off (On if you use G-SYNC + FPS cap)" },
-          { "name": "Max Frame Rate", "value": "Off (or refresh rate − 3 with G-SYNC)" },
-          { "name": "Monitor Technology", "value": "G-SYNC Compatible (if supported)" }
-        ],
-        "note": { "ru": "Режим низкой задержки, частоту обновления и режим питания AI Tweaker выставляет сам: «Драйверы → NVIDIA · настройки панели».", "en": "AI Tweaker sets Low Latency Mode, preferred refresh rate and power management itself: Drivers → NVIDIA · panel settings." }
-      },
-      {
-        "title": { "ru": "Дисплей", "en": "Display" },
-        "path": "NVIDIA Control Panel → Display",
-        "settings": [
-          { "name": "Change resolution → Refresh rate", "value": "Maximum" },
-          { "name": "Output dynamic range", "value": "Full" },
-          { "name": "Adjust desktop size and position → Perform scaling on", "value": "Display" }
-        ]
-      }
-    ]
-  },
-  {
     "id": "windows-graphics",
     "name": "Windows: Display & Graphics",
     "icon": "windows",
@@ -646,7 +610,7 @@
       "ru": "Системные настройки дисплея и графики.",
       "en": "System display and graphics settings."
     },
-    "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations"],
+    "autoTweaks": ["display.maxhz", "gaming.hags", "gaming.windowed-optimizations", "gaming.vrr-windowed"],
     "sections": [
       {
         "title": { "ru": "Дисплей", "en": "Display" },
@@ -762,65 +726,6 @@
           { "name": "Combine taskbar buttons", "value": "Always, hide labels" },
           { "name": "Colour", "value": "Чёрный — даёт твик «Чёрные панель задач и «Пуск»»" }
         ]
-      }
-    ]
-  },
-  {
-    "id": "cru",
-    "name": "CRU — растянутое разрешение",
-    "icon": "display",
-    "summary": {
-      "ru": "Как добавить своё разрешение (например, 4:3) и растянуть его на весь экран без чёрных полос — через CRU (любая видеокарта) или встроенными средствами NVIDIA/AMD.",
-      "en": "How to add your own resolution (e.g. 4:3) and stretch it to full screen without black bars — with CRU (any GPU) or with the NVIDIA/AMD control panels."
-    },
-    "sections": [
-      {
-        "title": { "ru": "1. Добавить разрешение в CRU", "en": "1. Add the resolution in CRU" },
-        "path": "CRU.exe → Detailed resolutions → Add…",
-        "settings": [
-          { "name": "Монитор / Monitor", "value": "ваш основной (верхний список)" },
-          { "name": "Timing", "value": "Automatic (PC)" },
-          { "name": "Active", "value": "1440 × 1080 или 1280 × 960 (4:3)", "note": { "ru": "Ширина и высота разрешения, в котором будет игра.", "en": "The width and height the game will run at." } },
-          { "name": "Refresh rate", "value": "максимальная частота монитора", "note": { "ru": "Например, 144/165/240 Гц — иначе потеряете плавность.", "en": "E.g. 144/165/240 Hz — otherwise you lose smoothness." } }
-        ],
-        "note": { "ru": "CRU бесплатный, скачивается на вкладке «Установка». Запустите CRU.exe, добавьте разрешение и нажмите OK во всех окнах.", "en": "CRU is free (Install tab). Run CRU.exe, add the resolution and press OK in every window." }
-      },
-      {
-        "title": { "ru": "2. Перезапустить драйвер", "en": "2. Restart the graphics driver" },
-        "path": "Папка CRU → restart64.exe",
-        "settings": [
-          { "name": "restart64.exe", "value": "запустить / run", "note": { "ru": "Экран на пару секунд погаснет — это нормально.", "en": "The screen goes black for a couple of seconds — that's normal." } }
-        ],
-        "note": { "ru": "Если разрешение не появилось в списке — перезагрузите компьютер. Вернуть всё как было: reset-all.exe, затем restart64.exe.", "en": "If the resolution doesn't show up, reboot. To undo everything: reset-all.exe, then restart64.exe." }
-      },
-      {
-        "title": { "ru": "3. NVIDIA: растянуть на весь экран", "en": "3. NVIDIA: stretch to full screen" },
-        "path": "NVIDIA Control Panel → Display → Adjust desktop size and position",
-        "settings": [
-          { "name": "Select a scaling mode", "value": "Full-screen" },
-          { "name": "Perform scaling on", "value": "GPU" },
-          { "name": "Override the scaling mode set by games and programs", "value": "ON" }
-        ],
-        "note": { "ru": "Разрешение можно создать и без CRU: Change resolution → Customize → Create Custom Resolution.", "en": "You can also create the resolution without CRU: Change resolution → Customize → Create Custom Resolution." }
-      },
-      {
-        "title": { "ru": "3. AMD: растянуть на весь экран", "en": "3. AMD: stretch to full screen" },
-        "path": "AMD Software → Settings → Display",
-        "settings": [
-          { "name": "GPU Scaling", "value": "ON" },
-          { "name": "Scaling Mode", "value": "Full panel" }
-        ],
-        "note": { "ru": "В AMD Software есть и свои кастомные разрешения: Display → Custom Resolutions → Create New.", "en": "AMD Software has its own custom resolutions too: Display → Custom Resolutions → Create New." }
-      },
-      {
-        "title": { "ru": "4. Включить в игре", "en": "4. Use it in the game" },
-        "path": "Настройки игры → Видео",
-        "settings": [
-          { "name": "Режим / Mode", "value": "Полноэкранный / Fullscreen" },
-          { "name": "Разрешение / Resolution", "value": "ваше растянутое, например 1440 × 1080" },
-          { "name": "Масштабирование (CS2 и др.)", "value": "Растянутое / Stretched" }
-        ],
-        "note": { "ru": "В оконном и безрамочном режимах растяжение не работает — только полноэкранный. Рабочий стол можно оставить на родном разрешении; переключиться на растянутое можно и во вкладке «Инструменты».", "en": "Stretching only works in exclusive fullscreen, not windowed or borderless. Keep the desktop native; you can also switch to the stretched mode from the Tools tab." }
       }
     ]
   },
@@ -1048,5 +953,80 @@
       }
     ],
     "autoTweaks": ["apps.autostart.cleanup"]
+  },
+  {
+    "id": "autoruns",
+    "name": "Autoruns",
+    "icon": "autoruns",
+    "detect": "app.autoruns",
+    "summary": {
+      "ru": "Всё, что стартует вместе с Windows, в одном окне. Снимайте галочки с лишнего, ничего не удаляя, — драйверы, звук, античиты и защиту не трогайте.",
+      "en": "Everything that starts with Windows in one window. Untick what you don't need without deleting anything — leave drivers, audio, anti-cheat and security alone."
+    },
+    "sections": [
+      {
+        "title": { "ru": "Запуск и фильтры", "en": "Start and filters" },
+        "path": "Start → Autoruns (Run as administrator) → Options",
+        "settings": [
+          { "name": "Run as administrator", "value": "ON", "note": { "ru": "Без прав администратора не видны и не меняются общие записи (HKLM, службы).", "en": "Without admin rights machine-wide entries (HKLM, services) can't be seen or changed." } },
+          { "name": "Options → Hide Microsoft Entries", "value": "ON", "note": { "ru": "Прячет компоненты Windows — их трогать не нужно.", "en": "Hides Windows components — they don't need touching." } },
+          { "name": "Options → Hide Windows Entries", "value": "ON" },
+          { "name": "Options → Hide Empty Locations", "value": "ON" },
+          { "name": "Options → Scan Options → Verify code signatures", "value": "ON", "note": { "ru": "Показывает, кем подписан файл. Без подписи — повод присмотреться.", "en": "Shows who signed each file. No signature is a reason to take a closer look." } },
+          { "name": "Options → Scan Options → Check VirusTotal.com", "value": "OFF", "note": { "ru": "По желанию: отправляет хеши файлов в VirusTotal и показывает, сколько антивирусов на них ругаются.", "en": "Optional: sends file hashes to VirusTotal and shows how many scanners flag them." } }
+        ],
+        "note": { "ru": "Главное правило: снимайте галочку, а не нажимайте Delete. Галочка возвращается одним кликом, удалённую запись восстановить сложно.", "en": "The main rule: untick, don't press Delete. A tick comes back in one click; a deleted entry is hard to restore." }
+      },
+      {
+        "title": { "ru": "Logon — автозагрузка", "en": "Logon — startup" },
+        "path": "Autoruns → Logon",
+        "settings": [
+          { "name": "Лаунчеры: Steam, Epic, EA, Battle.net, Ubisoft, GOG, Riot Client", "value": "OFF", "note": { "ru": "Откроются сами, когда запустите игру.", "en": "They open by themselves when you start a game." } },
+          { "name": "Обновлялки программ (Adobe, Java, CCleaner…)", "value": "OFF" },
+          { "name": "Discord, Telegram, Spotify, Teams, Skype", "value": "OFF", "note": { "ru": "Если не нужны сразу после входа. Те же записи AI Tweaker отключает сам во вкладке «Инструменты» → «Автозагрузка».", "en": "If you don't need them right after sign-in. AI Tweaker switches the same entries off itself in Tools → Startup." } },
+          { "name": "OneDrive, Google Drive, Dropbox, Яндекс Диск", "value": "OFF", "note": { "ru": "Если не нужна постоянная синхронизация.", "en": "If you don't need constant syncing." } },
+          { "name": "Звук: Realtek, Nahimic, Dolby, Waves", "value": "ON", "note": { "ru": "Без них могут пропасть эффекты и настройки звука.", "en": "Without them sound effects and settings can disappear." } },
+          { "name": "Мышь и клавиатура: Logitech G HUB, Razer, SteelSeries, Corsair", "value": "ON", "note": { "ru": "Хранят DPI, частоту опроса и макросы.", "en": "They keep DPI, polling rate and macros." } },
+          { "name": "SecurityHealth (значок «Безопасности Windows»)", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Scheduled Tasks — задачи", "en": "Scheduled Tasks" },
+        "path": "Autoruns → Scheduled Tasks",
+        "settings": [
+          { "name": "Задачи обновления браузеров (GoogleUpdateTask, MicrosoftEdgeUpdateTask)", "value": "ON", "note": { "ru": "Оставьте: через них приходят исправления безопасности браузера.", "en": "Keep them: browser security fixes arrive through them." } },
+          { "name": "Задачи сторонних программ: Adobe, CCleaner, телеметрия производителя ноутбука", "value": "OFF" },
+          { "name": "Задачи драйверов видеокарты (NVIDIA, AMD)", "value": "ON" }
+        ]
+      },
+      {
+        "title": { "ru": "Services — службы", "en": "Services" },
+        "path": "Autoruns → Services",
+        "settings": [
+          { "name": "Античиты: vgc (Vanguard), EasyAntiCheat, BEService, FACEIT", "value": "ON", "note": { "ru": "Без них онлайн-игры не запустятся.", "en": "Online games won't start without them." } },
+          { "name": "Службы видеокарты и звука", "value": "ON" },
+          { "name": "Службы уже удалённых программ (жёлтые, File not found)", "value": "Delete", "note": { "ru": "Это остатки: файла уже нет, запись можно удалить.", "en": "These are leftovers: the file is gone, the entry can be deleted." } },
+          { "name": "Остальные системные службы Windows", "value": "Не трогать / Leave", "note": { "ru": "Ими удобнее и безопаснее управлять во вкладке «Службы» AI Tweaker — там есть откат.", "en": "They're easier and safer to manage in AI Tweaker's Services tab, which has rollback." } }
+        ]
+      },
+      {
+        "title": { "ru": "Цвета строк", "en": "Row colours" },
+        "path": "Autoruns",
+        "settings": [
+          { "name": "Жёлтая строка", "value": "File not found", "note": { "ru": "Файл удалён — запись осталась от старой программы.", "en": "The file is gone — the entry is left over from an old program." } },
+          { "name": "Розовая / красная строка", "value": "Not verified", "note": { "ru": "Нет подписи или издатель не подтверждён. Не обязательно вирус, но проверьте, что это за программа.", "en": "No signature or the publisher isn't verified. Not necessarily malware, but check what the program is." } }
+        ]
+      },
+      {
+        "title": { "ru": "Что никогда не трогать", "en": "Never touch" },
+        "path": "Autoruns → Drivers / Boot Execute / Winlogon / LSA Providers / Winsock Providers / KnownDLLs",
+        "settings": [
+          { "name": "Drivers", "value": "Не трогать / Leave" },
+          { "name": "Boot Execute, Winlogon", "value": "Не трогать / Leave" },
+          { "name": "LSA Providers, Winsock Providers, KnownDLLs", "value": "Не трогать / Leave" }
+        ],
+        "note": { "ru": "Изменения в этих разделах могут помешать Windows загрузиться или выйти в сеть.", "en": "Changes in these sections can stop Windows from booting or getting online." }
+      }
+    ]
   }
 ]

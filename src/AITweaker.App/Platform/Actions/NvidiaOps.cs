@@ -13,11 +13,11 @@ public static class NvidiaOps
             throw new InvalidOperationException("The NVIDIA driver is not installed");
         var settings = a.Settings.Where(s => ctx.Matches(s.When)).ToList();
         if (settings.Count == 0) return;
-        var before = await NvidiaTools.SetBaseProfileAsync(settings.Select(s => new NvidiaProfileFile.Setting(s.SettingId, s.Name, s.Value)).ToList(), ctx.Ct);
+        var before = await NvidiaTools.SetBaseProfileAsync(settings.Select(s => new NvidiaProfileFile.Setting(s.SettingId, s.Name, s.Resolve(ctx.Profile))).ToList(), ctx.Ct);
         // what to put back on rollback: the customized value, or the driver default when there was none
         ctx.Record(ChangeRecord.Of("nvidia", ("settings", string.Join(";", settings.Select(s =>
             $"{s.Id}={(before.TryGetValue(s.SettingId, out var v) ? v : s.Default).ToString(CultureInfo.InvariantCulture)}={s.Name}")))));
-        ctx.Log(string.Join(", ", settings.Select(s => $"{s.Name}: {(before.TryGetValue(s.SettingId, out var v) ? v.ToString(CultureInfo.InvariantCulture) : "default")} -> {s.Value}")));
+        ctx.Log(string.Join(", ", settings.Select(s => $"{s.Name}: {(before.TryGetValue(s.SettingId, out var v) ? v.ToString(CultureInfo.InvariantCulture) : "default")} -> {s.Resolve(ctx.Profile)}")));
     }
 
     public static async Task RevertAsync(ChangeRecord r)

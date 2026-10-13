@@ -38,6 +38,8 @@ jobs:
           git diff --exit-code -- src/AITweaker.App/wwwroot/js/mock-data.js
       - name: UI scripts parse
         run: for f in src/AITweaker.App/wwwroot/js/*.js; do node --check "$f"; done
+      - name: Every UI string exists in RU and EN
+        run: node tools/check-i18n.js
 
   windows:
     name: Windows build (AITweaker.exe)

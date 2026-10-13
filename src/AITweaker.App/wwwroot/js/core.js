@@ -1,7 +1,7 @@
 /* Shell: state, helpers, navigation, modals, confirmations, global search. */
 (function () {
   const S = (window.S = {
-    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Performance", demo: false,
+    lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Extreme", gameMode: false, demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
     log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
     busy: false, view: "dashboard",
@@ -63,24 +63,14 @@
   window.confirmBox = (title, text, yes, cls = "primary", hazard = false) =>
     modal({ title, body: `<div>${text}</div>`, hazard, buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: yes || t("yes"), value: true, cls }] });
 
-  /** Walks the user through every tweak that disables something important. Returns the ids they accepted. */
+  /** Asks about every tweak that switches off something important ("switch off" vs "keep"). Returns the ids to apply. */
   window.confirmImportant = async (ids) => {
-    const need = ids.map((id) => S.byId[id]).filter((tw) => tw && (tw.confirm || tw.risk === "high"));
-    const declined = new Set();
-    for (let i = 0; i < need.length; i++) {
-      const tw = need[i];
-      const res = await modal({
-        title: `${t("confirm.title")} · ${i + 1} ${t("confirm.of")} ${need.length}`,
-        hazard: true,
-        body: html`<div class="confirm-title">${esc(L(tw.name))}</div>
-          <div style="color:var(--ink-2)">${esc(L(tw.description))}</div>
-          ${tw.confirmText ? `<div class="callout crit"><b>${t("confirm.lose")}</b><br>${esc(L(tw.confirmText))}</div>` : ""}
-          <div class="tm" style="display:flex;gap:6px;flex-wrap:wrap">${badges(tw)}</div>`,
-        buttons: [{ label: t("confirm.no"), value: false, cls: "ghost" }, { label: t("confirm.yes"), value: true, cls: tw.risk === "high" ? "danger" : "primary" }],
-      });
-      if (res !== true) declined.add(tw.id);
-    }
-    return ids.filter((id) => !declined.has(id));
+    const feats = await App.loadFeatures();
+    const qs = ids.map((id) => App.questionFor(S.byId[id], feats)).filter(Boolean);
+    if (!qs.length) return ids;
+    const res = await askQuestions(qs, [], { summary: false, title: t("confirm.title") });
+    if (!res) return [];
+    return ids.filter((id) => !res.kept.has(id));
   };
 
   window.badges = (tw) => [
@@ -170,16 +160,14 @@
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["services", "07"],
-    ["drivers", "07"], ["apps", "08"], ["bios", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "06"], ["services", "07"],
+    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OPS", tune: "AUTO-TUNE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "INSTALL", tools: "TOOLS", services: "SERVICES", drivers: "DRIVERS", apps: "APPS", bios: "FIRMWARE", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
+  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
   const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
-  const MODEL = { tune: "cpu", tweaks: "board", debloat: "ssd", install: "monitor", tools: "router", services: "ram", drivers: "gpu", apps: "monitor", bios: "board", image: "usb", ai: "cpu", backup: "ssd" };
-  const DIST = { router: 7.4, monitor: 6.4, board: 6.2, gpu: 6.9, usb: 6.2 };
   const last = () => S.telemetry[S.telemetry.length - 1] || {};
   const pct = (v) => (v == null ? 0.15 : v / 100);
   window.HWLOAD = {
@@ -190,12 +178,13 @@
   /** Section code above every page title ("SEC 03 · CATALOG") and the model beside it, kept when a view re-renders itself. */
   function kicker(section) {
     const ph = section.querySelector(".page-h");
-    const head = ph && ph.querySelector(":scope > div:not(.ph-model):not(.actions)");
+    const head = ph && ph.querySelector(":scope > div:not(.ph-icon):not(.actions)");
     if (!head || ph.querySelector(".kicker")) return;
     const view = section.id.slice(2);
     const i = navList().findIndex(([v]) => v === view);
     head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[view] || ""}</span>`);
-    if (MODEL[view] && !ph.querySelector("[data-hw]")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-model" data-hw="${MODEL[view]}" data-key="ph-${view}" data-yaw="-0.7" data-dist="${DIST[MODEL[view]] || 5.8}"></div>`);
+    // 3D lives on the console only; other pages get their own flat emblem
+    if (!ph.querySelector(".ph-icon")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
   }
   const kickerWatch = new MutationObserver((list) => {
     const seen = new Set();
@@ -211,6 +200,8 @@
   }
 
   window.go = (view, opts = {}) => {
+    // BIOS now lives in the "By hand" tab, as its first section
+    if (view === "bios") { view = "manual"; opts = { ...opts, section: "bios" }; }
     const changed = S.view !== view || !$(".view.on");
     S.view = view;
     $$(".nav-item").forEach((n) => n.classList.toggle("on", n.dataset.view === view));
@@ -232,10 +223,10 @@
     applyPalette();
     $("#app").innerHTML = html`
       <header class="topbar">
-        <div class="brand">${brandMark()}<div><div class="brand-name">AI Tweaker</div><div class="brand-sub">${t("brand.sub")}</div></div></div>
+        <div class="brand">${brandMark()}<div class="brand-name">AI Tweaker</div></div>
         <div class="top-mid">
           <button class="search-btn" id="searchBtn">${icon("search")}<span>${t("search")}</span><span class="kbd">Ctrl K</span></button>
-          <span class="chip accent" id="profileChip">${t("prof." + S.profileName)}</span>
+          <button class="gm-btn ${S.gameMode ? "on" : ""}" id="gmBtn" title="${t("gm.title")}">${icon("gamepad")}<span>${t("gm.btn")}</span><b class="gm-state">${S.gameMode ? t("gm.on") : t("gm.off")}</b></button>
           ${S.init && S.init.isAdmin ? `<span class="chip ok dot">${t("admin")}</span>` : `<span class="chip crit dot">${t("notAdmin")}</span>`}
           <button class="chip crit reboot-chip" id="rebootChip" title="${t("rs.chipTitle")}" ${S.rebootPending ? "" : "hidden"}>${icon("refresh")}${t("rs.chip")}</button>
         </div>
@@ -260,6 +251,7 @@
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
     $("#rebootChip").onclick = () => App.restartPrompt("reboot");
+    $("#gmBtn").onclick = () => App.gameMode();
     $("#shiftSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.v); };
     $("#langSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setLang(b.dataset.v); };
     updateBadges();
@@ -353,7 +345,7 @@
     S.catalog.forEach((tw) => idx.push({ type: "tweak", title: L(tw.name), desc: tw.id + " · " + L(tw.description), keys: tw.id + " " + tw.name.ru + " " + tw.name.en + " " + tw.description.ru + " " + tw.description.en, go: () => go("tweaks", { focus: tw.id }) }));
     ((window.MOCK_DATA && MOCK_DATA.guides) || S.guides || []).forEach((g) => g.sections.forEach((sec) => sec.settings.forEach((st) =>
       idx.push({ type: "setting", title: `${g.name}: ${st.name}`, desc: `${L(sec.title)} → ${st.value}`, keys: `${g.name} ${st.name} ${sec.title.ru} ${sec.title.en} ${sec.path}`, go: () => go("apps", { guide: g.id }) }))));
-    ((S.bios && S.bios.advice) || (window.MOCK_DATA && MOCK_DATA.bios) || []).forEach((b) => idx.push({ type: "bios", title: L(b.title), desc: b.value, keys: b.title.ru + " " + b.title.en + " " + b.value, go: () => go("bios") }));
+    ((S.bios && S.bios.advice) || (window.MOCK_DATA && MOCK_DATA.bios) || []).forEach((b) => idx.push({ type: "bios", title: L(b.title), desc: b.value, keys: b.title.ru + " " + b.title.en + " " + b.value, go: () => go("manual", { section: "bios" }) }));
     ((window.MOCK_DATA && MOCK_DATA.apps) || []).forEach((a) => idx.push({ type: "app", title: L(a.name), desc: a.package, keys: a.package + " " + a.name.ru + " " + a.name.en, go: () => go("debloat") }));
     return idx;
   }

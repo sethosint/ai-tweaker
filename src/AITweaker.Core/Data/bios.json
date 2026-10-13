@@ -13,13 +13,23 @@
       "msi": "M-FLASH (кнопка на главном экране / main screen button)",
       "gigabyte": "Q-Flash (F8)",
       "asrock": "Tool → Instant Flash",
+      "asus-laptop": "MyASUS → Обновление системы / Windows Update; в BIOS: Advanced → ASUS EZ Flash",
+      "msi-laptop": "MSI Center → Support → Live Update",
+      "gigabyte-laptop": "GIGABYTE Control Center → Update",
+      "lenovo": "Lenovo Vantage → Обновления системы / pcsupport.lenovo.com",
+      "hp": "HP Support Assistant → Обновления / support.hp.com",
+      "dell": "Dell SupportAssist / Dell Command | Update",
+      "acer": "acer.com → Поддержка → BIOS/Firmware (по серийному номеру)",
+      "razer": "mysupport.razer.com → ваша модель → BIOS",
+      "microsoft": "Windows Update",
+      "laptop": "Сайт производителя → Поддержка → BIOS / Windows Update → Дополнительные обновления",
       "other": "Tools → BIOS Flash / Update"
     }
   },
   {
     "id": "microcode",
     "priority": "high",
-    "when": "cpu.intelGen == 13 || cpu.intelGen == 14",
+    "when": "(cpu.intelGen == 13 || cpu.intelGen == 14) && system.desktop",
     "value": "Microcode 0x12B+ / Intel Default Settings",
     "title": { "ru": "Intel 13/14 gen: микрокод 0x12B и Intel Default Settings", "en": "Intel 13th/14th gen: microcode 0x12B and Intel Default Settings" },
     "detail": {
@@ -37,6 +47,7 @@
   {
     "id": "xmp",
     "priority": "high",
+    "when": "system.desktop",
     "value": "XMP I / EXPO I",
     "title": { "ru": "Включите профиль памяти XMP / EXPO", "en": "Enable the XMP / EXPO memory profile" },
     "detail": {
@@ -54,7 +65,7 @@
   {
     "id": "rebar",
     "priority": "high",
-    "when": "gpu.discrete",
+    "when": "gpu.discrete && system.desktop",
     "value": "Enabled",
     "title": { "ru": "Resizable BAR + Above 4G Decoding", "en": "Resizable BAR + Above 4G Decoding" },
     "detail": {
@@ -83,6 +94,14 @@
       "msi": "Settings → Security → Secure Boot → Enabled; Settings → Advanced → Windows OS Configuration → BIOS UEFI/CSM Mode: UEFI",
       "gigabyte": "Boot → Secure Boot → Enabled; Boot → CSM Support → Disabled",
       "asrock": "Security → Secure Boot → Enabled; Boot → CSM → Disabled",
+      "asus-laptop": "Security → Secure Boot",
+      "msi-laptop": "Security → Secure Boot",
+      "gigabyte-laptop": "Security → Secure Boot",
+      "lenovo": "Security → Secure Boot",
+      "hp": "System Configuration → Boot Options → Secure Boot",
+      "dell": "Boot Configuration → Secure Boot",
+      "acer": "Boot → Secure Boot",
+      "laptop": "Security / Boot → Secure Boot",
       "other": "Boot / Security → Secure Boot → Enabled"
     }
   },
@@ -100,13 +119,65 @@
       "msi": "Settings → Security → Trusted Computing → Security Device Support → Enable",
       "gigabyte": "Settings → Miscellaneous → AMD CPU fTPM / Intel Platform Trust Technology (PTT)",
       "asrock": "Advanced → CPU Configuration → AMD fTPM Switch / Security → Intel PTT",
+      "asus-laptop": "Advanced → Trusted Computing / AMD fTPM / Intel PTT",
+      "msi-laptop": "Security → Trusted Computing",
+      "gigabyte-laptop": "Security → TPM",
+      "lenovo": "Security → Security Chip",
+      "hp": "Security → TPM",
+      "dell": "Security → TPM 2.0 Security",
+      "acer": "Security → TPM / PTT",
+      "laptop": "Security → TPM / PTT / fTPM",
       "other": "Security → TPM / fTPM / PTT → Enabled"
+    }
+  },
+  {
+    "id": "laptop-power-mode",
+    "priority": "high",
+    "when": "system.laptop",
+    "value": "Performance / Turbo",
+    "title": { "ru": "Режим «Производительность» в утилите ноутбука", "en": "Performance mode in the laptop utility" },
+    "detail": {
+      "ru": "Лимиты мощности процессора и видеокарты (PL1/PL2, TGP) и обороты кулеров на ноутбуке задаёт прошивка, а не Windows. В «тихом» и «сбалансированном» режимах железо получает меньше ватт — это минус 10–30% FPS. Играйте от сети в режиме «Производительность» или «Турбо».",
+      "en": "On a laptop the firmware, not Windows, sets the CPU and GPU power limits (PL1/PL2, TGP) and fan speed. Silent and Balanced modes feed the hardware fewer watts — 10–30% fewer FPS. Play plugged in, in Performance or Turbo mode."
+    },
+    "paths": {
+      "asus-laptop": "Armoury Crate → Operating Mode → Turbo (или G-Helper → Turbo)",
+      "msi-laptop": "MSI Center → Features → User Scenario → Extreme Performance",
+      "gigabyte-laptop": "GIGABYTE Control Center → Power Mode → Turbo",
+      "lenovo": "Fn+Q до красного индикатора / Legion Space → Performance",
+      "hp": "OMEN Gaming Hub → Performance Control → Performance",
+      "dell": "Alienware Command Center → Performance / Dell G: Game Shift (Fn+F9)",
+      "acer": "NitroSense / PredatorSense → Turbo / Performance",
+      "razer": "Razer Synapse → System → Performance",
+      "laptop": "Утилита производителя → режим «Производительность» / «Турбо»"
+    }
+  },
+  {
+    "id": "laptop-gpu-mode",
+    "priority": "high",
+    "when": "system.laptop && gpu.hybrid",
+    "value": "dGPU / Ultimate / Discrete",
+    "title": { "ru": "Видеокарта напрямую: режим dGPU (MUX)", "en": "GPU direct: dGPU (MUX) mode" },
+    "detail": {
+      "ru": "В гибридном режиме (Optimus) кадры видеокарты идут на экран через встроенную графику процессора: минус 5–20% FPS и выше задержка. Режим «только дискретная» через MUX выводит картинку напрямую и включает G-SYNC на экране ноутбука. Нужна перезагрузка, батарея садится быстрее — в дороге переключайте обратно. Внешний монитор в порт видеокарты (обычно HDMI или USB-C сзади) работает напрямую и так.",
+      "en": "In hybrid mode (Optimus) the GPU's frames reach the screen through the CPU's integrated graphics: 5–20% fewer FPS and more latency. Discrete-only mode through the MUX switch sends the picture directly and enables G-SYNC on the laptop panel. Needs a reboot and drains the battery faster — switch back on the go. An external monitor on the GPU's port (usually the rear HDMI or USB-C) is already direct."
+    },
+    "paths": {
+      "asus-laptop": "Armoury Crate → GPU Mode → Ultimate (или G-Helper → Ultimate)",
+      "msi-laptop": "MSI Center → Features → GPU Switch → Discrete Graphics Mode",
+      "gigabyte-laptop": "GIGABYTE Control Center → Discrete GPU",
+      "lenovo": "Legion Space / Lenovo Vantage → GPU Working Mode → dGPU; в BIOS: Configuration → GPU Working Mode",
+      "hp": "OMEN Gaming Hub → Graphics → Discrete / Advanced Optimus",
+      "dell": "Alienware Command Center / BIOS → Display → Hybrid Graphics: Off или Advanced Optimus",
+      "acer": "NitroSense / PredatorSense → GPU Mode (если в модели есть MUX)",
+      "razer": "Razer Synapse → System → Performance → GPU Mode: Discrete",
+      "laptop": "Утилита производителя или BIOS → MUX / Discrete GPU / dGPU Only (если есть)"
     }
   },
   {
     "id": "amd-psic",
     "priority": "medium",
-    "when": "cpu.vendor == \"AMD\"",
+    "when": "cpu.vendor == \"AMD\" && system.desktop",
     "value": "Typical Current Idle",
     "title": { "ru": "Power Supply Idle Control → Typical Current Idle", "en": "Power Supply Idle Control → Typical Current Idle" },
     "detail": {
@@ -124,7 +195,7 @@
   {
     "id": "amd-mcr",
     "priority": "low",
-    "when": "cpu.vendor == \"AMD\" && ram.type == \"DDR5\"",
+    "when": "cpu.vendor == \"AMD\" && ram.type == \"DDR5\" && system.desktop",
     "value": "Enabled",
     "title": { "ru": "Memory Context Restore (AM5)", "en": "Memory Context Restore (AM5)" },
     "detail": {
@@ -157,21 +228,10 @@
       "other": "AMD Overclocking → Precision Boost Overdrive → Curve Optimizer"
     }
   },
-  {
-    "id": "virtualization",
-    "priority": "low",
-    "value": "Disabled (if not used)",
-    "title": { "ru": "Виртуализация SVM / VT-x — если не используете", "en": "SVM / VT-x virtualization — if unused" },
-    "detail": {
-      "ru": "Если вы не пользуетесь эмуляторами Android, WSL, Docker и виртуальными машинами, отключение виртуализации гарантированно выключает VBS. Если пользуетесь — не трогайте.",
-      "en": "If you don't use Android emulators, WSL, Docker or VMs, disabling virtualization guarantees VBS is off. If you do — leave it on."
-    },
-    "paths": {
-      "asus": "Advanced → CPU Configuration → SVM Mode / Intel Virtualization Technology",
-      "msi": "OC → Advanced CPU Configuration → SVM Mode / Intel Virtualization Tech",
-      "gigabyte": "Tweaker → Advanced CPU Settings → SVM Mode / Intel Virtualization Technology",
-      "asrock": "Advanced → CPU Configuration → SVM Mode / Intel Virtualization Technology",
-      "other": "CPU Configuration → SVM / VT-x"
-    }
-  }
+  { "id": "vendor-software", "when": "system.desktop", "priority": "low", "value": "Disabled", "title": { "ru": "Автоустановка программ платы из BIOS", "en": "Board software auto-install from the BIOS" }, "detail": { "ru": "Платы ASUS, MSI, Gigabyte и ASRock после каждой переустановки Windows сами ставят Armoury Crate, MSI Center и т. п. — это фоновые службы и автозагрузка, которые не нужны для игр.", "en": "ASUS, MSI, Gigabyte and ASRock boards install Armoury Crate, MSI Center and the like after every Windows reinstall — background services and startup entries games don't need." }, "paths": { "asus": "Tool → ASUS Armoury Crate → Download & Install ARMOURY CRATE app", "asrock": "Tool → Auto Driver Installer", "other": "Tool / Advanced → Armoury Crate / MSI Driver Utility Installer / GIGABYTE Utilities Downloader / Auto Driver Installer" } },
+  { "id": "spread-spectrum", "when": "system.desktop", "priority": "low", "value": "Disabled", "title": { "ru": "Spread Spectrum", "en": "Spread Spectrum" }, "detail": { "ru": "Модуляция тактовой частоты для снижения помех. Для игр не нужна: выключите и проверьте в CPU-Z, что BCLK ≈ 100.00 МГц.", "en": "Clock modulation to reduce interference. Not needed for games: turn it off and check in CPU-Z that BCLK reads about 100.00 MHz." }, "paths": { "asus": "Ai Tweaker → CPU/PCIE Spread Spectrum", "msi": "OC → Spread Spectrum", "other": "OC / Advanced → Spread Spectrum" } },
+  { "id": "pcie-gen", "priority": "low", "when": "gpu.discrete && system.desktop", "value": "Gen4 / Gen5", "title": { "ru": "Скорость PCIe для видеокарты и NVMe", "en": "PCIe speed for the GPU and NVMe" }, "detail": { "ru": "Вместо Auto выставьте максимальное поколение, которое поддерживают и плата, и устройство — так слот не скатится на Gen3 из-за сбоев согласования.", "en": "Instead of Auto set the highest generation both the board and the device support — so the slot doesn't fall back to Gen3 after a negotiation hiccup." }, "paths": { "asus": "Advanced → PCI Subsystem Settings → PCIEX16 Link Mode", "msi": "Settings → Advanced → PCI Subsystem Settings → PCIe x16 Lane Configuration", "other": "Advanced → PCIe Configuration → PCIe Link Speed" } },
+  { "id": "unused-controllers", "when": "system.desktop", "priority": "low", "value": "Disabled", "title": { "ru": "Неиспользуемые контроллеры на плате", "en": "Unused onboard controllers" }, "detail": { "ru": "Второй сетевой порт, Wi-Fi/Bluetooth на ПК с кабелем, встроенный звук при USB-ЦАП, RGB-контроллеры — выключите то, чем не пользуетесь: меньше драйверов и прерываний.", "en": "A second network port, Wi-Fi/Bluetooth on a wired PC, onboard audio when you use a USB DAC, RGB controllers — turn off what you don't use: fewer drivers and interrupts." }, "paths": { "other": "Advanced → Onboard Devices Configuration" } },
+  { "id": "bios-profile", "when": "system.desktop", "priority": "medium", "value": "Save", "title": { "ru": "Сохраните профиль BIOS", "en": "Save a BIOS profile" }, "detail": { "ru": "Перед любыми изменениями сохраните профиль на флешку или в слот платы, после — ещё один. Если система не стартует, всё возвращается за минуту. Там же настройте кривые вентиляторов.", "en": "Save a profile to a USB stick or a board slot before any change, and another one after. If the PC won't boot, everything comes back in a minute. Set the fan curves while you're there." }, "paths": { "asus": "Tool → ASUS User Profile", "msi": "OC Profile", "gigabyte": "Save & Exit → Save Profiles", "other": "Save & Exit / Tool → Save Profile" } },
+  { "id": "am5-fclk", "priority": "medium", "when": "cpu.vendor == \"AMD\" && ram.type == \"DDR5\" && system.desktop", "value": "FCLK 2000, UCLK = MCLK", "title": { "ru": "AM5: FCLK 2000 и UCLK = MCLK", "en": "AM5: FCLK 2000 and UCLK = MCLK" }, "detail": { "ru": "После EXPO выставьте FCLK 2000 МГц и режим UCLK = MCLK (1:1). Дальше — простые тайминги Buildzoid (больше tREFI, меньше tRFC). Каждое изменение проверяйте стресс-тестом (TM5, OCCT, y-cruncher).", "en": "After EXPO set FCLK to 2000 MHz and UCLK = MCLK (1:1). Then Buildzoid's easy timings (higher tREFI, lower tRFC). Check every change with a stress test (TM5, OCCT, y-cruncher)." }, "paths": { "asus": "Ai Tweaker → FCLK Frequency + UCLK DIV1 MODE", "msi": "OC → Advanced DRAM Configuration → FCLK / UCLK DIV1 MODE", "other": "OC → Infinity Fabric Frequency (FCLK) + UCLK DIV1 Mode" } }
 ]

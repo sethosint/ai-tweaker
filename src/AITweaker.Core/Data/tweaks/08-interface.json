@@ -76,7 +76,7 @@
     "category": "interface",
     "level": 1,
     "restartExplorer": true,
-    "name": { "ru": "Удобный Проводник", "en": "Practical File Explorer" },
+    "name": { "ru": "Проводник: расширения файлов и «Этот компьютер»", "en": "Explorer: file extensions and This PC" },
     "description": {
       "ru": "Показывает расширения файлов (защита от вирусов вида «фото.jpg.exe») и открывает Проводник на «Этот компьютер».",
       "en": "Shows file extensions (protects against 'photo.jpg.exe' malware) and opens Explorer on 'This PC'."
@@ -105,7 +105,7 @@
     "category": "interface",
     "level": 2,
     "logoff": true,
-    "name": { "ru": "Мгновенные меню", "en": "Instant menus" },
+    "name": { "ru": "Меню без задержки (MenuShowDelay 0)", "en": "Menus without delay (MenuShowDelay 0)" },
     "description": {
       "ru": "Вложенные меню открываются сразу, без задержки 400 мс.",
       "en": "Submenus open immediately instead of after 400 ms."
@@ -185,6 +185,20 @@
     "actions": [
       { "type": "registry", "path": "HKU\\.DEFAULT\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" },
       { "type": "registry", "path": "HKCU\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "kind": "string", "value": "2" }
+    ]
+  },
+  {
+    "id": "interface.dynamic-lighting.off",
+    "category": "interface",
+    "level": 2,
+    "when": "os.build >= 22631",
+    "name": { "ru": "Отключить Dynamic Lighting", "en": "Disable Dynamic Lighting" },
+    "description": {
+      "ru": "Windows перестаёт перехватывать управление RGB-подсветкой и больше не воюет с iCUE, Synapse и G HUB.",
+      "en": "Windows stops taking over RGB lighting and no longer fights iCUE, Synapse and G HUB."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\Lighting", "name": "AmbientLightingEnabled", "kind": "dword", "value": 0 }
     ]
   }
 ]

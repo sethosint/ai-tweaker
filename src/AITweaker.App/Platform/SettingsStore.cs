@@ -13,7 +13,7 @@ public sealed class AppSettings
     public string Accent { get; set; } = "industrial";
     /// <summary>Show the optional Advisor tab (needs the user's own paid Claude API key).</summary>
     public bool ShowAdvisor { get; set; }
-    public string Profile { get; set; } = "Performance";
+    public string Profile { get; set; } = "Extreme";
     public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;
     /// <summary>API key encrypted with DPAPI (current user), base64.</summary>
     public string? ClaudeKeyProtected { get; set; }
