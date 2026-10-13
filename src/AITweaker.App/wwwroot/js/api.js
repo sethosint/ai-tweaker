@@ -321,6 +321,7 @@
         { id: "print", items: ["Print Spooler"] },
         { id: "apps", items: ["OneDrive", "Microsoft Teams", "Widgets"] },
         { id: "power", items: ["high"] },
+        { id: "wifi", items: ["Wi-Fi"] },
         { id: "memory", items: [] },
         { id: "timer", items: [] },
       ],

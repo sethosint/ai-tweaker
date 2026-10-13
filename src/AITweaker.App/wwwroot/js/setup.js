@@ -171,7 +171,7 @@
     }
     const on = new Set(st.options.map((o) => o.id));
     const row = (o) => html`<button class="gm-opt ${on.has(o.id) ? "on" : ""}" data-o="${o.id}">
-      <span><b>${t("gm." + o.id)}</b><small>${o.id === "power" ? t("gm.power." + o.items[0]) : o.items.length ? esc([...new Set(o.items)].join(", ")) : t("gm." + o.id + "D")}</small></span>
+      <span><b>${t("gm." + o.id)}</b><small>${o.id === "power" ? t("gm.power." + o.items[0]) : o.id === "wifi" ? `${t("gm.wifiD")} · ${esc(o.items.join(", "))}` : o.items.length ? esc([...new Set(o.items)].join(", ")) : t("gm." + o.id + "D")}</small></span>
       <span class="switch ${on.has(o.id) ? "on" : ""}"></span></button>`;
     const r = await modal({
       title: t("gm.title"),

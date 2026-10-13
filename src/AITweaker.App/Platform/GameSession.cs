@@ -31,7 +31,7 @@ public static class GameSession
         ("AdobeCollabSync", "Adobe Acrobat"), ("Skype", "Skype"), ("Cortana", "Cortana"),
     ];
 
-    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes);
+    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes, List<string>? Wifi = null);
 
     private static State? _active;
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -64,6 +64,7 @@ public static class GameSession
                 Option("updates", running), Option("indexing", running), Option("telemetry", running), Option("print", running),
                 AppsOption(),
                 new { id = "power", items = new[] { PowerPlanName(profile) } },
+                WifiInterfaces() is { Count: > 0 } wifi ? new { id = "wifi", items = wifi.ToArray() } : null,
                 new { id = "memory", items = Array.Empty<string>() },
                 TimerAvailable() ? new { id = "timer", items = Array.Empty<string>() } : null,
             }.Where(o => o is not null),
@@ -146,6 +147,21 @@ public static class GameSession
                 catch (InvalidOperationException ex) { AppLog.Write("warn", "game", "memory purge: " + ex.Message); }
             }
 
+            if (want.Contains("wifi"))
+            {
+                // Windows scans for networks about once a minute even while connected — the classic Wi-Fi ping spike.
+                // With auto-config off for the session the connection stays, the scans stop.
+                var paused = new List<string>();
+                foreach (var name in WifiInterfaces())
+                {
+                    var r = await ProcessRunner.RunAsync("netsh.exe", $"wlan set autoconfig enabled=no interface=\"{name}\"", TimeSpan.FromSeconds(15));
+                    if (r.ExitCode == 0) paused.Add(name);
+                    else AppLog.Write("warn", "game", $"Wi-Fi {name}: netsh exit {r.ExitCode}");
+                }
+                state = state with { Wifi = paused };
+                Save(state);
+            }
+
             if (want.Contains("timer") && TimerAvailable())
                 timer = NtSetTimerResolution(5000, true, out _) == 0;
 
@@ -166,6 +182,8 @@ public static class GameSession
             var s = _active ?? Load();
             if (s is null) return false;
             if (s.Timer) NtSetTimerResolution(5000, false, out _);
+            foreach (var name in s.Wifi ?? [])
+                await ProcessRunner.RunAsync("netsh.exe", $"wlan set autoconfig enabled=yes interface=\"{name}\"", TimeSpan.FromSeconds(15));
             if (Guid.TryParse(s.Scheme, out var scheme)) Native.SetActiveScheme(scheme);
             if (s.Scheme is not null) Native.SetOverlay(Guid.TryParse(s.Overlay, out var ov) ? ov : PowerOps.OverlayBalanced);
             foreach (var name in s.Services)
@@ -193,6 +211,14 @@ public static class GameSession
     {
         if (_active is null && File.Exists(StateFile)) await StopAsync();
     }
+
+    /// <summary>Connected Wi-Fi adapters by their connection name (what netsh calls the interface).</summary>
+    private static List<string> WifiInterfaces() =>
+        System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()
+            .Where(n => n.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Wireless80211
+                        && n.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up)
+            .Select(n => n.Name)
+            .ToList();
 
     private static async Task RaisePowerAsync(SystemProfile profile, Guid active)
     {
