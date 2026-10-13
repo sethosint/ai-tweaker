@@ -6,14 +6,16 @@ using Microsoft.Win32;
 
 namespace AITweaker.App.Platform;
 
-/// <param name="Method">winget | download | page</param>
+/// <param name="Method">installer | winget | download | page</param>
 public sealed record InstallResult(string Id, string Name, bool Ok, string Method, string? Error);
 
 public sealed record InstallSummary(IReadOnlyList<InstallResult> Results, bool RebootRequired);
 
 /// <summary>
-/// Installs Install-tab programs with winget (Microsoft's package manager, official packages only), unpacks official
-/// portable zips, or opens the official page as the last resort.
+/// Installs Install-tab programs from the vendor's own installer: downloaded from the official site (or the
+/// vendor's GitHub releases), checked for a valid digital signature and run silently where the installer allows it.
+/// winget is the fallback for programs without a stable direct link; portable zips are unpacked; the official page
+/// is opened as the last resort.
 /// </summary>
 public static class ProgramInstaller
 {
@@ -101,11 +103,20 @@ public static class ProgramInstaller
             InstallResult r;
             try
             {
-                if (p.Winget is not null && winget is not null)
+                InstallResult? direct = p.Installer is not null || p.Github is not null ? await InstallerAsync(p, ct) : null;
+                if (direct is { Ok: true })
+                {
+                    r = direct;
+                }
+                else if (p.Winget is not null && winget is not null)
                 {
                     var (ok, needsReboot, error) = await WingetAsync(winget, p, ct);
                     reboot |= needsReboot;
-                    r = new InstallResult(p.Id, p.Name, ok, "winget", error);
+                    r = new InstallResult(p.Id, p.Name, ok, "winget", ok ? null : (direct?.Error is { } de ? de + "; " : "") + error);
+                }
+                else if (direct is not null)
+                {
+                    r = direct;
                 }
                 else if (p.Download is not null)
                 {
@@ -205,6 +216,90 @@ public static class ProgramInstaller
         var r = await ProcessRunner.PowerShellAsync(script, TimeSpan.FromMinutes(30), ct: ct);
         var line = r.Output.Split('\n').Select(l => l.Trim()).LastOrDefault(l => l.StartsWith("RESULT:", StringComparison.Ordinal));
         return line is not null && long.TryParse(line["RESULT:".Length..], out var v) ? unchecked((int)v) : -1;
+    }
+
+    /// <summary>
+    /// Downloads the vendor's installer, makes sure Windows trusts its signature and runs it: silently when the
+    /// program has known switches, otherwise the installer window opens for the user.
+    /// </summary>
+    private static async Task<InstallResult> InstallerAsync(InstallProgram p, CancellationToken ct)
+    {
+        string url, name;
+        try
+        {
+            if (p.Github is not null)
+            {
+                var rx = new System.Text.RegularExpressions.Regex(p.Asset ?? @"\.exe$");
+                (name, url) = await Downloader.LatestGitHubAssetAsync(p.Github, n => rx.IsMatch(n), ct);
+            }
+            else
+            {
+                url = p.Installer!.Replace("{lang}", SettingsStore.Current.Language == "en" ? "en-US" : "ru");
+                name = p.Id + "-setup";
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return new InstallResult(p.Id, p.Name, false, "installer", "no installer link: " + ex.Message);
+        }
+
+        var dir = Path.Combine(AppPaths.Downloads, "installers");
+        Directory.CreateDirectory(dir);
+        var file = Path.Combine(dir, name);
+        try
+        {
+            await Downloader.DownloadAsync(url, file, null, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException)
+        {
+            return new InstallResult(p.Id, p.Name, false, "installer", "download failed: " + ex.Message);
+        }
+        // links like ".../latest" don't say what they are: name the file by its content (MSI or EXE)
+        bool msi = IsMsi(file);
+        var target = Path.ChangeExtension(file, msi ? ".msi" : ".exe");
+        if (!string.Equals(target, file, StringComparison.OrdinalIgnoreCase)) File.Move(file, target, overwrite: true);
+
+        var sig = await ProcessRunner.PowerShellAsync($"(Get-AuthenticodeSignature -FilePath {ProcessRunner.PsQuote(target)}).Status", TimeSpan.FromMinutes(1), ct: ct);
+        if (!sig.Output.Contains("Valid"))
+        {
+            File.Delete(target);
+            return new InstallResult(p.Id, p.Name, false, "installer", "the downloaded installer has no valid signature: " + sig.Output.Trim());
+        }
+
+        string exe = target, args = p.Silent ?? "";
+        if (msi)
+        {
+            exe = ProcessRunner.System32("msiexec.exe");
+            args = $"/i \"{target}\" /qn /norestart";
+        }
+        AppLog.Info("install", $"{p.Name}: {Path.GetFileName(target)} {args}".TrimEnd());
+        int code;
+        if (p.User && (p.Silent is not null || msi))
+        {
+            code = await RunAsSignedInUserAsync(exe, args, ct);
+        }
+        else if (p.Silent is not null || msi)
+        {
+            code = (await ProcessRunner.RunAsync(exe, args, TimeSpan.FromMinutes(30), ct: ct)).ExitCode;
+        }
+        else
+        {
+            // no silent switches: the installer opens and the user finishes it
+            using var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(target) { UseShellExecute = true });
+            if (proc is not null) await proc.WaitForExitAsync(ct);
+            code = 0;
+        }
+        // 3010 / 1641: done, restart needed
+        bool ok = code is 0 or 3010 or 1641;
+        return new InstallResult(p.Id, p.Name, ok, "installer", ok ? null : $"installer exit code {code}");
+    }
+
+    /// <summary>MSI files are OLE compound documents (D0 CF 11 E0 …).</summary>
+    private static bool IsMsi(string file)
+    {
+        Span<byte> head = stackalloc byte[4];
+        using var f = File.OpenRead(file);
+        return f.Read(head) == 4 && head[0] == 0xD0 && head[1] == 0xCF && head[2] == 0x11 && head[3] == 0xE0;
     }
 
     /// <summary>Official portable zip → C:\ProgramData\AITweaker\Tools\&lt;id&gt; with a Start menu shortcut.</summary>

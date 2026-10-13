@@ -198,8 +198,20 @@ public class CatalogTests
             if (p.Download is not null) Assert.StartsWith("https://", p.Download);
             if (p.Url is not null) Assert.StartsWith("https://", p.Url);
             if (p.Download is not null) Assert.NotNull(p.Url); // fallback when the direct link moves
+            if (p.Installer is not null) Assert.StartsWith("https://", p.Installer);
+            if (p.Github is not null)
+            {
+                Assert.Matches(@"^[\w.-]+/[\w.-]+$", p.Github);
+                Assert.NotNull(p.Asset);
+                _ = new System.Text.RegularExpressions.Regex(p.Asset!); // compiles
+            }
+            // installers that refuse to run elevated must be run as the signed-in user, and that path needs silent switches
+            if (p.User && (p.Installer ?? p.Github) is not null && !(p.Installer ?? "").Contains(".msi")) Assert.NotNull(p.Silent);
             Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
         }
+        // the main programs come from their vendors' own installers, not winget
+        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell" })
+            Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github) is not null, id);
         // the apps from the user's own setup are there
         foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
             Assert.Contains(Catalog.Programs, p => p.Id == id);

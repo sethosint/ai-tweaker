@@ -73,6 +73,17 @@ public sealed class InstallProgram
     public string? Override { get; init; }
     /// <summary>Direct link to an official portable zip (used when there is no winget package).</summary>
     public string? Download { get; init; }
+    /// <summary>
+    /// Direct link to the vendor's own installer (.exe or .msi), downloaded and run when the user clicks Install.
+    /// <c>{lang}</c> is replaced with the interface language (ru / en-US).
+    /// </summary>
+    public string? Installer { get; init; }
+    /// <summary>GitHub repository whose latest release holds the installer (owner/name), with <see cref="Asset"/>.</summary>
+    public string? Github { get; init; }
+    /// <summary>Regular expression for the installer's file name in the latest GitHub release.</summary>
+    public string? Asset { get; init; }
+    /// <summary>Silent switches for the installer; null = the installer opens normally and the user clicks through it.</summary>
+    public string? Silent { get; init; }
     /// <summary>Official page, opened when neither winget nor the direct download works.</summary>
     public string? Url { get; init; }
     /// <summary>DisplayName fragments in "Apps &amp; features" ("|" = any of them) that mean it is already installed.</summary>

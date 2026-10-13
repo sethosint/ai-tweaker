@@ -189,7 +189,7 @@
       await sleep(250);
       return {
         winget: true,
-        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, installed: mock.installed.has(p.id) })),
+        programs: D.programs.map((p) => ({ ...p, direct: !!p.download, source: p.github ? "github.com/" + p.github : p.installer ? new URL(p.installer).host : null, silent: !!p.silent || /\.msi/.test(p.installer || ""), installed: mock.installed.has(p.id) })),
         extensions: D.extensions.map((e) => ({ ...e, storeUrl: "https://chromewebstore.google.com/detail/" + e.extensionId })),
       };
     },
