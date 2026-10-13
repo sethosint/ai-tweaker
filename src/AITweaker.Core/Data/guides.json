@@ -463,88 +463,317 @@
       "ru": "Без оверлея, трансляций и Remote Play; лёгкая библиотека; загрузки не мешают играм.",
       "en": "No overlay, broadcasting or Remote Play; lightweight library; downloads never interfere with games."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": [
+      "apps.autostart.cleanup"
+    ],
     "sections": [
       {
-        "title": { "ru": "Интерфейс", "en": "Interface" },
+        "title": {
+          "ru": "Интерфейс",
+          "en": "Interface"
+        },
         "path": "Steam → Settings → Interface",
         "settings": [
-          { "name": "Start Up Location", "value": "Library" },
-          { "name": "Scale text and icons to match monitor settings", "value": "ON" },
-          { "name": "Run Steam when my computer starts", "value": "OFF" },
-          { "name": "Ask which account to use each time Steam starts", "value": "OFF" },
-          { "name": "Start Steam in Big Picture Mode", "value": "OFF" },
-          { "name": "Notify me about additions or changes to my games…", "value": "OFF" },
-          { "name": "Enable smooth scrolling in web views", "value": "OFF" },
-          { "name": "Enable GPU accelerated rendering in web views", "value": "OFF", "note": { "ru": "Steam не занимает видеокарту, пока вы играете.", "en": "Steam stops using the GPU while you play." } },
-          { "name": "Enable hardware video decoding", "value": "OFF" }
+          {
+            "name": "Start Up Location",
+            "value": "Library"
+          },
+          {
+            "name": "Scale text and icons to match monitor settings",
+            "value": "ON"
+          },
+          {
+            "name": "Run Steam when my computer starts",
+            "value": "OFF"
+          },
+          {
+            "name": "Ask which account to use each time Steam starts",
+            "value": "OFF"
+          },
+          {
+            "name": "Start Steam in Big Picture Mode",
+            "value": "OFF"
+          },
+          {
+            "name": "Notify me about additions or changes to my games…",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable smooth scrolling in web views",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable GPU accelerated rendering in web views",
+            "value": "OFF",
+            "note": {
+              "ru": "Steam не занимает видеокарту, пока вы играете.",
+              "en": "Steam stops using the GPU while you play."
+            }
+          },
+          {
+            "name": "Enable hardware video decoding",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Библиотека", "en": "Library" },
+        "title": {
+          "ru": "Библиотека",
+          "en": "Library"
+        },
         "path": "Steam → Settings → Library",
         "settings": [
-          { "name": "Display size for Library user interface elements", "value": "Automatic" },
-          { "name": "Low Bandwidth Mode", "value": "ON" },
-          { "name": "Low Performance Mode", "value": "ON" },
-          { "name": "Disable Community Content", "value": "ON" },
-          { "name": "Show game icons in the left column", "value": "ON" },
-          { "name": "Ready to Play should include streamable games", "value": "OFF" },
-          { "name": "Show Steam Deck compatibility information in library", "value": "OFF" }
+          {
+            "name": "Display size for Library user interface elements",
+            "value": "Automatic"
+          },
+          {
+            "name": "Low Bandwidth Mode",
+            "value": "ON"
+          },
+          {
+            "name": "Low Performance Mode",
+            "value": "ON"
+          },
+          {
+            "name": "Disable Community Content",
+            "value": "ON"
+          },
+          {
+            "name": "Show game icons in the left column",
+            "value": "ON"
+          },
+          {
+            "name": "Ready to Play should include streamable games",
+            "value": "OFF"
+          },
+          {
+            "name": "Show Steam Deck compatibility information in library",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Загрузки", "en": "Downloads" },
+        "title": {
+          "ru": "Загрузки",
+          "en": "Downloads"
+        },
         "path": "Steam → Settings → Downloads",
         "settings": [
-          { "name": "Limit download speed", "value": "OFF" },
-          { "name": "Display download rates in bits per second", "value": "ON" },
-          { "name": "Game update timing", "value": "Let Steam decide when to update" },
-          { "name": "Schedule auto-updates", "value": "OFF" },
-          { "name": "Allow downloads during gameplay", "value": "OFF" },
-          { "name": "Throttle downloads while streaming", "value": "OFF" }
+          {
+            "name": "Limit download speed",
+            "value": "OFF"
+          },
+          {
+            "name": "Display download rates in bits per second",
+            "value": "ON"
+          },
+          {
+            "name": "Game update timing",
+            "value": "Let Steam decide when to update"
+          },
+          {
+            "name": "Schedule auto-updates",
+            "value": "OFF"
+          },
+          {
+            "name": "Allow downloads during gameplay",
+            "value": "OFF"
+          },
+          {
+            "name": "Throttle downloads while streaming",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "В игре (оверлей)", "en": "In Game (overlay)" },
+        "title": {
+          "ru": "В игре (оверлей)",
+          "en": "In Game (overlay)"
+        },
         "path": "Steam → Settings → In Game",
         "settings": [
-          { "name": "Enable the Steam Overlay while in-game", "value": "OFF" },
-          { "name": "Show toolbar as list view", "value": "OFF" },
-          { "name": "Restore my previous browser tabs when starting a game", "value": "OFF" },
-          { "name": "Use the Big Picture Overlay when using a controller", "value": "OFF" },
-          { "name": "Scale Steam Overlay text and icons to match monitor settings", "value": "OFF" }
+          {
+            "name": "Enable the Steam Overlay while in-game",
+            "value": "OFF"
+          },
+          {
+            "name": "Show toolbar as list view",
+            "value": "OFF"
+          },
+          {
+            "name": "Restore my previous browser tabs when starting a game",
+            "value": "OFF"
+          },
+          {
+            "name": "Use the Big Picture Overlay when using a controller",
+            "value": "OFF"
+          },
+          {
+            "name": "Scale Steam Overlay text and icons to match monitor settings",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Облако", "en": "Cloud" },
+        "title": {
+          "ru": "Облако",
+          "en": "Cloud"
+        },
         "path": "Steam → Settings → Cloud",
         "settings": [
-          { "name": "Enable Steam Cloud", "value": "ON" },
-          { "name": "Screenshot Management (open after closing a game)", "value": "OFF" }
+          {
+            "name": "Enable Steam Cloud",
+            "value": "ON"
+          },
+          {
+            "name": "Screenshot Management (open after closing a game)",
+            "value": "OFF"
+          }
         ]
       },
       {
-        "title": { "ru": "Remote Play и трансляции", "en": "Remote Play & Broadcast" },
+        "title": {
+          "ru": "Remote Play и трансляции",
+          "en": "Remote Play & Broadcast"
+        },
         "path": "Steam → Settings → Remote Play / Broadcast",
         "settings": [
-          { "name": "Enable Remote Play", "value": "OFF" },
-          { "name": "Broadcast → Privacy setting", "value": "Broadcasting disabled" }
+          {
+            "name": "Enable Remote Play",
+            "value": "OFF"
+          },
+          {
+            "name": "Broadcast → Privacy setting",
+            "value": "Broadcasting disabled"
+          }
         ]
       },
       {
-        "title": { "ru": "Друзья и чат", "en": "Friends & Chat" },
+        "title": {
+          "ru": "Друзья и чат",
+          "en": "Friends & Chat"
+        },
         "path": "Steam → Settings → Friends & Chat",
         "settings": [
-          { "name": "Enable Animated Avatars & Animated Avatar Frames", "value": "OFF" },
-          { "name": "Compact friends list & chat view / Compact favorite friends area", "value": "OFF" },
-          { "name": "Dock chats to the friends list", "value": "OFF" },
-          { "name": "Open a new window for new chats", "value": "OFF" },
-          { "name": "Don't embed images and other media in-line", "value": "OFF" },
-          { "name": "Remember my open chats", "value": "OFF" },
-          { "name": "Disable spellcheck in chat message entry", "value": "ON" },
-          { "name": "Disable animated room effects", "value": "ON" }
+          {
+            "name": "Append nicknames to friends' names",
+            "value": "OFF"
+          },
+          {
+            "name": "Group friends together by game",
+            "value": "ON"
+          },
+          {
+            "name": "Hide offline friends in custom categories",
+            "value": "OFF"
+          },
+          {
+            "name": "Hide categorized friends in Online/Offline Friends",
+            "value": "OFF"
+          },
+          {
+            "name": "Ignore 'Away' status when sorting friends",
+            "value": "OFF"
+          },
+          {
+            "name": "Sign in to friends when Steam starts",
+            "value": "ON"
+          },
+          {
+            "name": "Enable Animated Avatars & Animated Avatar Frames",
+            "value": "OFF",
+            "note": {
+              "ru": "Анимированные аватары грузят процессор, пока открыт список друзей.",
+              "en": "Animated avatars keep the CPU busy while the friends list is open."
+            }
+          },
+          {
+            "name": "Compact friends list & chat view / Compact favorite friends area",
+            "value": "OFF"
+          },
+          {
+            "name": "Dock chats to the friends list",
+            "value": "OFF"
+          },
+          {
+            "name": "Open a new window for new chats",
+            "value": "OFF"
+          },
+          {
+            "name": "Don't embed images and other media in-line",
+            "value": "OFF"
+          },
+          {
+            "name": "Remember my open chats",
+            "value": "OFF"
+          },
+          {
+            "name": "Disable spellcheck in chat message entry",
+            "value": "ON"
+          },
+          {
+            "name": "Disable animated room effects",
+            "value": "ON"
+          },
+          {
+            "name": "Chat Filtering",
+            "value": "Do not filter strong profanity or slurs"
+          },
+          {
+            "name": "Chat Font Size",
+            "value": "Default"
+          }
         ]
+      },
+      {
+        "title": {
+          "ru": "Уведомления",
+          "en": "Notifications"
+        },
+        "path": "Steam → Settings → Notifications",
+        "settings": [
+          {
+            "name": "Show Notification Toasts",
+            "value": "Anytime"
+          },
+          {
+            "name": "Play a sound when a notification toast is displayed",
+            "value": "ON"
+          },
+          {
+            "name": "When I unlock an achievement",
+            "value": "Toast ON · Sound OFF"
+          },
+          {
+            "name": "When I connect or disconnect a controller",
+            "value": "Toast ON · Sound OFF"
+          },
+          {
+            "name": "When a controller's battery is low",
+            "value": "Toast ON · Sound OFF"
+          },
+          {
+            "name": "When a friend joins a game",
+            "value": "Toast ON · Sound OFF"
+          },
+          {
+            "name": "When a friend comes online",
+            "value": "Toast OFF · Sound OFF"
+          },
+          {
+            "name": "When I receive a direct chat message",
+            "value": "Toast ON · Sound ON"
+          },
+          {
+            "name": "When I receive a chat room notification",
+            "value": "Toast ON · Sound ON"
+          }
+        ],
+        "note": {
+          "ru": "Всплывашки в самой игре идут через оверлей Steam — он выключен, поэтому в игре они не появятся, только на рабочем столе.",
+          "en": "In-game toasts go through the Steam Overlay — it's off, so they only show on the desktop, never inside a game."
+        }
       }
     ]
   },
@@ -1390,19 +1619,70 @@
       "ru": "Без автозапуска, трея и уведомлений; облачные сохранения включены.",
       "en": "No autostart, tray or notifications; cloud saves on."
     },
-    "autoTweaks": ["apps.autostart.cleanup"],
+    "autoTweaks": [
+      "apps.autostart.cleanup"
+    ],
     "sections": [
       {
-        "title": { "ru": "Настройки лаунчера", "en": "Launcher settings" },
-        "path": "Epic Games Launcher → Settings",
+        "title": {
+          "ru": "Настройки лаунчера",
+          "en": "Launcher settings"
+        },
+        "path": "Epic Games Launcher → Settings → Preferences",
         "settings": [
-          { "name": "Minimize To System Tray", "value": "OFF" },
-          { "name": "Run When My Computer Starts", "value": "OFF" },
-          { "name": "Enable Debug Logging", "value": "OFF" },
-          { "name": "Hide Game Library", "value": "OFF" },
-          { "name": "Enable Cloud Saves", "value": "ON" },
-          { "name": "Use Proxy", "value": "OFF" },
-          { "name": "Show Free Game / News / Chat Notifications", "value": "OFF" }
+          {
+            "name": "Minimize To System Tray",
+            "value": "OFF"
+          },
+          {
+            "name": "Run When My Computer Starts",
+            "value": "OFF",
+            "note": {
+              "ru": "Если лаунчер всё равно возвращается в автозагрузку — AI Tweaker уберёт его сам.",
+              "en": "If the launcher still puts itself back into startup, AI Tweaker removes it."
+            }
+          },
+          {
+            "name": "Enable Debug Logging",
+            "value": "OFF"
+          },
+          {
+            "name": "Hide Game Library",
+            "value": "OFF"
+          },
+          {
+            "name": "Enable Cloud Saves",
+            "value": "ON"
+          },
+          {
+            "name": "Use Proxy",
+            "value": "OFF"
+          }
+        ]
+      },
+      {
+        "title": {
+          "ru": "Уведомления",
+          "en": "Desktop notifications"
+        },
+        "path": "Epic Games Launcher → Settings → Desktop Notifications",
+        "settings": [
+          {
+            "name": "Show Free Game Notifications",
+            "value": "OFF"
+          },
+          {
+            "name": "Show News and Special Offer Notifications",
+            "value": "OFF"
+          },
+          {
+            "name": "Show Chat Notifications",
+            "value": "OFF"
+          },
+          {
+            "name": "Show Game Invitation Notifications",
+            "value": "OFF"
+          }
         ]
       }
     ]
