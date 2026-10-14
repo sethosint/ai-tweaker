@@ -20,24 +20,42 @@ public static class Downloader
         resp.EnsureSuccessStatusCode();
         long? total = resp.Content.Headers.ContentLength;
         var tmp = target + ".part";
-        await using (var src = await resp.Content.ReadAsStreamAsync(ct))
-        await using (var dst = File.Create(tmp))
+        try
         {
-            var buffer = new byte[1 << 20];
-            long done = 0, lastReport = 0;
-            int read;
-            while ((read = await src.ReadAsync(buffer, ct)) > 0)
+            await using (var src = await resp.Content.ReadAsStreamAsync(ct))
+            await using (var dst = File.Create(tmp))
             {
-                await dst.WriteAsync(buffer.AsMemory(0, read), ct);
-                done += read;
-                if (done - lastReport > 4 << 20 || done == total)
+                var buffer = new byte[1 << 20];
+                long done = 0, lastReport = 0;
+                int read;
+                while ((read = await src.ReadAsync(buffer, ct)) > 0)
                 {
-                    progress?.Invoke(done, total);
-                    lastReport = done;
+                    await dst.WriteAsync(buffer.AsMemory(0, read), ct);
+                    done += read;
+                    if (done - lastReport > 4 << 20 || done == total)
+                    {
+                        progress?.Invoke(done, total);
+                        lastReport = done;
+                    }
                 }
             }
+            File.Move(tmp, target, overwrite: true);
         }
-        File.Move(tmp, target, overwrite: true);
+        catch
+        {
+            // a cancelled or broken multi-GB download doesn't stay on the disk
+            try { File.Delete(tmp); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            throw;
+        }
+    }
+
+    /// <summary>Throws (and deletes the file) unless Windows confirms a valid Authenticode signature by <paramref name="signer"/>.</summary>
+    public static async Task RequireSignatureAsync(string file, string signer, CancellationToken ct = default)
+    {
+        var sig = await ProcessRunner.PowerShellAsync($"$s = Get-AuthenticodeSignature -FilePath {ProcessRunner.PsQuote(file)}; \"$($s.Status)|$($s.SignerCertificate.Subject)\"", TimeSpan.FromSeconds(30), ct: ct);
+        if (sig.Output.Contains("Valid|") && sig.Output.Contains(signer, StringComparison.OrdinalIgnoreCase)) return;
+        File.Delete(file);
+        throw new InvalidOperationException($"{Path.GetFileName(file)} is not signed by {signer}; it was deleted. {sig.Output.Trim()}");
     }
 
     /// <summary>Returns the download URL of the first asset in the latest GitHub release whose name ends with <paramref name="suffix"/>.</summary>

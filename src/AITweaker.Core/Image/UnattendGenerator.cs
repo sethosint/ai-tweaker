@@ -21,8 +21,10 @@ public sealed class UnattendOptions
     public bool CopyTweaker { get; set; } = true;
     /// <summary>Start AI Tweaker on first logon to finish the hardware-specific tuning (needs <see cref="CopyTweaker"/>).</summary>
     public bool RunTweakerAfterSetup { get; set; } = true;
-    /// <summary>Select Windows 11 Pro with the public generic install key (does not activate).</summary>
+    /// <summary>Select the edition with Microsoft's public generic install key (it does not activate anything).</summary>
     public bool SelectPro { get; set; } = true;
+    /// <summary>Professional | Core (Home): must match the edition in the image and the PC's licence.</summary>
+    public string Edition { get; set; } = "Professional";
 }
 
 /// <summary>
@@ -31,14 +33,32 @@ public sealed class UnattendOptions
 /// </summary>
 public static class UnattendGenerator
 {
-    /// <summary>Microsoft's public generic key that only selects the Pro edition during setup.</summary>
+    /// <summary>Microsoft's public generic keys that only select the edition during setup.</summary>
     public const string GenericProKey = "VK7JG-NPHTM-C97JM-9MPGT-3V66T";
+    public const string GenericHomeKey = "YTMG3-N6DKC-DKB77-7M9GH-8HVX7";
+
+    private static readonly string[] ReservedUsers = ["Administrator", "Guest", "DefaultAccount", "WDAGUtilityAccount", "System", "None"];
+
+    /// <summary>Throws with a readable reason when Windows Setup would stop on these names (it does so in the middle of setup).</summary>
+    public static void Validate(UnattendOptions o)
+    {
+        var user = o.UserName?.Trim() ?? "";
+        if (user.Length == 0) throw new ArgumentException("User name is required");
+        if (user.Length > 20) throw new ArgumentException("User name: at most 20 characters");
+        if (user.IndexOfAny(['"', '/', '\\', '[', ']', ':', ';', '|', '=', ',', '+', '*', '?', '<', '>', '@', '%']) >= 0 || user.EndsWith('.'))
+            throw new ArgumentException("User name contains characters Windows does not allow");
+        if (ReservedUsers.Contains(user, StringComparer.OrdinalIgnoreCase)) throw new ArgumentException($"\"{user}\" is a built-in Windows account name");
+        var pc = o.ComputerName?.Trim() ?? "";
+        if (pc.Length == 0) return;
+        if (pc.Length > 15) throw new ArgumentException("Computer name: at most 15 characters");
+        if (!pc.All(c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '-') || pc.All(char.IsDigit) || pc.StartsWith('-') || pc.EndsWith('-'))
+            throw new ArgumentException("Computer name: Latin letters, digits and hyphens only, not only digits");
+        if (pc.Equals(user, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("The computer name must differ from the user name");
+    }
 
     public static string Generate(UnattendOptions o)
     {
-        if (string.IsNullOrWhiteSpace(o.UserName)) throw new ArgumentException("User name is required");
-        if (o.UserName.IndexOfAny(['"', '/', '\\', '[', ']', ':', ';', '|', '=', ',', '+', '*', '?', '<', '>', '@']) >= 0)
-            throw new ArgumentException("User name contains characters Windows does not allow");
+        Validate(o);
 
         string X(string s) => SecurityElement.Escape(s) ?? "";
         const string cmp = "processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\"";
@@ -54,7 +74,7 @@ public static class UnattendGenerator
         if (o.SelectPro)
         {
             sb.AppendLine("        <ProductKey>");
-            sb.AppendLine($"          <Key>{GenericProKey}</Key>");
+            sb.AppendLine($"          <Key>{(o.Edition == "Core" ? GenericHomeKey : GenericProKey)}</Key>");
             sb.AppendLine("          <WillShowUI>OnError</WillShowUI>");
             sb.AppendLine("        </ProductKey>");
         }
@@ -138,29 +158,31 @@ public static class UnattendGenerator
         sb.AppendLine("        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>");
         sb.AppendLine("        <ProtectYourPC>3</ProtectYourPC>");
         sb.AppendLine("      </OOBE>");
+        // the one automatic logon is done: the password Windows kept for it leaves the registry
+        var first = new List<(string Command, string Description)> { (ClearAutoLogonCommand, "Remove the stored automatic logon password") };
         if (o.CopyTweaker)
         {
-            sb.AppendLine("      <FirstLogonCommands>");
-            sb.AppendLine("        <SynchronousCommand wcm:action=\"add\">");
-            sb.AppendLine("          <Order>1</Order>");
-            sb.AppendLine($"          <CommandLine>{X(CopyTweakerCommand)}</CommandLine>");
-            sb.AppendLine("          <Description>Copy AI Tweaker to the desktop</Description>");
-            sb.AppendLine("        </SynchronousCommand>");
-            if (o.RunTweakerAfterSetup)
-            {
-                sb.AppendLine("        <SynchronousCommand wcm:action=\"add\">");
-                sb.AppendLine("          <Order>2</Order>");
-                sb.AppendLine($"          <CommandLine>{X(RunTweakerCommand)}</CommandLine>");
-                sb.AppendLine("          <Description>Finish tuning with AI Tweaker</Description>");
-                sb.AppendLine("        </SynchronousCommand>");
-            }
-            sb.AppendLine("      </FirstLogonCommands>");
+            first.Add((CopyTweakerCommand, "Copy AI Tweaker to the desktop"));
+            if (o.RunTweakerAfterSetup) first.Add((RunTweakerCommand, "Finish tuning with AI Tweaker"));
         }
+        sb.AppendLine("      <FirstLogonCommands>");
+        for (int i = 0; i < first.Count; i++)
+        {
+            sb.AppendLine("        <SynchronousCommand wcm:action=\"add\">");
+            sb.AppendLine($"          <Order>{i + 1}</Order>");
+            sb.AppendLine($"          <CommandLine>{X(first[i].Command)}</CommandLine>");
+            sb.AppendLine($"          <Description>{first[i].Description}</Description>");
+            sb.AppendLine("        </SynchronousCommand>");
+        }
+        sb.AppendLine("      </FirstLogonCommands>");
         sb.AppendLine("    </component>");
         sb.AppendLine("  </settings>");
         sb.AppendLine("</unattend>");
         return sb.ToString();
     }
+
+    public const string ClearAutoLogonCommand =
+        "cmd.exe /c reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v DefaultPassword /f & reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v AutoAdminLogon /t REG_SZ /d 0 /f";
 
     /// <summary>Starts AI Tweaker in first-run mode without blocking the logon (it scans the hardware and offers auto-tuning).</summary>
     public const string RunTweakerCommand = "cmd.exe /c if exist \"%PUBLIC%\\Desktop\\AITweaker.exe\" start \"\" \"%PUBLIC%\\Desktop\\AITweaker.exe\" --first-run";

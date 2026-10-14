@@ -26,12 +26,7 @@ public static partial class RufusTool
             Directory.CreateDirectory(Path.GetDirectoryName(Exe)!);
             await Downloader.DownloadAsync(url, Exe, null, ct);
             // only run it if Windows confirms the author's signature
-            var sig = await ProcessRunner.PowerShellAsync($"$s = Get-AuthenticodeSignature -FilePath {ProcessRunner.PsQuote(Exe)}; \"$($s.Status)|$($s.SignerCertificate.Subject)\"", TimeSpan.FromSeconds(30), ct: ct);
-            if (!sig.Output.Contains("Valid|") || !sig.Output.Contains("Akeo", StringComparison.OrdinalIgnoreCase))
-            {
-                File.Delete(Exe);
-                throw new InvalidOperationException("The downloaded Rufus is not signed by its author; it was deleted. " + sig.Output.Trim());
-            }
+            await Downloader.RequireSignatureAsync(Exe, "Akeo Consulting", ct);
             AppLog.Ok("rufus", $"downloaded {name} (signature verified)");
             downloaded = true;
         }

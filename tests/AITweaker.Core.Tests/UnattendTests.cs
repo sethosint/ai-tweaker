@@ -35,7 +35,7 @@ public class UnattendTests
     {
         var xml = UnattendGenerator.Generate(new UnattendOptions { BypassRequirements = false, CopyTweaker = false, SelectPro = false, DisableAutoBitLocker = false });
         Assert.DoesNotContain("LabConfig", xml);
-        Assert.DoesNotContain("FirstLogonCommands", xml);
+        Assert.DoesNotContain("AITweaker.exe", xml);
         Assert.DoesNotContain("ProductKey", xml);
         Assert.DoesNotContain("PreventDeviceEncryption", xml);
         XDocument.Parse(xml);
@@ -45,8 +45,28 @@ public class UnattendTests
     [InlineData("")]
     [InlineData("bad/name")]
     [InlineData("a@b")]
+    [InlineData("Administrator")]
+    [InlineData("AVeryLongUserNameOverTwenty")]
     public void RejectsInvalidUserNames(string name) =>
         Assert.Throws<ArgumentException>(() => UnattendGenerator.Generate(new UnattendOptions { UserName = name }));
+
+    [Theory]
+    [InlineData("Мой ПК")]            // setup stops in the specialize pass on these
+    [InlineData("GAMING-PC-2026-NEW")] // over 15 characters
+    [InlineData("12345")]
+    [InlineData("Gamer")]             // same as the user name
+    public void RejectsComputerNamesSetupWouldStopOn(string pc) =>
+        Assert.Throws<ArgumentException>(() => UnattendGenerator.Generate(new UnattendOptions { UserName = "Gamer", ComputerName = pc }));
+
+    [Fact]
+    public void HomeEditionGetsTheHomeKeyAndThePasswordIsClearedAfterLogon()
+    {
+        var xml = UnattendGenerator.Generate(new UnattendOptions { UserName = "Gamer", ComputerName = "GAMING-PC", Edition = "Core" });
+        Assert.Contains(UnattendGenerator.GenericHomeKey, xml);
+        Assert.DoesNotContain(UnattendGenerator.GenericProKey, xml);
+        Assert.Contains("DefaultPassword", xml);
+        XDocument.Parse(xml);
+    }
 
     [Fact]
     public void StartsAITweakerAfterSetup()

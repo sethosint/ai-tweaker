@@ -316,7 +316,7 @@
     if (!ok) return;
     const before = Object.keys(S.status).filter((id) => S.status[id] === "applied");
     const span = { download: [0, 0.72], extract: [0.72, 0.1], install: [0.84, 0.14] };
-    const b = busy(t("nv.busy").replace("{v}", esc(ver)));
+    const b = busy(t("nv.busy").replace("{v}", esc(ver)), { cancel: true });
     const off = API.on("nvidia.progress", (p) => { const [a, w] = span[p.step] || [0, 0]; b.progress(a + w * p.value, t("nv.step." + p.step) + (p.step === "download" ? ` · ${Math.round(p.value * 100)}%` : "")); });
     let r;
     try { r = await call("nvidia.install", opts); } catch { return; } finally { off(); b.done(); }
@@ -404,10 +404,10 @@
   const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
   // Without a USB stick the English Windows 11 is offered; files and apps can only be kept with an image in the system's own language.
   const rein = { source: "dl", mode: "clean", lang: "English" };
-  const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
+  const img = { edition: "", level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
   const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
-  const imgOptions = () => ({ level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
+  const imgOptions = () => ({ edition: img.edition || undefined, level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
 
   V.image = async () => {
     const v = $("#v-image");
@@ -426,11 +426,12 @@
           <div class="callout">${t("ib.desc")}</div>
           <div class="step"><h4>${t("usb.iso")}</h4>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="isoPick">${t("usb.pick")}</button>
-              <select class="input" id="isoLang" style="width:auto">${["Russian", "English", "English International", "Ukrainian", "Kazakh"].map((l) => `<option ${usb.lang === l ? "selected" : ""}>${l}</option>`).join("")}</select>
+              <select class="input" id="isoLang" style="width:auto">${["Russian", "English", "English International", "Ukrainian"].map((l) => `<option ${usb.lang === l ? "selected" : ""}>${l}</option>`).join("")}</select>
               <button class="btn sm" id="isoDl">${icon("download")}${t("usb.download")}</button></div>
             <div class="tid" style="margin-top:8px;word-break:break-all">${esc(usb.iso || "—")}</div>
             <div class="td" style="margin-top:6px;color:var(--muted)">${t("usb.fidoNote")}</div></div>
           <div class="step"><h4>${t("ib.contents")}</h4>
+            <label class="field">${t("ib.edition")}<select class="input" id="ibEdition">${[["", t("ib.edition.auto")], ["Professional", "Windows 11 Pro"], ["Core", "Windows 11 Home"]].map(([v, n]) => `<option value="${v}" ${img.edition === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
             <label class="field">${t("ib.level")}<select class="input" id="ibLevel">${[1, 2, 3].map((l) => `<option value="${l}" ${img.level === l ? "selected" : ""}>${t("prof." + ["Safe", "Balanced", "Performance"][l - 1])}</option>`).join("")}</select></label>
             <div style="display:grid;gap:8px;margin-top:10px">
               ${[["look", "ib.look"], ["updates", "ib.updates"], ["removeApps", "ib.apps"], ["removeComponents", "ib.components"], ["cleanup", "ib.cleanup"], ["drivers", "ib.drivers"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-ib="${k}" ${img[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
@@ -502,12 +503,13 @@
     if ($("#ameShow")) $("#ameShow").onclick = () => call("shell.reveal", { path: usb.ame.path });
     $("#isoLang").onchange = (e) => (usb.lang = e.target.value);
     $("#isoDl").onclick = async () => {
-      const b = busy(t("usb.download"));
-      const off = API.on("usb.progress", (p) => b.progress(p.value, `${p.step} · ${Math.round(p.value * 100)}%`));
+      const b = busy(t("usb.download"), { cancel: true });
+      const off = API.on("usb.progress", (p) => b.progress(p.value, `${t("rein.step." + p.step)} · ${Math.round(p.value * 100)}%`));
       try { usb.iso = await call("usb.downloadIso", { language: usb.lang }); } catch { /* toast shown */ } finally { off(); b.done(); }
       V.image();
     };
     $("#ibLevel").onchange = (e) => (img.level = +e.target.value);
+    $("#ibEdition").onchange = (e) => (img.edition = e.target.value);
     v.querySelectorAll("[data-ib]").forEach((i) => (i.onchange = () => { img[i.dataset.ib] = i.checked; if (i.dataset.ib === "look") V.image(); }));
     v.querySelectorAll("[data-extra]").forEach((i) => (i.onchange = async () => {
       if (i.checked) {
@@ -528,7 +530,7 @@
     };
     $("#ibBuild").onclick = async () => {
       if (!(await confirmBox(t("ib.build"), t("ib.buildQ"), t("ib.build")))) return;
-      const b = busy(t("busy.image"));
+      const b = busy(t("busy.image"), { cancel: true });
       const off = API.on("image.progress", (p) => b.progress(p.value, `${t("ib.step." + p.step)} · ${Math.round(p.value * 100)}%`));
       try { usb.built = await call("image.build", { iso: usb.iso, options: imgOptions() }); usb.source = "built"; toast(t("ib.ready"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
       V.image();
@@ -538,7 +540,7 @@
     $("#diskRefresh").onclick = async () => { usb.disks = await call("usb.list"); V.image(); };
     v.querySelectorAll("[data-o]").forEach((i) => (i.onchange = () => (o[i.dataset.o] = i.value)));
     v.querySelectorAll("[data-b]").forEach((i) => (i.onchange = () => (o[i.dataset.b] = i.checked)));
-    $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
+    $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { source: usb.source, options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
     $("#usbGo").onclick = () => createUsb(src);
     v.querySelectorAll("input[name=reinsrc]").forEach((r) => (r.onchange = () => { rein.source = r.value; V.image(); }));
     v.querySelectorAll("input[name=reinmode]").forEach((r) => (r.onchange = () => { rein.mode = r.value; V.image(); }));
@@ -589,7 +591,7 @@
     });
     if (res !== true) return;
     if (clean && typed.trim().toUpperCase() !== t("rein.yes").toUpperCase()) { toast(t("rein.notTyped"), "warn"); return; }
-    const b = busy(t("rein.busy"));
+    const b = busy(t("rein.busy"), { cancel: true });
     const off = [API.on("reinstall.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : { fido: 0.03, mount: 0.88, check: 0.92, setup: 0.97 }[p.step] || 0.5, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : ""))),
       API.on("usb.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : 0.03, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : "")))];
     let r = null;
@@ -608,9 +610,9 @@
       onOpen: (ov) => { const i = $("#typed", ov); i.focus(); ov.querySelector("[data-i='1']").addEventListener("click", () => (usb.typed = i.value), { capture: true }); },
     });
     if (typed !== "go" || String(usb.typed).trim() !== String(d.number)) return;
-    const b = busy(t("busy.usb"));
-    const off = API.on("usb.progress", (p) => b.progress(p.value, `${p.step} · ${Math.round(p.value * 100)}%`));
-    try { await call("usb.create", { disk: d.number, iso: src, options: usb.opt }); toast(t("usb.done"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
+    const b = busy(t("busy.usb"), { cancel: true });
+    const off = API.on("usb.progress", (p) => b.progress(p.value, `${t("usb.step." + p.step)} · ${Math.round(p.value * 100)}%`));
+    try { await call("usb.create", { disk: d.number, iso: src, source: usb.source, options: usb.opt }); toast(t("usb.done"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
   }
 
   // ------------------------------------------------------------------ [10] backup

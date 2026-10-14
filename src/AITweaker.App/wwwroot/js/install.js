@@ -78,7 +78,7 @@
     const names = st.data.programs.filter((p) => ids.includes(p.id));
     const ok = await confirmBox(t("inst.go"), html`${t("inst.confirm")}<div class="pre" style="margin-top:10px">${names.map((p) => esc(p.name)).join("\n")}</div>`, `${t("inst.go")} (${ids.length})`);
     if (!ok) return;
-    const b = busy(t("inst.busy"));
+    const b = busy(t("inst.busy"), { cancel: true });
     const off = API.on("install.progress", (p) => b.progress((p.i - 0.5) / p.n, `${p.i}/${p.n} · ${p.name}`));
     let summary;
     try { summary = await call("programs.install", { ids }); } catch { return; } finally { off(); b.done(); }

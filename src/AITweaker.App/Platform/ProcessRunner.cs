@@ -71,6 +71,8 @@ public static class ProcessRunner
         catch (OperationCanceledException)
         {
             try { p.Kill(entireProcessTree: true); } catch { /* already gone */ }
+            // Cancel pressed: the caller's cleanup runs; a timeout is an ordinary failure
+            ct.ThrowIfCancellationRequested();
             return new ProcessResult(-1, stdout.ToString(), "Timed out");
         }
         p.WaitForExit(); // flush async readers

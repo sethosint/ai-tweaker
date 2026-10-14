@@ -85,14 +85,26 @@
   // ------------------------------------------------------------------ busy veil
 
   let veil = null;
-  window.busy = (title) => {
+  /** Progress veil. opts.cancel: a Cancel button that stops the running job (its cleanup still runs). Long jobs show the elapsed time. */
+  window.busy = (title, opts = {}) => {
     S.busy = true;
     $("#statusLed").className = "led busy";
     $("#statusText").textContent = t("status.busy");
     veil = document.createElement("div");
     veil.className = "busy-veil";
-    veil.innerHTML = html`<div class="busy-card"><div class="bt">${title}</div><div class="progress"><i style="width:4%"></i></div><div class="bs">…</div></div>`;
+    veil.innerHTML = html`<div class="busy-card"><div class="bt">${title}<span class="busy-time"></span></div><div class="progress"><i style="width:4%"></i></div><div class="bs">…</div>
+      ${opts.cancel ? `<div class="busy-f"><button class="btn sm ghost" id="busyCancel">${t("busy.cancel")}</button></div>` : ""}</div>`;
     document.body.append(veil);
+    const started = Date.now(), card = veil;
+    const timer = setInterval(() => {
+      const s = Math.round((Date.now() - started) / 1000);
+      if (s >= 20) $(".busy-time", card).textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }, 1000);
+    if (opts.cancel) $("#busyCancel", veil).onclick = (e) => {
+      e.currentTarget.disabled = true;
+      e.currentTarget.textContent = t("busy.cancelling");
+      call("task.cancel", {}, { silent: true }).catch(() => {});
+    };
     return {
       progress(v, text) {
         if (!veil) return;
@@ -101,6 +113,7 @@
       },
       done() {
         S.busy = false;
+        clearInterval(timer);
         veil && veil.remove();
         veil = null;
         $("#statusLed").className = "led";

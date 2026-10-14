@@ -40,6 +40,8 @@ public sealed class OfflineImageOptions
     public bool IntegrateUpdates { get; set; } = true;
     /// <summary>Bake the AI Tweaker look (category "look", level 1+) into the default user profile, regardless of <see cref="MaxLevel"/>.</summary>
     public bool ApplyLook { get; set; } = true;
+    /// <summary>EditionId exported from the ISO: Professional or Core (Home) — the edition the PC is licensed for.</summary>
+    public string Edition { get; set; } = "Professional";
 }
 
 /// <summary>
@@ -167,6 +169,8 @@ public sealed class OfflineImagePlan
     public static (OfflineHive Hive, string SubKey)? Map(string path)
     {
         const string sw = @"HKLM\SOFTWARE\", sys = @"HKLM\SYSTEM\CurrentControlSet\", cu = @"HKCU\";
+        // HKCU\Software\Classes lives in the user's UsrClass.dat, not NTUSER.DAT: written into the default profile it never shows up
+        if (path.StartsWith(@"HKCU\Software\Classes\", StringComparison.OrdinalIgnoreCase)) return null;
         if (path.StartsWith(sw, StringComparison.OrdinalIgnoreCase)) return (OfflineHive.Software, path[sw.Length..]);
         if (path.StartsWith(sys, StringComparison.OrdinalIgnoreCase)) return (OfflineHive.System, @"ControlSet001\" + path[sys.Length..]);
         if (path.StartsWith(cu, StringComparison.OrdinalIgnoreCase)) return (OfflineHive.DefaultUser, path[cu.Length..]);

@@ -32,6 +32,7 @@ public sealed class MainForm : Form
             .ToDictionary(n => n.Replace('\\', '/')[4..], n => n, StringComparer.OrdinalIgnoreCase);
 
         Load += async (_, _) => await InitAsync();
+        FormClosing += OnFormClosing;
         // minimized: the page stops drawing (WebView2 reports it hidden) and the live sampling slows down
         Resize += (_, _) =>
         {
@@ -45,6 +46,23 @@ public sealed class MainForm : Form
             // Game Mode only lasts while AI Tweaker is open: closing it puts the paused services and closed apps back.
             if (GameSession.Active) Task.Run(GameSession.StopAsync).Wait(TimeSpan.FromSeconds(30));
         };
+    }
+
+    private bool _closeAllowed;
+
+    /// <summary>Closing in the middle of an image build or a USB write would leave a mounted image and loaded hives behind: stop the job cleanly first.</summary>
+    private async void OnFormClosing(object? sender, FormClosingEventArgs e)
+    {
+        if (_closeAllowed || _bridge is null || !_bridge.Api.LongTaskRunning || e.CloseReason == CloseReason.WindowsShutDown) return;
+        e.Cancel = true;
+        var answer = MessageBox.Show(this,
+            "AI Tweaker ещё работает (сборка образа, запись флешки или установка). Остановить и закрыть?\n\nAI Tweaker is still working (image build, USB or install). Stop it and close?",
+            "AI Tweaker", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+        if (answer != DialogResult.Yes) return;
+        Text = "AI Tweaker — остановка… / stopping…";
+        await _bridge.Api.StopAsync(TimeSpan.FromMinutes(3));
+        _closeAllowed = true;
+        Close();
     }
 
     protected override void OnHandleCreated(EventArgs e)

@@ -88,7 +88,7 @@ public sealed class ApiService
         "image.preview" => ImagePreview(p),
         "image.build" => await Exclusive(() => ImageBuilder.BuildAsync(Str(p, "iso") ?? "", OfflineImagePlan.Build(_catalog, ImageOptions(p)), (s, v) => _emit("image.progress", new { step = s, value = v }), NewLongTask())),
         "image.ame" => await AmeExport.ExportAsync(_catalog, SettingsStore.Current.Language),
-        "image.existing" => File.Exists(Path.Combine(ImageBuilder.OutputFolder, "sources", "install.wim")) ? ImageBuilder.OutputFolder : null,
+        "image.existing" => ImageBuilder.Existing(),
         "system.logoff" => await LogoffAsync(),
         "system.rebootPending" => SettingsStore.RebootPending,
         "firstrun.done" => Do(() => { SettingsStore.Current.FirstRunDone = true; SettingsStore.Save(); }),
@@ -446,6 +446,7 @@ public sealed class ApiService
         o.CleanupComponents = Bool(e, "cleanup") ?? true;
         o.IntegrateUpdates = Bool(e, "updates") ?? true;
         o.ApplyLook = Bool(e, "look") ?? true;
+        o.Edition = Str(e, "edition") is { } ed && ed is "Core" or "Professional" ? ed : HostEdition();
         return o;
     }
 
@@ -519,10 +520,30 @@ public sealed class ApiService
         return dlg.ShowDialog() == DialogResult.OK ? dlg.FileName : null;
     }
 
+    /// <summary>Home ("Core…") or Pro, from the running Windows: an image of the licensed edition activates by itself.</summary>
+    private static string HostEdition()
+    {
+        using var k = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+        return (k?.GetValue("EditionID") as string ?? "").StartsWith("Core", StringComparison.OrdinalIgnoreCase) ? "Core" : "Professional";
+    }
+
+    /// <summary>Keyboard layouts for the chosen locale: English plus the locale's own.</summary>
+    private static string InputLocaleFor(string locale) => locale switch
+    {
+        "en-US" => "0409:00000409",
+        "uk-UA" => "0409:00000409;0422:00000422",
+        "kk-KZ" => "0409:00000409;043F:0000043F",
+        "be-BY" => "0409:00000409;0423:00000423",
+        "de-DE" => "0409:00000409;0407:00000407",
+        _ => "0409:00000409;0419:00000419",
+    };
+
     private static UnattendOptions Unattend(JsonElement p)
     {
-        var o = new UnattendOptions();
+        var o = new UnattendOptions { Edition = ImageBuilder.BuiltEdition() ?? HostEdition() };
         if (!p.TryGetProperty("options", out var e) || e.ValueKind != JsonValueKind.Object) return o;
+        // a clean Microsoft ISO is set up as the PC's own edition; our image as the edition it was built with
+        if (Str(p, "source") == "iso") o.Edition = HostEdition();
         o.UserName = Str(e, "userName") ?? o.UserName;
         o.Password = Str(e, "password") ?? "";
         o.ComputerName = Str(e, "computerName") ?? "";
@@ -534,7 +555,7 @@ public sealed class ApiService
         if (Str(e, "locale") is { } loc)
         {
             o.SystemLocale = o.UserLocale = loc;
-            o.InputLocale = loc == "en-US" ? "0409:00000409" : "0409:00000409;0419:00000419";
+            o.InputLocale = InputLocaleFor(loc);
         }
         return o;
     }
@@ -574,6 +595,17 @@ public sealed class ApiService
         if (!await _busy.WaitAsync(0)) throw new InvalidOperationException(SettingsStore.Current.Language == "en" ? "Another operation is still running." : "Уже выполняется другая операция.");
         try { return await work(); }
         finally { _busy.Release(); }
+    }
+
+    /// <summary>A long job (image build, USB, installs…) is running right now.</summary>
+    public bool LongTaskRunning => _busy.CurrentCount == 0;
+
+    /// <summary>Presses Cancel on the running job and waits until its cleanup (discarding a mounted image, unloading hives) is done.</summary>
+    public async Task StopAsync(TimeSpan max)
+    {
+        _longTask?.Cancel();
+        var until = DateTime.UtcNow + max;
+        while (LongTaskRunning && DateTime.UtcNow < until) await Task.Delay(250);
     }
 
     private CancellationToken NewLongTask()

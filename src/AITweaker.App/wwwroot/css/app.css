@@ -880,3 +880,5 @@ details.cat-group > summary::-webkit-details-marker { display: none; }
 :root.idle *, :root.idle *::before, :root.idle *::after { animation-play-state: paused !important; }
 /* long lists: rows off screen are skipped by layout and paint */
 .trow { content-visibility: auto; contain-intrinsic-size: auto 76px; }
+.busy-time { margin-left: auto; font: 500 11px/1 var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.busy-f { display: flex; justify-content: flex-end; margin-top: 12px; }
