@@ -148,6 +148,13 @@
     if (S.view === "dashboard" && App.refreshSteps) App.refreshSteps();
   };
 
+  /** Automatic Game Mode switched itself on or off around a game. */
+  App.gmAuto = (e) => {
+    S.gameMode = !!e.on;
+    App.gmButton();
+    toast(t(e.on ? "gm.autoOn" : "gm.autoOff").replace("{g}", e.game || ""), e.on ? "ok" : "info", 6000);
+  };
+
   App.gmRefresh = async () => {
     try { S.gameMode = (await call("gamemode.state", {}, { silent: true })).active; } catch { S.gameMode = false; }
     App.gmButton();
@@ -161,6 +168,7 @@
       const r = await modal({
         title: t("gm.title"),
         body: html`<div class="gm-live">${icon("gamepad")}<div><b>${t("gm.isOn")}</b><div>${t("gm.since")} ${fmtTime(st.started)}</div></div></div>
+          ${st.game ? `<div class="callout">${t("gm.autoNote").replace("{g}", esc(st.game))}</div>` : ""}
           <div class="metrics"><div class="metric"><div class="k">${t("gm.paused")}</div><div class="v">${st.services.length}</div></div>
             <div class="metric"><div class="k">${t("gm.closed")}</div><div class="v">${st.apps.length}</div></div></div>
           <div class="td" style="color:var(--muted)">${t("gm.stopNote")}</div>`,
@@ -179,22 +187,27 @@
     const row = (o) => html`<button class="gm-opt ${on.has(o.id) ? "on" : ""}" data-o="${o.id}">
       <span><b>${t("gm." + o.id)}</b><small>${o.id === "power" ? t("gm.power." + o.items[0]) : o.id === "wifi" ? `${t("gm.wifiD")} · ${esc(o.items.join(", "))}` : o.items.length ? esc([...new Set(o.items)].join(", ")) : t("gm." + o.id + "D")}</small></span>
       <span class="switch ${on.has(o.id) ? "on" : ""}"></span></button>`;
+    let auto = !!S.init.settings.autoGameMode;
     const r = await modal({
       title: t("gm.title"),
       wide: true,
       body: html`<div>${t("gm.desc")}</div><div class="gm-opts">${st.options.map(row).join("")}</div>
+        <button class="gm-opt gm-auto ${auto ? "on" : ""}" id="gmAuto"><span><b>${t("gm.auto")}</b><small>${t("gm.autoD")}</small></span><span class="switch ${auto ? "on" : ""}"></span></button>
         <div class="td" style="color:var(--muted)">${icon("shield")} ${t("gm.safe")}</div>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("gm.start"), value: true, cls: "primary" }],
-      onOpen: (ov) => ov.querySelectorAll("[data-o]").forEach((b) => (b.onclick = () => {
-        on.has(b.dataset.o) ? on.delete(b.dataset.o) : on.add(b.dataset.o);
-        b.classList.toggle("on", on.has(b.dataset.o));
-        $(".switch", b).classList.toggle("on", on.has(b.dataset.o));
-      })),
+      onOpen: (ov) => {
+        ov.querySelectorAll("[data-o]").forEach((b) => (b.onclick = () => {
+          on.has(b.dataset.o) ? on.delete(b.dataset.o) : on.add(b.dataset.o);
+          b.classList.toggle("on", on.has(b.dataset.o));
+          $(".switch", b).classList.toggle("on", on.has(b.dataset.o));
+        }));
+        $("#gmAuto", ov).onclick = (e) => { auto = !auto; e.currentTarget.classList.toggle("on", auto); $(".switch", e.currentTarget).classList.toggle("on", auto); };
+      },
     });
     if (r !== true || !on.size) return;
     const b = busy(t("gm.starting"));
     let res = null;
-    try { res = await call("gamemode.start", { groups: [...on] }); } catch { /* toast */ } finally { b.done(); }
+    try { res = await call("gamemode.start", { groups: [...on], auto }); S.init.settings.autoGameMode = auto; } catch { /* toast */ } finally { b.done(); }
     if (!res) return;
     S.gameMode = !!res.active;
     App.gmButton();

@@ -20,6 +20,10 @@ public static class LocalReinstall
         if (string.IsNullOrWhiteSpace(source) && mode != "clean" && language.StartsWith("English", StringComparison.OrdinalIgnoreCase)
             && !profile.Os.Language.StartsWith("en", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"Files and apps can only be kept with an image in the system language ({profile.Os.Language}). Choose a clean install or your own ISO in that language.");
+        // Setup keeps files and apps only within the same edition: our image holds one (Pro or Home)
+        if (mode != "clean" && source is not null && source.Equals(ImageBuilder.Existing(), StringComparison.OrdinalIgnoreCase)
+            && ImageBuilder.BuiltEdition() is { } built && !profile.Os.Edition.StartsWith(built == "Core" ? "Core" : "Professional", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"The AI Tweaker image holds Windows 11 {(built == "Core" ? "Home" : "Pro")}, but this PC runs {profile.Os.Edition}: files and apps can only be kept within the same edition. Rebuild the image with \"Same as this PC\" or choose a clean install.");
         if (string.IsNullOrWhiteSpace(source)) source = await UsbCreator.DownloadIsoAsync(language, progress, ct);
 
         progress("mount", 0);

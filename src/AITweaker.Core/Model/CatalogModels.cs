@@ -4,6 +4,8 @@ public sealed class TweakCategory
 {
     public required string Id { get; init; }
     public required LocalizedText Name { get; init; }
+    /// <summary>One word for tabs.</summary>
+    public LocalizedText? Short { get; init; }
     public string Icon { get; init; } = "";
 }
 
@@ -40,8 +42,8 @@ public sealed class GuideSection
     public required LocalizedText Title { get; init; }
     /// <summary>Settings path inside the app, e.g. "User Settings → Game Overlay".</summary>
     public string Path { get; init; } = "";
-    /// <summary>Optional screenshot in wwwroot/guides, shown as is next to the text.</summary>
-    public string? Image { get; init; }
+    /// <summary>Screenshots in wwwroot/guides (cut by tools/guide-shots), shown next to the text in this order.</summary>
+    public List<string> Images { get; init; } = [];
     public List<GuideSetting> Settings { get; init; } = [];
     public LocalizedText? Note { get; init; }
 }

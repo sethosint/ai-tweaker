@@ -9,8 +9,10 @@ namespace AITweaker.App;
 public sealed class MainForm : Form
 {
     private const string Host = "https://app.aitweaker";
-    private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(0xEC, 0xE8, 0xDE) };
+    private readonly WebView2 _web = new() { Dock = DockStyle.Fill };
     private readonly Dictionary<string, string> _resources;
+    /// <summary>Changes with every build: index.html asks for js/css with it, so a cached old file is never used.</summary>
+    private readonly string _stamp = $"{Updater.Current.ToString(3)}-{File.GetLastWriteTimeUtc(Environment.ProcessPath ?? typeof(MainForm).Assembly.Location).Ticks:x}";
     private BridgeHost? _bridge;
     private Telemetry? _telemetry;
 
@@ -20,7 +22,9 @@ public sealed class MainForm : Form
         MinimumSize = new Size(1100, 720);
         Size = new Size(1480, 920);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.FromArgb(0xEC, 0xE8, 0xDE);
+        // the page background of the saved theme from the first frame: no light flash before the UI loads
+        BackColor = Night(SettingsStore.Current.Theme) ? NightBg : DayBg;
+        _web.DefaultBackgroundColor = BackColor;
         try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!); } catch { /* default icon */ }
         Controls.Add(_web);
 
@@ -30,6 +34,14 @@ public sealed class MainForm : Form
             .ToDictionary(n => n.Replace('\\', '/')[4..], n => n, StringComparer.OrdinalIgnoreCase);
 
         Load += async (_, _) => await InitAsync();
+        FormClosing += OnFormClosing;
+        // minimized: the page stops drawing (WebView2 reports it hidden) and the live sampling slows down
+        Resize += (_, _) =>
+        {
+            bool minimized = WindowState == FormWindowState.Minimized;
+            if (_telemetry is not null) _telemetry.Background = minimized;
+            if (_web.CoreWebView2 is not null && _web.Visible == minimized) _web.Visible = !minimized;
+        };
         FormClosed += (_, _) =>
         {
             _telemetry?.Dispose();
@@ -38,17 +50,41 @@ public sealed class MainForm : Form
         };
     }
 
+    private bool _closeAllowed;
+
+    /// <summary>Closing in the middle of an image build or a USB write would leave a mounted image and loaded hives behind: stop the job cleanly first.</summary>
+    private async void OnFormClosing(object? sender, FormClosingEventArgs e)
+    {
+        if (_closeAllowed || _bridge is null || !_bridge.Api.LongTaskRunning || e.CloseReason == CloseReason.WindowsShutDown) return;
+        e.Cancel = true;
+        var answer = MessageBox.Show(this,
+            "AI Tweaker ещё работает (сборка образа, запись флешки или установка). Остановить и закрыть?\n\nAI Tweaker is still working (image build, USB or install). Stop it and close?",
+            "AI Tweaker", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+        if (answer != DialogResult.Yes) return;
+        Text = "AI Tweaker — остановка… / stopping…";
+        await _bridge.Api.StopAsync(TimeSpan.FromMinutes(3));
+        _closeAllowed = true;
+        Close();
+    }
+
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
         ApplyTheme(SettingsStore.Current.Theme);
     }
 
+    /// <summary>The CSS --bg colours (app.css), so the window and the page never show two shades.</summary>
+    private static readonly Color DayBg = Color.FromArgb(0xEE, 0xED, 0xE8), NightBg = Color.FromArgb(0x07, 0x08, 0x0A);
+
+    private static bool Night(string theme) => theme == "night" || (theme == "auto" && SystemThemeReader.Read().Dark);
+
     public void ApplyTheme(string theme)
     {
-        bool night = theme == "night" || (theme == "auto" && SystemThemeReader.Read().Dark);
-        Native.StyleTitleBar(Handle, night, night ? 0x0E0F0C : 0xECE8DE, night ? 0xF2A93B : 0x1D1D1B);
-        BackColor = night ? Color.FromArgb(0x0E, 0x0F, 0x0C) : Color.FromArgb(0xEC, 0xE8, 0xDE);
+        bool night = Night(theme);
+        var bg = night ? NightBg : DayBg;
+        Native.StyleTitleBar(Handle, night, bg.R << 16 | bg.G << 8 | bg.B, night ? 0xF2A93B : 0x1D1D1B);
+        BackColor = bg;
+        if (_web.CoreWebView2 is not null) _web.DefaultBackgroundColor = bg;
     }
 
     private async Task InitAsync()
@@ -69,6 +105,14 @@ public sealed class MainForm : Form
         }
 
         var core = _web.CoreWebView2;
+        // UI files are cached for good (they live inside the exe); a new or rebuilt exe starts from an empty cache
+        if (SettingsStore.Current.WebCacheStamp != _stamp)
+        {
+            try { await core.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.DiskCache); }
+            catch (Exception ex) { AppLog.Warn("app", "web cache not cleared: " + ex.Message); }
+            SettingsStore.Current.WebCacheStamp = _stamp;
+            SettingsStore.Save();
+        }
         var s = core.Settings;
 #if !DEBUG
         s.AreDevToolsEnabled = false;
@@ -132,6 +176,13 @@ public sealed class MainForm : Form
 
         var ms = new MemoryStream();
         using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)!) s.CopyTo(ms);
+        if (path == "index.html")
+        {
+            var html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            html = html.Replace("data-theme=\"night\"", $"data-theme=\"{(Night(SettingsStore.Current.Theme) ? "night" : "day")}\"");
+            html = System.Text.RegularExpressions.Regex.Replace(html, @"(src|href)=""((?:js|css|vendor)/[^""?]+\.(?:js|css))""", m => $"{m.Groups[1].Value}=\"{m.Groups[2].Value}?v={_stamp}\"");
+            ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(html));
+        }
         ms.Position = 0;
         var type = Path.GetExtension(path).ToLowerInvariant() switch
         {
@@ -146,6 +197,7 @@ public sealed class MainForm : Form
             ".woff2" => "font/woff2",
             _ => "application/octet-stream",
         };
-        return env.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type: {type}\nCache-Control: no-cache");
+        var cache = path == "index.html" ? "no-cache" : "max-age=31536000, immutable";
+        return env.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type: {type}\nCache-Control: {cache}");
     }
 }

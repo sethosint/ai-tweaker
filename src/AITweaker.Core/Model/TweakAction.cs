@@ -105,12 +105,18 @@ public sealed class PowerSettingAction : TweakAction
 /// <summary>Activates (creating if needed) a power scheme and optionally sets the power mode overlay.</summary>
 public sealed class PowerSchemeAction : TweakAction
 {
-    /// <summary>ultimate | high | balanced</summary>
+    /// <summary>aitweaker (our own scheme, see <see cref="Base"/>) | ultimate | high | balanced</summary>
     public string Scheme { get; init; } = "high";
+    /// <summary>
+    /// What the "AI Tweaker" scheme is copied from: balanced (Windows' Balanced plan, which the power tweaks then tune —
+    /// power modes and Game Mode only work on Balanced-derived plans) or current (the active plan, so a laptop keeps its
+    /// maker's tuning; High/Ultimate/Power saver fall back to Balanced).
+    /// </summary>
+    public string Base { get; init; } = "balanced";
     /// <summary>Optional power mode overlay: best-performance | balanced | efficiency.</summary>
     public string? Overlay { get; init; }
 
-    public override string Describe() => $"power scheme -> {Scheme}{(Overlay is null ? "" : $" (overlay {Overlay})")}";
+    public override string Describe() => $"power scheme -> {(Scheme == "aitweaker" ? $"AI Tweaker (copy of {Base})" : Scheme)}{(Overlay is null ? "" : $" (overlay {Overlay})")}";
 }
 
 public sealed class BcdAction : TweakAction
@@ -201,19 +207,29 @@ public sealed class DisplayRefreshAction : TweakAction
 }
 
 /// <summary>
-/// Settings inside a program's own settings file: JSON (Discord's settings.json) or key=value lines (Spotify's prefs).
-/// A missing file means the program isn't installed or set up yet: nothing to do.
+/// Settings inside a program's own settings file: JSON (Discord's settings.json), key=value lines (Spotify's prefs)
+/// or INI (OBS's basic.ini). A missing file means the program isn't installed or set up yet: nothing to do.
 /// </summary>
 public sealed class FileSettingAction : TweakAction
 {
-    /// <summary>Environment variables such as %APPDATA% are expanded.</summary>
+    /// <summary>
+    /// Environment variables such as %APPDATA% are expanded; {obs-profile} is OBS's active profile folder;
+    /// "a|b" means the first of them that exists (OBS 31+ user.ini, older global.ini).
+    /// </summary>
     public required string Path { get; init; }
-    /// <summary>json | prefs</summary>
+    /// <summary>json | prefs | ini</summary>
     public string Format { get; init; } = "json";
-    /// <summary>Key → value. For prefs files the JSON literal is written as is (strings keep their quotes, like Spotify's).</summary>
+    /// <summary>
+    /// Key → value. For prefs files the JSON literal is written as is (strings keep their quotes, like Spotify's);
+    /// INI keys are "Section/Key" and strings are written without quotes.
+    /// </summary>
     public required Dictionary<string, JsonElement> Set { get; init; }
     /// <summary>A program that rewrites the file when it exits: it is closed first and started again afterwards.</summary>
     public string? Process { get; init; }
+    /// <summary>restart (close the program and start it again) | fail (leave it alone: it may be streaming or recording).</summary>
+    public string IfRunning { get; init; } = "restart";
+    /// <summary>Create the file when its folder exists but the program hasn't written it yet (OBS writes encoder settings lazily).</summary>
+    public bool Create { get; init; }
 
     public override string Describe() => $"file {Path}: " + string.Join(", ", Set.Select(kv => $"{kv.Key}={kv.Value.GetRawText()}"));
 }

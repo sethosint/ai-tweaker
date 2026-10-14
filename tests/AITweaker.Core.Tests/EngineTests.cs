@@ -20,7 +20,8 @@ public class EngineTests
         Assert.Contains("power.plan.ultimate", ids);
         Assert.Contains("devices.interrupt-affinity", ids);
         Assert.Contains("gaming.hags", ids);
-        Assert.Contains("gaming.dynamic-tick.off", ids);
+        Assert.Contains("power.cpu-responsiveness", ids);
+        Assert.DoesNotContain("gaming.dynamic-tick.off", ids);           // no measured gain: manual only
         Assert.DoesNotContain("power.plan.laptop", Applicable(plan));
         Assert.DoesNotContain("network.wifi-performance", Applicable(plan));
         Assert.DoesNotContain("system.bluetooth.off", Applicable(plan));
@@ -33,6 +34,8 @@ public class EngineTests
         var applicable = Applicable(plan);
         Assert.Contains("power.plan.laptop", applicable);
         Assert.Contains("network.wifi-performance", applicable);
+        Assert.Contains("power.laptop-ac", applicable);
+        Assert.DoesNotContain("power.cpu-responsiveness", applicable);
         Assert.DoesNotContain("power.plan.ultimate", applicable);
         Assert.DoesNotContain("gaming.dynamic-tick.off", applicable);
         Assert.DoesNotContain("power.hibernation.off", applicable);

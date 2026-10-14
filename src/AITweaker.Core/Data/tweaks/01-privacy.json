@@ -219,5 +219,18 @@
     "actions": [
       { "type": "registry", "path": "HKLM\\SOFTWARE\\NVIDIA Corporation\\NvControlPanel2\\Client", "name": "OptInOrOutPreference", "kind": "dword", "value": 0, "onlyIfKeyExists": true }
     ]
+  },
+  {
+    "id": "privacy.typing-insights.off",
+    "category": "privacy",
+    "level": 1,
+    "name": { "ru": "Без «аналитики ввода»", "en": "No typing insights" },
+    "description": {
+      "ru": "Windows перестаёт собирать статистику набора текста (сколько слов набрано, исправлений и подсказок) для раздела «Аналитика ввода».",
+      "en": "Windows stops collecting typing statistics (words typed, corrections and suggestions) for the typing insights page."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKCU\\Software\\Microsoft\\input\\Settings", "name": "InsightsEnabled", "kind": "dword", "value": 0 }
+    ]
   }
 ]

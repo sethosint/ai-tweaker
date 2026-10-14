@@ -7,9 +7,6 @@
     <EmbeddedResource Include="Data\**\*.json" LogicalName="AITweaker.Data.%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Anthropic" Version="12.54.1" />
-  </ItemGroup>
-  <ItemGroup>
     <InternalsVisibleTo Include="AITweaker.Core.Tests" />
   </ItemGroup>
 </Project>

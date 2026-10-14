@@ -3,7 +3,7 @@
   const S = (window.S = {
     lang: "ru", rebootPending: false, theme: "day", themeMode: "auto", accentMode: "industrial", system: { accent: "#0078D4", dark: false }, sensors: null, profileName: "Extreme", gameMode: false, demo: false,
     init: null, scan: null, catalog: [], byId: {}, status: {}, plan: null, selected: new Set(),
-    log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null, ai: null,
+    log: [], telemetry: [], guides: null, bios: null, appx: null, drivers: null, backups: null,
     busy: false, view: "dashboard",
   });
 
@@ -85,14 +85,26 @@
   // ------------------------------------------------------------------ busy veil
 
   let veil = null;
-  window.busy = (title) => {
+  /** Progress veil. opts.cancel: a Cancel button that stops the running job (its cleanup still runs). Long jobs show the elapsed time. */
+  window.busy = (title, opts = {}) => {
     S.busy = true;
     $("#statusLed").className = "led busy";
     $("#statusText").textContent = t("status.busy");
     veil = document.createElement("div");
     veil.className = "busy-veil";
-    veil.innerHTML = html`<div class="busy-card"><div class="bt">${title}</div><div class="progress"><i style="width:4%"></i></div><div class="bs">…</div></div>`;
+    veil.innerHTML = html`<div class="busy-card"><div class="bt">${title}<span class="busy-time"></span></div><div class="progress"><i style="width:4%"></i></div><div class="bs">…</div>
+      ${opts.cancel ? `<div class="busy-f"><button class="btn sm ghost" id="busyCancel">${t("busy.cancel")}</button></div>` : ""}</div>`;
     document.body.append(veil);
+    const started = Date.now(), card = veil;
+    const timer = setInterval(() => {
+      const s = Math.round((Date.now() - started) / 1000);
+      if (s >= 20) $(".busy-time", card).textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }, 1000);
+    if (opts.cancel) $("#busyCancel", veil).onclick = (e) => {
+      e.currentTarget.disabled = true;
+      e.currentTarget.textContent = t("busy.cancelling");
+      call("task.cancel", {}, { silent: true }).catch(() => {});
+    };
     return {
       progress(v, text) {
         if (!veil) return;
@@ -101,6 +113,7 @@
       },
       done() {
         S.busy = false;
+        clearInterval(timer);
         veil && veil.remove();
         veil = null;
         $("#statusLed").className = "led";
@@ -160,12 +173,12 @@
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "06"], ["services", "07"],
-    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["ai", "11"], ["backup", "12"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "07"], ["services", "08"],
+    ["drivers", "09"], ["apps", "10"], ["manual", "11"], ["image", "12"], ["backup", "13"],
   ];
   window.NAV = NAV;
-  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", ai: "ADVISOR", backup: "ROLLBACK" };
-  const navList = () => NAV.filter(([v]) => v !== "ai" || (S.init && S.init.settings && S.init.settings.showAdvisor));
+  const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", backup: "ROLLBACK" };
+  const navList = () => NAV;
 
   // The live 3D part shown next to each page title; fans and lights follow the real load.
   const last = () => S.telemetry[S.telemetry.length - 1] || {};
@@ -184,11 +197,15 @@
     const i = navList().findIndex(([v]) => v === view);
     head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[view] || ""}</span>`);
     // 3D lives on the console only; other pages get their own flat emblem
-    if (!ph.querySelector(".ph-icon")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
+    if (!ph.querySelector(".ph-icon, :scope > .app-ico")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
   }
   const kickerWatch = new MutationObserver((list) => {
     const seen = new Set();
-    list.forEach((m) => { const sec = m.target.closest(".view"); if (sec && !seen.has(sec)) { seen.add(sec); kicker(sec); if (window.HW3D) HW3D.scan(sec, HWLOAD); } });
+    list.forEach((m) => {
+      if (m.target.closest("[data-live]")) return; // live numbers on the dashboard: nothing new to decorate
+      const sec = m.target.closest(".view");
+      if (sec && !seen.has(sec)) { seen.add(sec); kicker(sec); if (window.HW3D) HW3D.scan(sec, HWLOAD); }
+    });
   });
 
   /** Slides the highlight in the menu to the current page. */
@@ -196,7 +213,7 @@
     const g = $(".nav-glider"), on = $(".nav-item.on");
     if (!g) return;
     g.style.opacity = on ? 1 : 0;
-    if (on) g.style.top = on.offsetTop + "px";
+    if (on) g.style.transform = `translateY(${on.offsetTop}px)`;
   }
 
   window.go = (view, opts = {}) => {
@@ -216,7 +233,14 @@
     }
     const r = Views[view];
     if (r) r(opts);
+    if (window.HW3D && HW3D.wake) HW3D.wake();
   };
+
+  // A game in front or the window minimized: CSS animations pause (see :root.idle in app.css).
+  const idle = () => document.documentElement.classList.toggle("idle", document.hidden || !document.hasFocus());
+  window.addEventListener("blur", idle);
+  window.addEventListener("focus", idle);
+  document.addEventListener("visibilitychange", idle);
 
   function renderShell() {
     document.documentElement.lang = S.lang;
@@ -234,12 +258,13 @@
           <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">${t("shift.night")}</button></div>
           <div class="seg" id="langSeg"><button data-v="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button><button data-v="en" class="${S.lang === "en" ? "on" : ""}">EN</button></div>
           ${S.demo ? `<span class="demo-pill">${t("demo")}</span>` : ""}
+          <span id="updSlot"></span>
           <button class="icon-btn" id="settingsBtn" title="${t("settings")}">${icon("settings")}</button>
           <div class="clock" id="clock">${fmtTime()}</div>
         </div>
       </header>
       <nav class="nav"><div class="nav-glider"></div>
-        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === (all.some(([x]) => x === "ai") ? "ai" : "backup") ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === "backup" ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}" role="button" tabindex="0"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
         <div class="nav-foot">${t("nav.foot")}<br><br><span class="mono">AI TWEAKER ${esc((S.init && S.init.version) || "1.0.0")}${S.init && S.init.machine ? " · " + esc(S.init.machine) : ""}</span></div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
@@ -248,6 +273,7 @@
     $$(".view").forEach((sec) => kickerWatch.observe(sec, { childList: true, subtree: true }));
     requestAnimationFrame(moveGlider);
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
+    $(".nav").addEventListener("keydown", (e) => { const n = e.target.closest(".nav-item"); if (n && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go(n.dataset.view); } });
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
     $("#rebootChip").onclick = () => App.restartPrompt("reboot");
@@ -255,6 +281,7 @@
     $("#shiftSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.v); };
     $("#langSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setLang(b.dataset.v); };
     updateBadges();
+    if (App.updatePill) App.updatePill();
   }
   window.renderShell = renderShell;
 
@@ -311,27 +338,30 @@
     const s = S.init.settings;
     await modal({
       title: t("settings"),
-      body: html`<label class="field">${t("settings.accent")}
+      body: html`<div class="set-ver"><div><span>${t("settings.version")}</span><b>AI Tweaker ${esc(S.init.version)}</b></div><button class="btn sm" id="setUpd">${icon("update")}${t("upd.check")}</button></div>
+        <label class="check"><input type="checkbox" id="setCu" ${s.checkUpdates !== false ? "checked" : ""}><span class="box"></span>${t("settings.checkUpdates")}</label>
+        <label class="check"><input type="checkbox" id="setAg" ${s.autoGameMode ? "checked" : ""}><span class="box"></span>${t("settings.autoGame")}</label>
+        <label class="field">${t("settings.accent")}
           <select class="input" id="setAccent">${["industrial", "system", "mono"].map((m) => `<option value="${m}" ${S.accentMode === m ? "selected" : ""}>${t("settings.accent." + m)}</option>`).join("")}</select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
         <label class="field">${t("settings.autoRestart")}
           <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
-        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>
-        <label class="check"><input type="checkbox" id="setAdv" ${s.showAdvisor ? "checked" : ""}><span class="box"></span>${t("settings.advisor")}</label>
-        <div class="td" style="color:var(--muted);margin-top:-6px;padding-left:26px">${t("settings.advisorD")}</div>`,
-      buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("ai.save"), value: true, cls: "primary" }],
-      onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
+        <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
+      buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("settings.save"), value: true, cls: "primary" }],
+      onOpen: (ov) => {
+        $("#setUpd", ov).onclick = async (e) => { e.currentTarget.disabled = true; await App.checkUpdate(true); e.currentTarget.disabled = false; };
+        ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
-        const showAdvisor = $("#setAdv", ov).checked;
+        const checkUpdates = $("#setCu", ov).checked;
+        const autoGameMode = $("#setAg", ov).checked;
+        if (autoGameMode !== !!s.autoGameMode) await call("gamemode.auto", { enabled: autoGameMode });
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode, showAdvisor });
-        const navChanged = !!s.showAdvisor !== showAdvisor;
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, showAdvisor });
-        if (navChanged) { if (!showAdvisor && S.view === "ai") S.view = "dashboard"; renderShell(); go(S.view); }
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates, accent: S.accentMode });
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates, autoGameMode });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });

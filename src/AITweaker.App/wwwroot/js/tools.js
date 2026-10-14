@@ -72,7 +72,7 @@
 
         <div class="panel"><div class="panel-h">${t("startup.title")}<span class="right">${st.startup ? st.startup.filter((e) => e.enabled).length + "/" + st.startup.length : ""}</span></div>
           <div class="panel-b" style="padding-bottom:0;display:grid;gap:10px"><div class="td" style="color:var(--muted)">${t("startup.desc")}</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">${junk ? `<button class="btn primary sm" id="suClean">${t("startup.clean")} (${junk})</button>` : `<button class="btn done sm" disabled>${icon("check")}${t("startup.clean0")}</button>`}<button class="btn ghost sm" id="suAutoruns">${icon("external")}Autoruns</button></div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">${junk ? `<button class="btn primary sm" id="suClean">${t("startup.clean")} (${junk})</button>` : `<button class="btn done sm" disabled>${icon("check")}${t("startup.clean0")}</button>`}</div></div>
           <div>${st.startup ? (st.startup.length ? st.startup.map((e) => `<div class="tool-row"><div><div class="tn">${esc(e.name)} ${e.suggest === "off" ? `<span class="chip warn">${t("startup.off")}</span>` : e.suggest === "keep" ? `<span class="chip ok">${t("startup.keep")}</span>` : ""}</div><div class="tdsc">${esc(e.location)} · ${esc(e.scope)} · ${esc(e.command)}</div></div><div class="switch ${e.enabled ? "on" : ""}" data-sid="${esc(e.id)}" role="switch" aria-checked="${e.enabled}"></div></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`) : `<div class="empty" style="margin:12px">…</div>`}</div>
         </div>
 
@@ -123,7 +123,6 @@
       st.startup = await call("startup.list");
       render();
     };
-    $("#suAutoruns").onclick = () => go("apps", { guide: "autoruns" });
     v.querySelectorAll("[data-sid]").forEach((sw) => (sw.onclick = async () => {
       const e = st.startup.find((x) => x.id === sw.dataset.sid);
       await call("startup.set", { id: e.id, enabled: !e.enabled });

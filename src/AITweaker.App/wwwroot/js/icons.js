@@ -31,8 +31,16 @@
     monitor: '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.2"/><path d="M9 20h6M12 16v4"/>',
     bios: '<rect x="3.5" y="5" width="17" height="14" rx="1"/><path d="M3.5 9h17"/><path d="M7 13h4M7 16h7"/>',
     image: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 8 8"/>',
-    ai: '<path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3"/><circle cx="12" cy="12" r="4.5"/>',
     backup: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/><path d="M12 8v4.5l3 2"/>',
+    update: '<path d="M12 4v10"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M4.5 16v2.5a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V16"/>',
+    // program badges without a published brand mark
+    send: '<path d="M20 4 3.5 10.8l6.3 2.4 2.4 6.3L20 4Z"/><path d="m9.8 13.2 4.4-4.4"/>',
+    feather: '<path d="M19.5 4.5c-6.5 0-11 4.5-11 11v4"/><path d="M19.5 4.5c0 7-4 11-11 11"/><path d="M8.5 15.5 5 19"/><path d="M12 12h4.5"/>',
+    box: '<path d="M12 3.5 19.5 7.5v9L12 20.5 4.5 16.5v-9L12 3.5Z"/><path d="M4.5 7.5 12 11.5l7.5-4M12 11.5v9"/>',
+    cube: '<path d="M12 3.5 19.5 7.5v9L12 20.5 4.5 16.5v-9L12 3.5Z"/><path d="M12 11.5v9M12 11.5 4.5 7.5M12 11.5l7.5-4"/><path d="m8.2 5.5 7.5 4"/>',
+    skip: '<path d="M6 6.5v11l8-5.5-8-5.5Z"/><path d="M17.5 6.5v11"/>',
+    volume: '<path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3v-5Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+    start: '<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 9h8M8 12.5h8M8 16h5"/>',
   };
   window.icon = (name, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${P[name] || ""}</svg>`;
 

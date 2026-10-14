@@ -54,7 +54,14 @@ jobs:
       - name: Unit tests on Windows
         run: dotnet test tests/AITweaker.Core.Tests -c Release
       - name: Publish single-file exe
-        run: dotnet publish src/AITweaker.App/AITweaker.App.csproj -c Release -o publish
+        # a release build carries the tag's version, so the in-app updater compares against the right number
+        shell: pwsh
+        env:
+          TAG: ${{ inputs.release || github.ref_name }}
+        run: |
+          $props = @()
+          if ($env:TAG -match '^v(\d+\.\d+\.\d+)$') { $props += "-p:Version=$($Matches[1])" }
+          dotnet publish src/AITweaker.App/AITweaker.App.csproj -c Release -o publish @props
       - uses: actions/upload-artifact@v4
         with:
           name: AITweaker-win-x64

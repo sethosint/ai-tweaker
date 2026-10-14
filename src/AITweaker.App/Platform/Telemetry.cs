@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net.NetworkInformation;
 
 namespace AITweaker.App.Platform;
@@ -14,6 +13,9 @@ public sealed class Telemetry : IDisposable
     private readonly Sensors _sensors = new();
     private int _tick;
     private long? _lastPing;
+
+    /// <summary>The window is minimized: sample every 5 s and skip the sensors (WMI) until it's back.</summary>
+    public bool Background { get; set; }
 
     public event Action<TelemetrySample>? Sample;
     public event Action<SensorSample>? SensorsRead;
@@ -33,14 +35,14 @@ public sealed class Telemetry : IDisposable
                 var (load, totalBytes, avail) = Native.GetMemoryStatus();
                 if (_tick++ % 2 == 0) _lastPing = await PingAsync();
                 Sample?.Invoke(new TelemetrySample(DateTime.Now, Math.Round(cpu, 1), load,
-                    Math.Round((totalBytes - avail) / 1073741824.0, 1), Math.Round(totalBytes / 1073741824.0, 1), _lastPing, Process.GetProcesses().Length));
-                if (_tick % 2 == 1) SensorsRead?.Invoke(_sensors.Read());
+                    Math.Round((totalBytes - avail) / 1073741824.0, 1), Math.Round(totalBytes / 1073741824.0, 1), _lastPing, Native.ProcessCount()));
+                if (_tick % 2 == 1 && !Background) SensorsRead?.Invoke(_sensors.Read());
             }
             catch (Exception ex)
             {
                 AppLog.Warn("telemetry", ex.Message);
             }
-            try { await Task.Delay(1000, _cts.Token); } catch (OperationCanceledException) { }
+            try { await Task.Delay(Background ? 5000 : 1000, _cts.Token); } catch (OperationCanceledException) { }
         }
     }
 

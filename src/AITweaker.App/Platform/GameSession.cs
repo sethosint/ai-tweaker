@@ -31,7 +31,8 @@ public static class GameSession
         ("AdobeCollabSync", "Adobe Acrobat"), ("Skype", "Skype"), ("Cortana", "Cortana"),
     ];
 
-    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes, List<string>? Wifi = null);
+    /// <param name="Game">Set when automatic Game Mode started the session for this game; it ends when the game closes.</param>
+    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes, List<string>? Wifi = null, string? Game = null);
 
     private static State? _active;
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -40,7 +41,31 @@ public static class GameSession
     [DllImport("ntdll.dll")]
     private static extern int NtSetTimerResolution(uint desired, bool set, out uint current);
 
+    /// <summary>0.506 ms (100 ns units): measured to give steadier Sleep(1) than exactly 0.5 ms on most PCs (Atlas ships the same).</summary>
+    private const uint TimerRequest = 5060;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PowerThrottlingState { public uint Version, ControlMask, StateMask; }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PowerThrottlingState info, uint size);
+
+    /// <summary>
+    /// Windows 11 ignores the timer request of a process whose window is minimized or covered — exactly where AI Tweaker
+    /// sits during a game. Opting out (PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION in the control mask, cleared in
+    /// the state mask) keeps the request honoured.
+    /// </summary>
+    private static void KeepTimerWhenHidden()
+    {
+        var state = new PowerThrottlingState { Version = 1, ControlMask = 0x4, StateMask = 0 };
+        if (!SetProcessInformation(System.Diagnostics.Process.GetCurrentProcess().Handle, 4 /* ProcessPowerThrottling */, ref state, (uint)Marshal.SizeOf<PowerThrottlingState>()))
+            AppLog.Warn("game", $"timer request may be ignored while minimized (error {Marshal.GetLastWin32Error()})");
+    }
+
     public static bool Active => _active is not null;
+
+    /// <summary>The game an automatically started session belongs to (null for a session started by hand).</summary>
+    public static string? AutoGame => _active?.Game;
 
     /// <summary>What the button would do right now (when off) or what it did (when on).</summary>
     public static object Describe(SystemProfile profile)
@@ -50,6 +75,7 @@ public static class GameSession
             {
                 active = true,
                 started = s.Started,
+                game = s.Game,
                 groups = s.Groups,
                 services = s.Services,
                 apps = s.Apps.Select(a => Path.GetFileNameWithoutExtension(a)).Distinct(),
@@ -83,7 +109,7 @@ public static class GameSession
         return names.Count == 0 ? null : new { id = "apps", items = names };
     }
 
-    public static async Task<object> StartAsync(IReadOnlyCollection<string> groups, SystemProfile profile)
+    public static async Task<object> StartAsync(IReadOnlyCollection<string> groups, SystemProfile profile, string? game = null)
     {
         await Gate.WaitAsync();
         try
@@ -96,7 +122,7 @@ public static class GameSession
             ulong freed = 0;
 
             // Saved before anything changes, so a crash or power loss is still undone on the next start.
-            var state = new State(DateTime.Now, [.. want], stopped, closed, null, null, false, 0);
+            var state = new State(DateTime.Now, [.. want], stopped, closed, null, null, false, 0, Game: game);
             Save(state);
 
             var running = RunningServices();
@@ -163,7 +189,10 @@ public static class GameSession
             }
 
             if (want.Contains("timer") && TimerAvailable())
-                timer = NtSetTimerResolution(5000, true, out _) == 0;
+            {
+                KeepTimerWhenHidden();
+                timer = NtSetTimerResolution(TimerRequest, true, out _) == 0;
+            }
 
             _active = state with { Timer = timer, FreedBytes = freed };
             Save(_active);
@@ -181,7 +210,7 @@ public static class GameSession
         {
             var s = _active ?? Load();
             if (s is null) return false;
-            if (s.Timer) NtSetTimerResolution(5000, false, out _);
+            if (s.Timer) NtSetTimerResolution(TimerRequest, false, out _);
             foreach (var name in s.Wifi ?? [])
                 await ProcessRunner.RunAsync("netsh.exe", $"wlan set autoconfig enabled=yes interface=\"{name}\"", TimeSpan.FromSeconds(15));
             if (Guid.TryParse(s.Scheme, out var scheme)) Native.SetActiveScheme(scheme);
@@ -223,8 +252,7 @@ public static class GameSession
     private static async Task RaisePowerAsync(SystemProfile profile, Guid active)
     {
         bool x3d = profile.Cpu.IsX3D && profile.Cpu.Cores > 8; // dual-CCD X3D needs the Balanced plan for core parking
-        if (!profile.Machine.IsLaptop && !x3d && active != PowerOps.High && active != PowerOps.UltimateTemplate
-            && active.ToString() != SettingsStore.Current.UltimateSchemeGuid && (await PowerOps.ListSchemesAsync()).Contains(PowerOps.High))
+        if (!profile.Machine.IsLaptop && !x3d && !PowerOps.IsPerformancePlan(active) && (await PowerOps.ListSchemesAsync()).Contains(PowerOps.High))
         {
             Native.SetActiveScheme(PowerOps.High);
             return;
@@ -233,7 +261,8 @@ public static class GameSession
     }
 
     private static string PowerPlanName(SystemProfile profile) =>
-        !profile.Machine.IsLaptop && !(profile.Cpu.IsX3D && profile.Cpu.Cores > 8) ? "high" : "overlay";
+        profile.Machine.IsLaptop || (profile.Cpu.IsX3D && profile.Cpu.Cores > 8) ? "overlay"
+        : PowerOps.IsPerformancePlan(Native.GetActiveScheme()) ? "kept" : "high";
 
     /// <summary>Only worth holding when Windows applies timer requests globally (the "global timer resolution" tweak).</summary>
     private static bool TimerAvailable()

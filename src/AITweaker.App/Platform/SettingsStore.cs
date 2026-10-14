@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -11,14 +10,12 @@ public sealed class AppSettings
     public string Theme { get; set; } = "auto";
     /// <summary>industrial (signal orange) | system (Windows accent color) | mono (monochrome)</summary>
     public string Accent { get; set; } = "industrial";
-    /// <summary>Show the optional Advisor tab (needs the user's own paid Claude API key).</summary>
-    public bool ShowAdvisor { get; set; }
     public string Profile { get; set; } = "Extreme";
-    public string ClaudeModel { get; set; } = AITweaker.Core.Ai.ClaudeAdvisor.DefaultModel;
-    /// <summary>API key encrypted with DPAPI (current user), base64.</summary>
-    public string? ClaudeKeyProtected { get; set; }
     public string PingHost { get; set; } = "1.1.1.1";
     public string? UltimateSchemeGuid { get; set; }
+    /// <summary>The "AI Tweaker" power scheme created by the power plan tweak, and what it was copied from.</summary>
+    public string? OwnSchemeGuid { get; set; }
+    public string? OwnSchemeBase { get; set; }
     public bool CreateRestorePoint { get; set; } = true;
     /// <summary>When changes that need a reboot were made; cleared once Windows has booted after that.</summary>
     public DateTime? RebootPendingSince { get; set; }
@@ -26,6 +23,14 @@ public sealed class AppSettings
     public int AutoRestartSeconds { get; set; } = 60;
     /// <summary>The post-install welcome (scan → auto-tune → look → restart) was completed or dismissed for good.</summary>
     public bool FirstRunDone { get; set; }
+    /// <summary>Look for a new AI Tweaker release on every start.</summary>
+    public bool CheckUpdates { get; set; } = true;
+    /// <summary>Turn Game Mode on by itself while a known game runs.</summary>
+    public bool AutoGameMode { get; set; }
+    /// <summary>What automatic Game Mode turns on: the choices from the last time the user started it.</summary>
+    public List<string>? AutoGameGroups { get; set; }
+    /// <summary>Build stamp the WebView2 disk cache belongs to.</summary>
+    public string? WebCacheStamp { get; set; }
 }
 
 public static class SettingsStore
@@ -83,25 +88,4 @@ public static class SettingsStore
         Save();
     }
 
-    public static string? GetClaudeKey()
-    {
-        var p = Current.ClaudeKeyProtected;
-        if (string.IsNullOrEmpty(p)) return null;
-        try
-        {
-            return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(p), null, DataProtectionScope.CurrentUser));
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    public static void SetClaudeKey(string? key)
-    {
-        Current.ClaudeKeyProtected = string.IsNullOrWhiteSpace(key)
-            ? null
-            : Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(key.Trim()), null, DataProtectionScope.CurrentUser));
-        Save();
-    }
 }

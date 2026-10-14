@@ -35,7 +35,7 @@ public class CatalogTests
     {
         Assert.True(Catalog.Tweaks.Count >= 60, $"only {Catalog.Tweaks.Count} tweaks");
         Assert.True(Catalog.Apps.Count >= 30);
-        Assert.True(Catalog.Guides.Count >= 8);
+        Assert.Equal(7, Catalog.Guides.Count); // the programs the user configures: GPU apps, Discord, Steam, Epic, OBS, Spotify
         Assert.True(Catalog.Bios.Count >= 6);
         Assert.Equal(11, Catalog.Categories.Count);
     }
@@ -114,7 +114,8 @@ public class CatalogTests
                     Assert.True(p.Ac.HasValue || p.Dc.HasValue, t.Id);
                     break;
                 case PowerSchemeAction s:
-                    Assert.Contains(s.Scheme, new[] { "ultimate", "high", "balanced" });
+                    Assert.Contains(s.Scheme, new[] { "aitweaker", "ultimate", "high", "balanced" });
+                    Assert.Contains(s.Base, new[] { "balanced", "current" });
                     if (s.Overlay is not null) Assert.Contains(s.Overlay, new[] { "best-performance", "balanced", "efficiency" });
                     break;
                 case ServiceAction s:
@@ -145,14 +146,53 @@ public class CatalogTests
                     break;
                 case FileSettingAction f:
                     // per-user program settings: always under the user's profile, never a system path
-                    Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", f.Path);
-                    Assert.Contains(f.Format, new[] { "json", "prefs" });
+                    Assert.All(f.Path.Split('|'), p => Assert.Matches(@"^%(APPDATA|LOCALAPPDATA)%\\", p));
+                    Assert.Contains(f.Format, new[] { "json", "prefs", "ini" });
+                    if (f.Format == "ini") Assert.All(f.Set.Keys, k => Assert.Matches(@"^[A-Za-z]+/[A-Za-z0-9]+$", k));
+                    Assert.Contains(f.IfRunning, new[] { "restart", "fail" });
                     Assert.NotEmpty(f.Set);
                     Assert.True(t.When is not null && t.When.StartsWith("app.", StringComparison.Ordinal), $"{t.Id}: a program's settings file only when the program is installed");
                     break;
             }
         }
     }
+
+    [Fact]
+    public void ObsSettingsUseRealObsKeys()
+    {
+        // ids and values checked against obs-studio's obs-nvenc plugin and settings dialog
+        var t = Catalog.Find("apps.obs.settings")!;
+        Assert.True(t.Confirm);
+        var files = t.Actions.Cast<FileSettingAction>().ToList();
+        // OBS may be live: never closed behind the user's back
+        Assert.All(files, f => Assert.Equal(("obs64", "fail"), (f.Process, f.IfRunning)));
+        var basic = files.First(f => f.Path.EndsWith("basic.ini") && f.When is null).Set;
+        Assert.Equal("obs_nvenc_h264_tex", basic["AdvOut/Encoder"].GetString());
+        Assert.Equal("hybrid_mp4", basic["AdvOut/RecFormat2"].GetString());
+        Assert.Equal("IPv4", basic["Output/IPFamily"].GetString());
+        Assert.Equal(512, basic["AdvOut/RecRBSize"].GetInt32());
+        Assert.Contains(files, f => f.When == "gpu.av1" && f.Set["AdvOut/RecEncoder"].GetString() == "obs_nvenc_av1_tex");
+        Assert.Contains(files, f => f.When == "!gpu.av1" && f.Set["AdvOut/RecEncoder"].GetString() == "obs_nvenc_hevc_tex");
+        foreach (var enc in files.Where(f => f.Path.EndsWith("Encoder.json")))
+        {
+            Assert.True(enc.Create);
+            Assert.Equal("p6", enc.Set["preset"].GetString());     // the new NVENC plugin's key is "preset", not "preset2"
+            Assert.Contains(enc.Set["rate_control"].GetString(), new[] { "CBR", "CQP" });
+            Assert.True(enc.Set["adaptive_quantization"].GetBoolean());
+        }
+    }
+
+    [Theory]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 4070 SUPER", true)]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 5070 Ti", true)]
+    [InlineData("NVIDIA", "NVIDIA GeForce RTX 3080", false)]
+    [InlineData("NVIDIA", "NVIDIA GeForce GTX 1660 SUPER", false)]
+    [InlineData("AMD", "AMD Radeon RX 7800 XT", true)]
+    [InlineData("AMD", "AMD Radeon RX 6700 XT", false)]
+    [InlineData("Intel", "Intel(R) Arc(TM) B580 Graphics", true)]
+    [InlineData("Intel", "Intel(R) UHD Graphics 770", false)]
+    public void KnowsWhichGpusEncodeAv1(string vendor, string name, bool av1) =>
+        Assert.Equal(av1, new GpuInfo { Vendor = vendor, Name = name }.EncodesAv1);
 
     [Fact]
     public void AppsAreUniqueAndImportantOnesWarn()
@@ -178,12 +218,18 @@ public class CatalogTests
             {
                 Assert.False(string.IsNullOrWhiteSpace(s.Path), $"{g.Id}: section without a path");
                 Assert.NotEmpty(s.Settings);
-                if (s.Image is not null)
-                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", s.Image)), $"missing guide screenshot {s.Image}");
+                // every section shows the real settings screen next to the text
+                Assert.True(s.Images.Count > 0, $"{g.Id}: {s.Title.En} has no screenshot");
+                foreach (var image in s.Images)
+                    Assert.True(File.Exists(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides", image)), $"missing guide screenshot {image}");
             }
             foreach (var id in g.AutoTweaks)
                 Assert.NotNull(Catalog.Find(id));
         }
+        // and no screenshot ships that no guide uses
+        var used = Catalog.Guides.SelectMany(g => g.Sections).SelectMany(s => s.Images).ToHashSet();
+        foreach (var file in Directory.GetFiles(Path.Combine(RepoRoot(), "src", "AITweaker.App", "wwwroot", "guides")))
+            Assert.Contains(Path.GetFileName(file), used);
     }
 
     [Fact]
@@ -232,11 +278,14 @@ public class CatalogTests
             Assert.False(p.Paid && p.Recommended, $"{p.Id}: paid software is never preselected");
         }
         // the main programs come from their vendors' own installers, not winget
-        foreach (var id in new[] { "chrome", "firefox", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "vlc", "everything", "mpv" })
+        foreach (var id in new[] { "chrome", "discord", "telegram", "steam", "epic", "spotify", "obs", "lightshot", "7zip", "vcredist", "directx", "dotnet8", "openshell", "mpv" })
             Assert.True(Catalog.Programs.Single(p => p.Id == id) is { } x && (x.Installer ?? x.Github ?? x.Page) is not null, id);
         // the apps from the user's own setup are there
-        foreach (var id in new[] { "chrome", "discord", "ayugram", "claude", "spotify", "obs", "epic", "steam", "openshell", "cru" })
+        foreach (var id in new[] { "chrome", "discord", "ayugram", "spotify", "obs", "epic", "steam", "openshell", "cru" })
             Assert.Contains(Catalog.Programs, p => p.Id == id);
+        // and what the user took out stays out
+        foreach (var id in new[] { "brave", "firefox", "claude", "battlenet", "vlc", "capcut", "everything", "notepadpp", "powertoys", "autoruns", "startallback", "whatsapp", "netflix", "gamingservices", "xbox", "minecraft" })
+            Assert.DoesNotContain(Catalog.Programs, p => p.Id == id);
     }
 
     [Fact]

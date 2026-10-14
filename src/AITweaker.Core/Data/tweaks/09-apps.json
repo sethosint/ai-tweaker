@@ -149,5 +149,47 @@
       { "type": "file", "path": "%APPDATA%\\Spotify\\prefs", "format": "prefs", "set": { "app.autostart-mode": "off", "app.autostart-configured": true }, "process": "Spotify" },
       { "type": "file", "path": "%LOCALAPPDATA%\\Packages\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0\\LocalState\\Spotify\\prefs", "format": "prefs", "set": { "app.autostart-mode": "off", "app.autostart-configured": true }, "process": "Spotify" }
     ]
+  },
+  {
+    "id": "apps.obs.settings",
+    "category": "apps",
+    "level": 2,
+    "confirm": true,
+    "confirmText": { "ru": "Перезапишутся разрешение, кодировщики, битрейт и Replay Buffer в активном профиле OBS. Откат возвращает прежние значения.", "en": "Resolution, encoders, bitrate and Replay Buffer in the active OBS profile are overwritten. Rollback restores the previous values." },
+    "when": "app.obs && gpu.nvidia",
+    "name": { "ru": "OBS: стрим и запись на NVENC, Replay Buffer", "en": "OBS: NVENC streaming and recording, Replay Buffer" },
+    "description": {
+      "ru": "Профиль OBS настраивается как у стримеров: стрим NVENC H.264 CBR 6000 Кбит/с в 1664×936 при 60 FPS (Lanczos), запись NVENC AV1 на RTX 40/50 или HEVC на остальных картах NVIDIA с постоянным качеством CQP 18 в Hybrid MP4, Replay Buffer на 30 секунд, звук 48 кГц и AAC 160 Кбит/с. Плюс: автопереподключение, только IPv4, выключено приглушение звука Windows и аппаратное ускорение браузерных источников. Если OBS открыт, программа его не трогает — закройте OBS и примените ещё раз.",
+      "en": "The OBS profile is set up the way streamers do it: NVENC H.264 CBR 6000 Kbps at 1664×936 60 FPS (Lanczos), recording with NVENC AV1 on RTX 40/50 or HEVC on other NVIDIA cards at constant quality CQP 18 in Hybrid MP4, a 30-second Replay Buffer, 48 kHz audio and AAC 160 Kbps. Plus auto-reconnect, IPv4 only, Windows audio ducking and browser source hardware acceleration off. If OBS is open it's left alone — close OBS and apply again."
+    },
+    "gain": {
+      "ru": "Кодирует видеокарта отдельным блоком NVENC — игра не теряет FPS, стрим чистый на 6000 Кбит/с, запись почти без потерь, повтор последних 30 секунд по горячей клавише.",
+      "en": "The GPU's separate NVENC block does the encoding — the game keeps its FPS, the stream stays clean at 6000 Kbps, recordings are near-lossless, and the last 30 seconds are a hotkey away."
+    },
+    "keep": { "ru": "Текущие настройки OBS остаются как есть.", "en": "Your current OBS settings stay as they are." },
+    "actions": [
+      { "type": "file", "path": "%APPDATA%\\obs-studio\\basic\\profiles\\{obs-profile}\\basic.ini", "format": "ini", "process": "obs64", "ifRunning": "fail", "set": { "Output/Mode": "Advanced", "Output/FilenameFormatting": "%CCYY-%MM-%DD %hh-%mm-%ss", "Output/OverwriteIfExists": false, "Output/DelayEnable": false, "Output/Reconnect": true, "Output/RetryDelay": 2, "Output/MaxRetries": 25, "Output/IPFamily": "IPv4", "Output/DynamicBitrate": false, "Output/NewSocketLoopEnable": false, "Output/LowLatencyEnable": false, "AdvOut/Encoder": "obs_nvenc_h264_tex", "AdvOut/AudioEncoder": "ffmpeg_aac", "AdvOut/TrackIndex": 1, "AdvOut/VodTrackEnabled": false, "AdvOut/RescaleFilter": 0, "AdvOut/RecType": "Standard", "AdvOut/RecFormat2": "hybrid_mp4", "AdvOut/RecAudioEncoder": "ffmpeg_aac", "AdvOut/RecTracks": 1, "AdvOut/RecRescaleFilter": 0, "AdvOut/RecFileNameWithoutSpace": false, "AdvOut/RecSplitFile": false, "AdvOut/Track1Bitrate": 160, "AdvOut/RecRB": true, "AdvOut/RecRBTime": 30, "AdvOut/RecRBSize": 512, "SimpleOutput/RecRBPrefix": "Replay", "Video/BaseCX": 1920, "Video/BaseCY": 1080, "Video/OutputCX": 1664, "Video/OutputCY": 936, "Video/ScaleType": "lanczos", "Video/FPSType": 0, "Video/FPSCommon": "60", "Video/ColorFormat": "NV12", "Video/ColorSpace": "709", "Video/ColorRange": "Partial", "Video/SdrWhiteLevel": 300, "Video/HdrNominalPeakLevel": 1000, "Video/AutoRemux": false, "Audio/SampleRate": 48000, "Audio/ChannelSetup": "Stereo" } },
+      { "type": "file", "path": "%APPDATA%\\obs-studio\\basic\\profiles\\{obs-profile}\\streamEncoder.json", "format": "json", "process": "obs64", "ifRunning": "fail", "create": true, "set": { "rate_control": "CBR", "bitrate": 6000, "keyint_sec": 2, "preset": "p6", "tune": "hq", "multipass": "qres", "lookahead": false, "adaptive_quantization": true, "bf": 2, "profile": "high" } },
+      { "type": "file", "when": "gpu.av1", "path": "%APPDATA%\\obs-studio\\basic\\profiles\\{obs-profile}\\basic.ini", "format": "ini", "process": "obs64", "ifRunning": "fail", "set": { "AdvOut/RecEncoder": "obs_nvenc_av1_tex" } },
+      { "type": "file", "when": "!gpu.av1", "path": "%APPDATA%\\obs-studio\\basic\\profiles\\{obs-profile}\\basic.ini", "format": "ini", "process": "obs64", "ifRunning": "fail", "set": { "AdvOut/RecEncoder": "obs_nvenc_hevc_tex" } },
+      { "type": "file", "path": "%APPDATA%\\obs-studio\\basic\\profiles\\{obs-profile}\\recordEncoder.json", "format": "json", "process": "obs64", "ifRunning": "fail", "create": true, "set": { "rate_control": "CQP", "cqp": 18, "keyint_sec": 2, "preset": "p6", "tune": "hq", "multipass": "qres", "lookahead": false, "adaptive_quantization": true, "bf": 2, "profile": "main", "bframe_ref_mode": 0 } },
+      { "type": "file", "path": "%APPDATA%\\obs-studio\\global.ini", "format": "ini", "process": "obs64", "ifRunning": "fail", "set": { "General/ProcessPriority": "Normal", "General/BrowserHWAccel": false, "Audio/DisableAudioDucking": true, "Video/Renderer": "Direct3D 11" } },
+      { "type": "file", "path": "%APPDATA%\\obs-studio\\user.ini|%APPDATA%\\obs-studio\\global.ini", "format": "ini", "process": "obs64", "ifRunning": "fail", "set": { "General/HotkeyFocusType": "NeverDisableHotkeys", "General/ConfirmOnExit": true, "Audio/LowLatencyAudioBuffering": false } }
+    ]
+  },
+  {
+    "id": "apps.spotify.quality",
+    "category": "apps",
+    "level": 2,
+    "when": "app.spotify",
+    "name": { "ru": "Spotify: качество «Очень высокое» без автоподстройки", "en": "Spotify: Very high quality without auto-adjust" },
+    "description": {
+      "ru": "Качество потока и загрузок — «Очень высокое» (320 Кбит/с, нужен Premium), автоматическая подстройка качества выключена: звук не проседает при загрузке сети в игре. Если Spotify открыт, он закроется и откроется снова.",
+      "en": "Streaming and download quality set to Very high (320 Kbps, needs Premium), auto-adjust off: the sound doesn't drop when a game loads the network. If Spotify is open, it closes and opens again."
+    },
+    "actions": [
+      { "type": "file", "path": "%APPDATA%\\Spotify\\prefs", "format": "prefs", "set": { "audio.play_bitrate_enumeration": 4, "audio.sync_bitrate_enumeration": 4, "audio.allow_downgrade": false }, "process": "Spotify" },
+      { "type": "file", "path": "%LOCALAPPDATA%\\Packages\\SpotifyAB.SpotifyMusic_zpdnekdrzrea0\\LocalState\\Spotify\\prefs", "format": "prefs", "set": { "audio.play_bitrate_enumeration": 4, "audio.sync_bitrate_enumeration": 4, "audio.allow_downgrade": false }, "process": "Spotify" }
+    ]
   }
 ]

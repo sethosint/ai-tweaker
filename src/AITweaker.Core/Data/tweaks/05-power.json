@@ -4,17 +4,17 @@
     "category": "power",
     "level": 2,
     "when": "system.desktop && !cpu.x3dMultiCcd",
-    "name": { "ru": "Схема «Максимальная производительность»", "en": "Ultimate Performance power plan" },
+    "name": { "ru": "Своя схема питания AI Tweaker", "en": "AI Tweaker power plan" },
     "description": {
-      "ru": "Создаёт и включает скрытую схему Ultimate Performance: ядра не паркуются, частоты не сбрасываются между кадрами, нет микрозадержек выхода из сна.",
-      "en": "Creates and activates the hidden Ultimate Performance plan: no core parking, no clock drops between frames, no wake-up micro-latency."
+      "ru": "Создаёт и включает схему «AI Tweaker» — копию сбалансированной схемы Windows, которую настройки ниже доводят до уровня «Максимальной производительности»: ядра не паркуются, частота поднимается сразу, порты, диски и сеть не засыпают. В отличие от «Максимальной», на ней работают режимы питания и игровой режим Windows, и она есть на любом ПК. Откат включает прежнюю схему и удаляет эту.",
+      "en": "Creates and activates the \"AI Tweaker\" plan — a copy of Windows' Balanced plan that the settings below bring up to Ultimate Performance level: no core parking, clocks rise at once, ports, disks and network never doze. Unlike Ultimate, Windows power modes and Game Mode keep working on it, and it exists on every PC. Rollback switches back to your previous plan and deletes this one."
     },
     "why": {
       "ru": "Настольный ПК: экономия энергии здесь только добавляет задержку.",
       "en": "Desktop PC: power saving only adds latency here."
     },
     "actions": [
-      { "type": "powerScheme", "scheme": "ultimate" }
+      { "type": "powerScheme", "scheme": "aitweaker", "base": "balanced" }
     ]
   },
   {
@@ -40,13 +40,13 @@
     "category": "power",
     "level": 2,
     "when": "system.laptop",
-    "name": { "ru": "Ноутбук: режим «Лучшая производительность»", "en": "Laptop: Best performance mode" },
+    "name": { "ru": "Ноутбук: схема AI Tweaker + «Лучшая производительность»", "en": "Laptop: AI Tweaker plan + Best performance" },
     "description": {
-      "ru": "Оставляет сбалансированную схему (её требуют современные ноутбуки с Modern Standby), но переключает режим питания на максимальную производительность.",
-      "en": "Keeps the Balanced plan (required by modern laptops with Modern Standby) but switches the power mode to best performance."
+      "ru": "Создаёт схему «AI Tweaker» как копию текущей сбалансированной схемы ноутбука — настройки производителя и Modern Standby сохраняются — и включает режим питания «Лучшая производительность». Настройки питания ниже пишутся в неё, от батареи ноутбук по-прежнему экономит заряд. Откат возвращает прежнюю схему.",
+      "en": "Creates the \"AI Tweaker\" plan as a copy of the laptop's current balanced plan — the maker's tuning and Modern Standby stay — and sets the power mode to Best performance. The power settings below are written into it; on battery the laptop still saves charge. Rollback restores the previous plan."
     },
     "actions": [
-      { "type": "powerScheme", "scheme": "balanced", "overlay": "best-performance" }
+      { "type": "powerScheme", "scheme": "aitweaker", "base": "current", "overlay": "best-performance" }
     ]
   },
   {
@@ -100,7 +100,8 @@
       "en": "The CPU jumps to boost clocks immediately under load instead of ramping up."
     },
     "actions": [
-      { "type": "powercfg", "alias": "Processor performance boost mode", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "be337238-0d82-4146-a960-4f3749d470c7", "ac": 2 }
+      { "type": "powercfg", "alias": "Processor performance boost mode", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "be337238-0d82-4146-a960-4f3749d470c7", "ac": 2 },
+      { "type": "powercfg", "alias": "Processor performance boost policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "45bcc044-d885-43e2-8605-ee0ec6e96b59", "ac": 100 }
     ]
   },
   {
@@ -129,7 +130,8 @@
       "en": "All cores stay ready — game threads never wait for a core to unpark. Skipped on dual-CCD X3D where the AMD driver needs parking."
     },
     "actions": [
-      { "type": "powercfg", "alias": "Processor performance core parking min cores", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "0cc5b647-c1df-4637-891a-dec35c318583", "ac": 100 }
+      { "type": "powercfg", "alias": "Processor performance core parking min cores", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "0cc5b647-c1df-4637-891a-dec35c318583", "ac": 100 },
+      { "type": "powercfg", "alias": "Processor performance core parking max cores", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "ea062031-0e34-4ff1-9b6d-eb1059334028", "ac": 100 }
     ]
   },
   {
@@ -143,7 +145,8 @@
       "en": "The CPU never lowers its clock, even at idle. The flattest frame times, but higher temperatures and power draw."
     },
     "actions": [
-      { "type": "powercfg", "alias": "Minimum processor state", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "893dee8e-2bef-41e0-89c6-b55d0929964c", "ac": 100 }
+      { "type": "powercfg", "alias": "Minimum processor state", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "893dee8e-2bef-41e0-89c6-b55d0929964c", "ac": 100 },
+      { "type": "powercfg", "alias": "Minimum processor state (class 1)", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "893dee8e-2bef-41e0-89c6-b55d0929964d", "ac": 100, "when": "cpu.hybrid" }
     ]
   },
   {
@@ -185,7 +188,8 @@
     },
     "actions": [
       { "type": "powercfg", "alias": "Sleep after", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "29f6c1db-86da-48c5-9fdb-f2b67b1f44da", "ac": 0 },
-      { "type": "powercfg", "alias": "Turn off display after", "subgroup": "7516b95f-f776-4464-8c53-06167f40cc99", "setting": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e", "ac": 900 }
+      { "type": "powercfg", "alias": "Turn off display after", "subgroup": "7516b95f-f776-4464-8c53-06167f40cc99", "setting": "3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e", "ac": 900 },
+      { "type": "powercfg", "alias": "Hibernate after", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "9d7815a6-7ee4-497e-8888-515a05f02364", "ac": 0 }
     ]
   },
   {
@@ -200,7 +204,8 @@
     },
     "actions": [
       { "type": "powercfg", "alias": "AHCI Link Power Management - HIPM/DIPM", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "0b2d69d7-a2a1-449c-9680-f91c70521c60", "ac": 0 },
-      { "type": "powercfg", "alias": "AHCI Link Power Management - HIPM/DIPM (battery)", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "0b2d69d7-a2a1-449c-9680-f91c70521c60", "dc": 0, "when": "system.desktop" }
+      { "type": "powercfg", "alias": "AHCI Link Power Management - HIPM/DIPM (battery)", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "0b2d69d7-a2a1-449c-9680-f91c70521c60", "dc": 0, "when": "system.desktop" },
+      { "type": "powercfg", "alias": "AHCI Link Power Management - Adaptive", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "dab60367-53fe-4fbc-825e-521d069d2456", "ac": 0 }
     ]
   },
   {
@@ -229,6 +234,78 @@
     "actions": [
       { "type": "powercfg", "alias": "Allow wake timers", "subgroup": "238c9fa8-0aad-41ed-83f4-97be242c8f20", "setting": "bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d", "ac": 0, "dc": 0 },
       { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Task Scheduler\\Maintenance", "name": "WakeUp", "kind": "dword", "value": 0 }
+    ]
+  },
+  {
+    "id": "power.cpu-responsiveness",
+    "category": "power",
+    "level": 2,
+    "when": "system.desktop && !cpu.x3dMultiCcd",
+    "name": { "ru": "Процессор: быстрый отклик частоты", "en": "CPU: fast clock response" },
+    "description": {
+      "ru": "Частота поднимается при 30% нагрузки и опускается неохотно, проверка каждые 15 мс вместо 30, без ограничения максимальной частоты, активное охлаждение (вентиляторы раньше, частота не сбрасывается), устройства в режиме производительности. На процессорах с аппаратным управлением частотой (Intel Speed Shift, AMD CPPC) часть пунктов решает сам процессор — вреда нет.",
+      "en": "Clocks rise at 30% load and drop reluctantly, checked every 15 ms instead of 30, no maximum frequency cap, active cooling (fans first, clocks kept), devices in performance mode. On CPUs that manage clocks in hardware (Intel Speed Shift, AMD CPPC) some of this is decided by the CPU itself — no harm either way."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Maximum processor state", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "bc5038f7-23e0-4960-96da-33abaf5935ec", "ac": 100 },
+      { "type": "powercfg", "alias": "Maximum processor frequency", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "75b0ae3f-bce0-45a7-8c89-c9611c25e100", "ac": 0 },
+      { "type": "powercfg", "alias": "System cooling policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "94d3a615-a899-4ac5-ae2b-e4d8f634367f", "ac": 1 },
+      { "type": "powercfg", "alias": "Processor performance increase threshold", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "06cadf0e-64ed-448a-8927-ce7bf90eb35d", "ac": 30 },
+      { "type": "powercfg", "alias": "Processor performance decrease threshold", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "12a0ab44-fe28-4fa9-b3bd-4b64f44960a6", "ac": 10 },
+      { "type": "powercfg", "alias": "Processor performance increase policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "465e1f50-b610-473a-ab58-00d1077dc418", "ac": 2 },
+      { "type": "powercfg", "alias": "Processor performance decrease policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "40fbefc7-2e9d-4d25-a185-0cfd8574bac6", "ac": 1 },
+      { "type": "powercfg", "alias": "Processor performance time check interval", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "4d2b0152-7d5c-498b-88e2-34345392a2c5", "ac": 15 },
+      { "type": "powercfg", "alias": "Device idle policy", "subgroup": "fea3413e-7e05-4911-9a71-700331f1c294", "setting": "4faab71a-92e5-4726-b531-224559672d19", "ac": 0 }
+    ]
+  },
+  {
+    "id": "power.laptop-ac",
+    "category": "power",
+    "level": 2,
+    "when": "system.laptop",
+    "name": { "ru": "Ноутбук от сети: без ограничений частоты", "en": "Laptop on AC: no clock limits" },
+    "description": {
+      "ru": "Только при работе от сети: процессор может брать максимальную частоту, вентиляторы включаются раньше, чем начинает снижаться частота, устройства в режиме производительности. От батареи всё остаётся как настроил производитель.",
+      "en": "On AC only: the CPU may take its full clock, fans spin up before clocks are lowered, devices run in performance mode. On battery everything stays as the maker set it."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Maximum processor state", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "bc5038f7-23e0-4960-96da-33abaf5935ec", "ac": 100 },
+      { "type": "powercfg", "alias": "Maximum processor frequency", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "75b0ae3f-bce0-45a7-8c89-c9611c25e100", "ac": 0 },
+      { "type": "powercfg", "alias": "System cooling policy", "subgroup": "54533251-82be-4824-96c1-47b60b740d00", "setting": "94d3a615-a899-4ac5-ae2b-e4d8f634367f", "ac": 1 },
+      { "type": "powercfg", "alias": "Device idle policy", "subgroup": "fea3413e-7e05-4911-9a71-700331f1c294", "setting": "4faab71a-92e5-4726-b531-224559672d19", "ac": 0 }
+    ]
+  },
+  {
+    "id": "power.nvme-apst.off",
+    "category": "power",
+    "level": 3,
+    "when": "system.desktop && disk.systemNvme",
+    "name": { "ru": "NVMe без режимов энергосбережения", "en": "NVMe without power-saving states" },
+    "description": {
+      "ru": "NVMe-диск не уходит в энергосберегающие состояния (APST), поэтому первое обращение после паузы не ждёт его пробуждения — ровнее подгрузка в играх. Минус: диск в простое теплее на несколько градусов и тратит на 1–3 Вт больше.",
+      "en": "The NVMe drive stays out of its power-saving states (APST), so the first access after a pause doesn't wait for it to wake — smoother streaming in games. Downside: the drive idles a few degrees warmer and uses 1–3 W more."
+    },
+    "actions": [
+      { "type": "powercfg", "alias": "Primary NVMe Power State Transition Latency Tolerance", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "fc95af4d-40e7-4b6d-835a-56d131dbc80e", "ac": 0 },
+      { "type": "powercfg", "alias": "Secondary NVMe Power State Transition Latency Tolerance", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "dbc9e238-6de9-49e3-92cd-8c2b4946b472", "ac": 0 },
+      { "type": "powercfg", "alias": "Primary NVMe Idle Timeout", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "d639518a-e56d-4345-8af2-b9f32fb26109", "ac": 0 },
+      { "type": "powercfg", "alias": "Secondary NVMe Idle Timeout", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "d3d55efd-c1ff-424e-9dc3-441be7833010", "ac": 0 },
+      { "type": "powercfg", "alias": "NVMe NOPPME", "subgroup": "0012ee47-9041-4b5d-9b77-535fba8b1442", "setting": "fc7372b6-ab2d-43ee-8797-15e9841f2cca", "ac": 0 }
+    ]
+  },
+  {
+    "id": "power.standby-network.off",
+    "category": "power",
+    "level": 2,
+    "when": "system.laptop",
+    "name": { "ru": "Ноутбук: без сети во сне", "en": "Laptop: no network while asleep" },
+    "description": {
+      "ru": "В режиме современного сна (Modern Standby) ноутбук не держит сеть: не просыпается ради обновлений и почты, меньше разряжается и не греется в сумке. Политика Windows «Разрешить сетевое подключение в ждущем режиме».",
+      "en": "In Modern Standby the laptop drops the network: it doesn't wake for updates and mail, drains less and doesn't heat up in a bag. Windows policy \"Allow network connectivity during connected-standby\"."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\f15576e8-98b7-4186-b944-eafa664402d9", "name": "DCSettingIndex", "kind": "dword", "value": 0 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\f15576e8-98b7-4186-b944-eafa664402d9", "name": "ACSettingIndex", "kind": "dword", "value": 0 }
     ]
   }
 ]

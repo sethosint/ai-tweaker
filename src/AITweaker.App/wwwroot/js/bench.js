@@ -104,7 +104,7 @@
   /** Idle measurement with a progress card. */
   App.benchSystem = async (label) => {
     if (S.busy) return;
-    const b = busy(t(label === "before" ? "bench.busyBefore" : "bench.busy"));
+    const b = busy(t(label === "before" ? "bench.busyBefore" : "bench.busy"), { cancel: true });
     const off = API.on("bench.progress", (x) => b.progress(x.value / 100, t("bench.step." + x.step)));
     try { await call("bench.system", { label }); toast(t("bench.saved"), "ok"); } catch { /* toast shown */ } finally { off(); b.done(); S.bench = null; }
     if (S.view === "bench") V.bench();
@@ -120,7 +120,7 @@
 
   async function benchGame() {
     if (S.busy) return;
-    const b = busy(t("bench.busyGame"));
+    const b = busy(t("bench.busyGame"), { cancel: true });
     const off = API.on("bench.progress", (x) => b.progress(x.value / 100, t("bench.step." + x.step)));
     try {
       const e = await call("bench.capture", { seconds: st.seconds, delay: 10 }, { silent: true });

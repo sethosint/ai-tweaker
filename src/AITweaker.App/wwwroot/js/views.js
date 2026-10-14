@@ -104,14 +104,14 @@
         <div class="actions"><button class="btn sm" id="bulkApply">${t("tweaks.applySel")}</button><button class="btn sm danger" id="bulkRevert">${t("tweaks.revertSel")}</button></div></div>
       <div class="toolbar">
         <input class="input" id="tf" placeholder="${t("tweaks.filter")}" value="${esc(tweakFilter)}">
-        <div class="tabs" id="catTabs"><button data-c="all" class="${tweakCat === "all" ? "on" : ""}">${t("all")}<span class="n">${S.catalog.length}</span></button>${S.init.categories.map((c) => `<button data-c="${c.id}" class="${tweakCat === c.id ? "on" : ""}">${esc(L(c.name).split(" ")[0])}<span class="n">${S.catalog.filter((x) => x.category === c.id).length}</span></button>`).join("")}</div>
+        <div class="tabs" id="catTabs"><button data-c="all" class="${tweakCat === "all" ? "on" : ""}">${t("all")}<span class="n">${S.catalog.length}</span></button>${S.init.categories.map((c) => `<button data-c="${c.id}" class="${tweakCat === c.id ? "on" : ""}">${esc(L(c.short || c.name))}<span class="n">${S.catalog.filter((x) => x.category === c.id).length}</span></button>`).join("")}</div>
         <label class="check"><input type="checkbox" id="onlyApp" ${onlyApplicable ? "checked" : ""}><span class="box"></span>${t("tweaks.onlyApplicable")}</label>
       </div>
       ${cats.map((c) => html`<div class="cat-group"><div class="cat-h">${esc(L(c.name))}<span class="n">${list.filter((x) => x.category === c.id).length}</span></div>
         ${list.filter((x) => x.category === c.id).map((tw) => row(tw, planIds.has(tw.id))).join("")}</div>`).join("") || `<div class="empty">${t("res.none")}</div>`}`;
 
     const tf = $("#tf");
-    tf.oninput = () => { tweakFilter = tf.value; const pos = tf.selectionStart; V.tweaks(); const n = $("#tf"); n.focus(); n.setSelectionRange(pos, pos); };
+    tf.oninput = () => { clearTimeout(tf._t); tf._t = setTimeout(() => { tweakFilter = tf.value; const pos = tf.selectionStart; V.tweaks(); const n = $("#tf"); n.focus(); n.setSelectionRange(pos, pos); }, 150); };
     $("#catTabs").onclick = (e) => { const b = e.target.closest("button"); if (b) { tweakCat = b.dataset.c; V.tweaks(); } };
     $("#onlyApp").onchange = (e) => { onlyApplicable = e.target.checked; V.tweaks(); };
     v.querySelectorAll("input[data-pick]").forEach((cb) => (cb.onchange = () => (cb.checked ? picked.add(cb.dataset.pick) : picked.delete(cb.dataset.pick))));
@@ -124,7 +124,7 @@
 
   function row(tw, ok) {
     const st = S.status[tw.id];
-    return html`<div class="trow" data-row="${tw.id}" style="${ok ? "" : "opacity:.55"}">
+    return html`<div class="trow ${ok ? "" : "na"}" data-row="${tw.id}">
       <label class="check"><input type="checkbox" data-pick="${tw.id}" ${picked.has(tw.id) ? "checked" : ""} ${ok ? "" : "disabled"}><span class="box"></span></label>
       <div><div class="tt">${esc(L(tw.name))}</div><div class="td">${esc(L(tw.description))}</div>
         ${tw.confirmText ? `<div class="td" style="color:var(--crit)">${esc(L(tw.confirmText))}</div>` : ""}
@@ -316,7 +316,7 @@
     if (!ok) return;
     const before = Object.keys(S.status).filter((id) => S.status[id] === "applied");
     const span = { download: [0, 0.72], extract: [0.72, 0.1], install: [0.84, 0.14] };
-    const b = busy(t("nv.busy").replace("{v}", esc(ver)));
+    const b = busy(t("nv.busy").replace("{v}", esc(ver)), { cancel: true });
     const off = API.on("nvidia.progress", (p) => { const [a, w] = span[p.step] || [0, 0]; b.progress(a + w * p.value, t("nv.step." + p.step) + (p.step === "download" ? ` · ${Math.round(p.value * 100)}%` : "")); });
     let r;
     try { r = await call("nvidia.install", opts); } catch { return; } finally { off(); b.done(); }
@@ -336,8 +336,17 @@
 
   // ------------------------------------------------------------------ [06] app guides
 
-  // Brand colour of each program's badge in the list.
-  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff", exitlag: "#ff6a13", "windows-graphics": "#4cc2ff", openshell: "#0067c0", startallback: "#0067c0", chrome: "#8ab4f8", lightshot: "#8b3ff0", telegram: "#2ea6ff", ea: "#ff4747", battlenet: "#148eff", autoruns: "#00a4ef" };
+  /** Full-size screenshot over the page; click anywhere or Esc closes it. */
+  function zoomShot(src) {
+    const o = document.createElement("div");
+    o.className = "shot-zoom";
+    o.innerHTML = `<img src="${esc(src)}" alt="">`;
+    const close = () => { o.remove(); document.removeEventListener("keydown", onKey); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    o.onclick = close;
+    document.addEventListener("keydown", onKey);
+    document.body.append(o);
+  }
 
   const autoOf = (g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "n/a");
   const pendingOf = (g) => autoOf(g).filter((id) => S.status[id] !== "applied");
@@ -356,7 +365,7 @@
           <div class="actions">${allPending.length ? `<button class="btn primary" id="appsAuto">${t("apps.autoAll")} (${allPending.length})</button>` : `<button class="btn done" disabled>${icon("check")}${t("apps.autoAllDone")}</button>`}</div></div>
         <div class="apps-legend"><span><i class="lg-auto"></i>${t("apps.legendAuto")}</span><span><i class="lg-man"></i>${t("apps.legendManual")}</span></div>
         <div class="cards">${S.guides.map((x) => { const a = autoOf(x), pend = pendingOf(x); return html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
-          <div class="cn"><span class="app-ico" style="--app-c:${BRAND[x.id] || "var(--accent)"}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
+          <div class="cn">${brandIcon(x.id, x.name)}${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
           <div class="cf">${x.installed ? "" : `<span class="chip">${t("apps.notInstalled")}</span>`}
             ${a.length ? `<span class="chip ${pend.length ? "info" : "ok"}">${t("apps.autoN")} ${a.length - pend.length}/${a.length}</span>` : ""}
@@ -368,7 +377,7 @@
     }
     const auto = autoOf(g), pend = pendingOf(g);
     v.innerHTML = html`
-      <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
+      <div class="page-h">${brandIcon(g.id, g.name, "lg")}<div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
         <div class="actions">${!g.installed && (S.init.programIds || []).includes(g.id) ? `<button class="btn primary sm" id="gInstall">${icon("download")}${t("apps.install")}</button>` : ""}<button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
       ${auto.length ? html`<div class="app-block auto">
         <div class="ab-h">${icon("tune")}<div><b>${t("apps.autoT")}</b><span>${t("apps.autoD")}</span></div>
@@ -378,12 +387,13 @@
       <div class="app-block man">
         <div class="ab-h">${icon("manual")}<div><b>${t("apps.manualT")}</b><span>${t(auto.length ? "apps.manualD" : "apps.manualD0").replaceAll("{app}", esc(g.name))}</span></div></div>
       </div>
-      ${g.sections.map((s, si) => html`<div class="guide-sec ${s.image ? "" : "noimg"}">
+      ${g.sections.map((s, si) => html`<div class="guide-sec ${(s.images || []).length ? "" : "noimg"}">
         <div class="gs-l"><h3><span class="gs-n">${String(si + 1).padStart(2, "0")}</span>${esc(L(s.title))}</h3><div class="path">${esc(s.path)}</div>
           ${s.settings.map((st) => { const vv = String(st.value); const cls = vv === "ON" ? "on" : vv === "OFF" ? "off" : ""; return html`<div class="setting"><div><div class="sn">${esc(st.name)}</div>${st.note ? `<div class="snote">${esc(L(st.note))}</div>` : ""}</div><span class="val ${cls}" title="${esc(vv)}">${esc(vv)}</span></div>`; }).join("")}
           ${s.note ? `<div class="note-box">${esc(L(s.note))}</div>` : ""}</div>
-        ${s.image ? `<div class="gs-r"><img src="guides/${esc(s.image)}" alt="${esc(L(s.title))}" loading="lazy"></div>` : ""}
+        ${(s.images || []).length ? `<div class="gs-r"><div class="gs-shots">${s.images.map((im) => `<button class="gs-shot" data-shot="guides/${esc(im)}" title="${t("apps.zoom")}"><img src="guides/${esc(im)}" alt="${esc(L(s.title))}" loading="lazy"></button>`).join("")}</div></div>` : ""}
       </div>`).join("")}`;
+    v.querySelectorAll("[data-shot]").forEach((b) => (b.onclick = () => zoomShot(b.dataset.shot)));
     $("#gBack").onclick = () => V.apps();
     if ($("#gInstall")) $("#gInstall").onclick = () => go("install", { focus: g.id });
     if ($("#gAuto")) $("#gAuto").onclick = () => App.apply(pend);
@@ -394,10 +404,11 @@
   const usb = { iso: "", built: null, source: "built", disk: null, disks: null, lang: "Russian", typed: "", opt: { userName: "User", password: "", computerName: "", timeZone: "Russian Standard Time", locale: "ru-RU", bypass: true, copyTweaker: true, runAfterSetup: true, disableBitLocker: true } };
   // Without a USB stick the English Windows 11 is offered; files and apps can only be kept with an image in the system's own language.
   const rein = { source: "dl", mode: "clean", lang: "English" };
-  const img = { level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
+  const img = { edition: "", level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
-  const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
-  const imgOptions = () => ({ level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
+  // Windows time zone id, UTC offset, city in Russian and in English
+  const TZ = [["Kaliningrad Standard Time", "UTC+2", "Калининград", "Kaliningrad"], ["Russian Standard Time", "UTC+3", "Москва", "Moscow"], ["Belarus Standard Time", "UTC+3", "Минск", "Minsk"], ["FLE Standard Time", "UTC+2", "Киев", "Kyiv"], ["Samara Standard Time", "UTC+4", "Самара", "Samara"], ["Ekaterinburg Standard Time", "UTC+5", "Екатеринбург", "Yekaterinburg"], ["West Asia Standard Time", "UTC+5", "Ташкент", "Tashkent"], ["Omsk Standard Time", "UTC+6", "Омск", "Omsk"], ["Central Asia Standard Time", "UTC+6", "Астана", "Astana"], ["N. Central Asia Standard Time", "UTC+7", "Новосибирск", "Novosibirsk"], ["North Asia Standard Time", "UTC+7", "Красноярск", "Krasnoyarsk"], ["North Asia East Standard Time", "UTC+8", "Иркутск", "Irkutsk"], ["Yakutsk Standard Time", "UTC+9", "Якутск", "Yakutsk"], ["Vladivostok Standard Time", "UTC+10", "Владивосток", "Vladivostok"], ["Magadan Standard Time", "UTC+11", "Магадан", "Magadan"], ["Russia Time Zone 11", "UTC+12", "Камчатка", "Kamchatka"], ["GMT Standard Time", "UTC+0", "London", "London"], ["W. Europe Standard Time", "UTC+1", "Berlin", "Berlin"], ["Eastern Standard Time", "UTC−5", "New York", "New York"], ["Pacific Standard Time", "UTC−8", "Los Angeles", "Los Angeles"]];
+  const imgOptions = () => ({ edition: img.edition || undefined, level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
 
   V.image = async () => {
     const v = $("#v-image");
@@ -416,11 +427,12 @@
           <div class="callout">${t("ib.desc")}</div>
           <div class="step"><h4>${t("usb.iso")}</h4>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="isoPick">${t("usb.pick")}</button>
-              <select class="input" id="isoLang" style="width:auto">${["Russian", "English", "English International", "Ukrainian", "Kazakh"].map((l) => `<option ${usb.lang === l ? "selected" : ""}>${l}</option>`).join("")}</select>
+              <select class="input" id="isoLang" style="width:auto">${["Russian", "English", "English International", "Ukrainian"].map((l) => `<option ${usb.lang === l ? "selected" : ""}>${l}</option>`).join("")}</select>
               <button class="btn sm" id="isoDl">${icon("download")}${t("usb.download")}</button></div>
             <div class="tid" style="margin-top:8px;word-break:break-all">${esc(usb.iso || "—")}</div>
             <div class="td" style="margin-top:6px;color:var(--muted)">${t("usb.fidoNote")}</div></div>
           <div class="step"><h4>${t("ib.contents")}</h4>
+            <label class="field">${t("ib.edition")}<select class="input" id="ibEdition">${[["", t("ib.edition.auto")], ["Professional", "Windows 11 Pro"], ["Core", "Windows 11 Home"]].map(([v, n]) => `<option value="${v}" ${img.edition === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
             <label class="field">${t("ib.level")}<select class="input" id="ibLevel">${[1, 2, 3].map((l) => `<option value="${l}" ${img.level === l ? "selected" : ""}>${t("prof." + ["Safe", "Balanced", "Performance"][l - 1])}</option>`).join("")}</select></label>
             <div style="display:grid;gap:8px;margin-top:10px">
               ${[["look", "ib.look"], ["updates", "ib.updates"], ["removeApps", "ib.apps"], ["removeComponents", "ib.components"], ["cleanup", "ib.cleanup"], ["drivers", "ib.drivers"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-ib="${k}" ${img[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
@@ -446,7 +458,7 @@
             <label class="field">${t("usb.user")}<input class="input" data-o="userName" value="${esc(o.userName)}"></label>
             <label class="field">${t("usb.pass")}<input class="input" type="password" data-o="password" value="${esc(o.password)}"></label>
             <label class="field">${t("usb.pc")}<input class="input" data-o="computerName" value="${esc(o.computerName)}"></label>
-            <label class="field">${t("usb.tz")}<select class="input" data-o="timeZone">${TZ.map(([id, n]) => `<option value="${id}" ${o.timeZone === id ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+            <label class="field">${t("usb.tz")}<select class="input" data-o="timeZone">${TZ.map(([id, off, ru, en]) => `<option value="${id}" ${o.timeZone === id ? "selected" : ""}>${off} ${S.lang === "ru" ? ru : en}</option>`).join("")}</select></label>
             <label class="field">${t("usb.locale")}<select class="input" data-o="locale">${["ru-RU", "en-US", "uk-UA", "kk-KZ", "be-BY"].map((l) => `<option ${o.locale === l ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
             <div style="display:grid;gap:8px;margin-top:10px">
               ${[["bypass", "usb.bypass"], ["copyTweaker", "usb.copy"], ["runAfterSetup", "usb.runAfter"], ["disableBitLocker", "usb.bitlocker"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-b="${k}" ${o[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
@@ -492,12 +504,13 @@
     if ($("#ameShow")) $("#ameShow").onclick = () => call("shell.reveal", { path: usb.ame.path });
     $("#isoLang").onchange = (e) => (usb.lang = e.target.value);
     $("#isoDl").onclick = async () => {
-      const b = busy(t("usb.download"));
-      const off = API.on("usb.progress", (p) => b.progress(p.value, `${p.step} · ${Math.round(p.value * 100)}%`));
+      const b = busy(t("usb.download"), { cancel: true });
+      const off = API.on("usb.progress", (p) => b.progress(p.value, `${t("rein.step." + p.step)} · ${Math.round(p.value * 100)}%`));
       try { usb.iso = await call("usb.downloadIso", { language: usb.lang }); } catch { /* toast shown */ } finally { off(); b.done(); }
       V.image();
     };
     $("#ibLevel").onchange = (e) => (img.level = +e.target.value);
+    $("#ibEdition").onchange = (e) => (img.edition = e.target.value);
     v.querySelectorAll("[data-ib]").forEach((i) => (i.onchange = () => { img[i.dataset.ib] = i.checked; if (i.dataset.ib === "look") V.image(); }));
     v.querySelectorAll("[data-extra]").forEach((i) => (i.onchange = async () => {
       if (i.checked) {
@@ -511,14 +524,14 @@
       const pv = await call("image.preview", { options: imgOptions() });
       modal({
         title: t("ib.preview"), wide: true,
-        body: html`<div class="kv"><b>${t("ib.pvTweaks")}</b><span>${pv.tweaks.length} · ${pv.registryValues} registry · ${pv.services.length} services</span><b>${t("ib.pvApps")}</b><span>${pv.apps.length}</span><b>${t("ib.pvComponents")}</b><span>${pv.capabilities.length}</span><b>${t("ib.pvAfter")}</b><span>${pv.afterInstall}</span></div>
+        body: html`<div class="kv"><b>${t("ib.pvTweaks")}</b><span>${pv.tweaks.length} · ${t("ib.pvRegistry").replace("{n}", pv.registryValues)} · ${t("ib.pvServices").replace("{n}", pv.services.length)}</span><b>${t("ib.pvApps")}</b><span>${pv.apps.length}</span><b>${t("ib.pvComponents")}</b><span>${pv.capabilities.length}</span><b>${t("ib.pvAfter")}</b><span>${pv.afterInstall}</span></div>
           <div class="pre">${esc(pv.tweaks.map((x) => `+ ${L(x.name)}  [${x.id}]`).join("\n"))}\n\n${esc(pv.apps.map((x) => `− ${x}`).join("\n"))}\n\n${esc(pv.capabilities.map((x) => `− ${x}*`).join("\n"))}</div>`,
         buttons: [{ label: t("close"), cls: "ghost" }],
       });
     };
     $("#ibBuild").onclick = async () => {
       if (!(await confirmBox(t("ib.build"), t("ib.buildQ"), t("ib.build")))) return;
-      const b = busy(t("busy.image"));
+      const b = busy(t("busy.image"), { cancel: true });
       const off = API.on("image.progress", (p) => b.progress(p.value, `${t("ib.step." + p.step)} · ${Math.round(p.value * 100)}%`));
       try { usb.built = await call("image.build", { iso: usb.iso, options: imgOptions() }); usb.source = "built"; toast(t("ib.ready"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
       V.image();
@@ -528,7 +541,7 @@
     $("#diskRefresh").onclick = async () => { usb.disks = await call("usb.list"); V.image(); };
     v.querySelectorAll("[data-o]").forEach((i) => (i.onchange = () => (o[i.dataset.o] = i.value)));
     v.querySelectorAll("[data-b]").forEach((i) => (i.onchange = () => (o[i.dataset.b] = i.checked)));
-    $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
+    $("#xmlPrev").onclick = async () => { const xml = await call("usb.preview", { source: usb.source, options: o }); modal({ title: "autounattend.xml", wide: true, body: `<div class="pre">${esc(xml)}</div>`, buttons: [{ label: t("close"), cls: "ghost" }] }); };
     $("#usbGo").onclick = () => createUsb(src);
     v.querySelectorAll("input[name=reinsrc]").forEach((r) => (r.onchange = () => { rein.source = r.value; V.image(); }));
     v.querySelectorAll("input[name=reinmode]").forEach((r) => (r.onchange = () => { rein.mode = r.value; V.image(); }));
@@ -579,7 +592,7 @@
     });
     if (res !== true) return;
     if (clean && typed.trim().toUpperCase() !== t("rein.yes").toUpperCase()) { toast(t("rein.notTyped"), "warn"); return; }
-    const b = busy(t("rein.busy"));
+    const b = busy(t("rein.busy"), { cancel: true });
     const off = [API.on("reinstall.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : { fido: 0.03, mount: 0.88, check: 0.92, setup: 0.97 }[p.step] || 0.5, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : ""))),
       API.on("usb.progress", (p) => b.progress(p.step === "iso" ? 0.05 + p.value * 0.8 : 0.03, t("rein.step." + p.step) + (p.step === "iso" ? ` · ${Math.round(p.value * 100)}%` : "")))];
     let r = null;
@@ -598,51 +611,10 @@
       onOpen: (ov) => { const i = $("#typed", ov); i.focus(); ov.querySelector("[data-i='1']").addEventListener("click", () => (usb.typed = i.value), { capture: true }); },
     });
     if (typed !== "go" || String(usb.typed).trim() !== String(d.number)) return;
-    const b = busy(t("busy.usb"));
-    const off = API.on("usb.progress", (p) => b.progress(p.value, `${p.step} · ${Math.round(p.value * 100)}%`));
-    try { await call("usb.create", { disk: d.number, iso: src, options: usb.opt }); toast(t("usb.done"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
+    const b = busy(t("busy.usb"), { cancel: true });
+    const off = API.on("usb.progress", (p) => b.progress(p.value, `${t("usb.step." + p.step)} · ${Math.round(p.value * 100)}%`));
+    try { await call("usb.create", { disk: d.number, iso: src, source: usb.source, options: usb.opt }); toast(t("usb.done"), "ok"); } catch { /* toast */ } finally { off(); b.done(); }
   }
-
-  // ------------------------------------------------------------------ [09] AI
-
-  V.ai = () => {
-    const v = $("#v-ai");
-    const s = S.init.settings;
-    const a = S.ai;
-    v.innerHTML = html`
-      <div class="page-h"><div><h1>${t("ai.title")}</h1><p>${t("ai.desc")}</p></div></div>
-      <div class="grid cols-2" style="align-items:start">
-        <div class="panel"><div class="panel-h">${t("ai.key")}<span class="right">${s.hasKey ? `<span class="chip ok">${t("ai.keySaved")}</span>` : ""}</span></div><div class="panel-b" style="display:grid;gap:10px">
-          <input class="input" type="password" id="aiKey" placeholder="sk-ant-…" autocomplete="off">
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" id="aiSave">${t("ai.save")}</button>${s.hasKey ? `<button class="btn sm danger" id="aiDel">${t("ai.removeKey")}</button>` : ""}<button class="btn sm ghost" id="aiGet">${t("ai.getKey")}${icon("external")}</button></div>
-          <label class="field">${t("ai.model")}<select class="input" id="aiModel">${S.init.models.map((m) => `<option ${s.model === m ? "selected" : ""}>${m}</option>`).join("")}</select></label>
-          <div class="callout">${t("ai.local")}</div>
-          <button class="btn hazard" id="aiRun" ${s.hasKey && S.scan ? "" : "disabled"}><span>${t("ai.analyze")}</span></button>
-        </div></div>
-        <div class="panel"><div class="panel-h">${t("ai.summary")}<span class="right">${a ? esc(a.model || "") : ""}</span></div><div class="panel-b" style="display:grid;gap:12px">
-          ${a ? html`<div style="font-weight:700">${esc(a.summary)}</div>
-            <div><div class="cat-h">${t("ai.recommend")}<span class="n">${a.recommendations.length}</span></div>${a.recommendations.map((r) => `<div class="trow" style="grid-template-columns:1fr auto"><div><div class="tt">${esc(L((S.byId[r.id] || {}).name) || r.id)}</div><div class="td">${esc(r.reason)}</div></div>${statusChip(r.id)}</div>`).join("")}</div>
-            ${a.avoid.length ? `<div><div class="cat-h">${t("ai.avoid")}<span class="n">${a.avoid.length}</span></div>${a.avoid.map((r) => `<div class="trow" style="grid-template-columns:1fr"><div><div class="tt">${esc(L((S.byId[r.id] || {}).name) || r.id)}</div><div class="td">${esc(r.reason)}</div></div></div>`).join("")}</div>` : ""}
-            ${a.tips.length ? `<div><div class="cat-h">${t("ai.tips")}</div>${a.tips.map((x) => `<div class="setting"><div class="sn">${esc(x)}</div></div>`).join("")}</div>` : ""}
-            <button class="btn primary" id="aiUse">${t("ai.useInTune")}</button>` : `<div class="empty">${t("ai.empty")}</div>`}
-        </div></div>
-      </div>`;
-    $("#aiSave").onclick = async () => { const k = $("#aiKey").value.trim(); if (!k) return; const r = await call("settings.set", { apiKey: k }); s.hasKey = r.hasKey; toast(t("toast.saved"), "ok"); V.ai(); };
-    if ($("#aiDel")) $("#aiDel").onclick = async () => { const r = await call("settings.set", { apiKey: null }); s.hasKey = r.hasKey; V.ai(); };
-    $("#aiGet").onclick = () => call("shell.open", { url: "https://console.anthropic.com/settings/keys" });
-    $("#aiModel").onchange = (e) => { s.model = e.target.value; call("settings.set", { model: s.model }); };
-    $("#aiRun").onclick = async () => {
-      const b = busy(t("busy.ai"));
-      b.progress(0.3, s.model);
-      try { S.ai = await call("ai.analyze", { profile: S.profileName }); } catch { /* toast */ } finally { b.done(); }
-      V.ai();
-    };
-    if ($("#aiUse")) $("#aiUse").onclick = () => {
-      a.recommendations.forEach((r) => S.selected.add(r.id));
-      a.avoid.forEach((r) => S.selected.delete(r.id));
-      go("tune");
-    };
-  };
 
   // ------------------------------------------------------------------ [10] backup
 
@@ -655,10 +627,10 @@
         <div class="actions"><button class="btn sm" id="rpNow">${t("backup.rp")}</button><button class="btn sm" id="rstrui">${t("backup.rstrui")}${icon("external")}</button><button class="btn sm ghost" id="bkFolder">${t("backup.folder")}</button><button class="btn sm ghost" id="logFolder">${t("backup.logs")}</button></div></div>
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h">${t("backup.applied")}<span class="right">${b.applied.length ? `<button class="btn sm danger" id="revertAll">${t("backup.revertAll")}</button>` : ""}</span></div><div class="panel-b flush">
-          ${b.applied.length ? b.applied.map((x) => `<div class="trow" style="grid-template-columns:1fr auto;padding:9px 12px"><div><div class="tt">${esc(L(x.name) || x.tweakId)}</div><div class="tm"><span class="tid">${esc(x.tweakId)} · ${fmtDate(x.appliedAt)} ${fmtTime(x.appliedAt)} · ${x.changes} changes</span></div></div><button class="btn sm danger" data-rv="${esc(x.tweakId)}">${t("revert")}</button></div>`).join("") : `<div class="empty" style="margin:12px">${t("backup.none")}</div>`}
+          ${b.applied.length ? b.applied.map((x) => `<div class="trow" style="grid-template-columns:1fr auto;padding:9px 12px"><div><div class="tt">${esc(L(x.name) || x.tweakId)}</div><div class="tm"><span class="tid">${esc(x.tweakId)} · ${fmtDate(x.appliedAt)} ${fmtTime(x.appliedAt)} · ${x.changes} changes</span></div></div><button class="btn sm danger" data-rv="${esc(x.tweakId)}">${t("revert")}</button></div>`).join("") : `<div class="empty empty-state" style="margin:12px">${icon("check")}${t("backup.none")}</div>`}
         </div></div>
         <div class="panel"><div class="panel-h">${t("backup.sessions")}</div><div class="panel-b flush">
-          ${b.sessions.length ? b.sessions.map((x) => `<div class="setting" style="padding:8px 12px"><div><div class="sn"><b>${x.kind.toUpperCase()}</b> ${esc(x.profile || "")} · ${fmtDate(x.time)} ${fmtTime(x.time)}</div><div class="snote">${x.applied.length} ok · ${x.failed.length} failed${x.restorePoint ? " · restore point" : ""}</div></div><span class="val ${x.failed.length ? "" : "on"}">${x.failed.length ? t("bk.errors") : t("bk.ok")}</span></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`}
+          ${b.sessions.length ? b.sessions.map((x) => `<div class="setting" style="padding:8px 12px"><div><div class="sn"><b>${x.kind.toUpperCase()}</b> ${esc(x.profile || "")} · ${fmtDate(x.time)} ${fmtTime(x.time)}</div><div class="snote">${x.applied.length} ok · ${x.failed.length} failed${x.restorePoint ? " · restore point" : ""}</div></div><span class="val ${x.failed.length ? "" : "on"}">${x.failed.length ? t("bk.errors") : t("bk.ok")}</span></div>`).join("") : `<div class="empty empty-state" style="margin:12px">${icon("backup")}${t("backup.noHistory")}</div>`}
         </div></div>
       </div>`;
     v.querySelectorAll("[data-rv]").forEach((x) => (x.onclick = () => App.revert([x.dataset.rv])));

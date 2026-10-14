@@ -43,7 +43,7 @@
       { id: "b1", at: "2026-10-12T19:02:00", kind: "system", label: "before", frames: null, system: mockSnap },
       { id: "g1", at: "2026-10-12T19:10:00", kind: "game", label: "manual", system: null, frames: { app: "cs2.exe", frames: 14820, seconds: 60, avgFps: 247.0, low1Fps: 148.3, low01Fps: 96.1, avgFrameMs: 4.05, p99FrameMs: 6.74, stuttersPerMin: 3.4, latencyMs: 11.2, pcLatencyMs: null, gpuBusyPercent: 68.2, bound: "cpu" } },
       { id: "b2", at: "2026-10-12T19:48:00", kind: "system", label: "after", frames: null, system: { ...mockSnap, cpuIdlePercent: 1.1, dpcPercent: 0.22, interruptPercent: 0.12, dpcPerSec: 690, interruptsPerSec: 5100, contextSwitchesPerSec: 8300, processes: 131, threads: 1890, services: 84, startupItems: 4, ramUsedGb: 3.92, timerMs: 0.5, sleepAvgMs: 1.04, sleepP99Ms: 1.21, routerPingMs: 1.8, routerJitterMs: 0.6, pingMs: 13.9, jitterMs: 1.1, bootSeconds: 18.7 } },
-    ], applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", showAdvisor: false, profile: "Extreme", model: "claude-opus-5-5", hasKey: false, pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60 }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
+    ], applied: new Set(), sessions: [], settings: { language: "ru", theme: "auto", accent: "industrial", profile: "Extreme", pingHost: "1.1.1.1", createRestorePoint: true, autoRestartSeconds: 60, checkUpdates: true, autoGameMode: false }, rebootPending: false, image: null, installed: new Set(["chrome", "discord", "steam", "spotify", "7zip", "vcredist"]), dns: null, removedApps: new Set(["Microsoft.BingWeather", "Microsoft.MicrosoftSolitaireCollection"]),
     services: [
       ["AudioSrv", "Windows Audio", "Управляет звуком для программ Windows.", "running", "auto", true],
       ["bthserv", "Служба поддержки Bluetooth", "Обнаружение и согласование удалённых устройств Bluetooth.", "stopped", "disabled", false, ["system.bluetooth.off"]],
@@ -101,7 +101,11 @@
   const statusOf = (t) => (mock.applied.has(t.id) ? "applied" : evalWhen(t.when) ? "off" : "n/a");
 
   const handlers = {
-    "app.init": async () => ({ version: "1.0.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, models: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"], categories: D.categories, programIds: D.programs.map((p) => p.id), log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
+    "gamemode.auto": async (p) => { mock.settings.autoGameMode = !!p.enabled; return true; },
+    "update.check": async () => ({ tag: "v1.2.0", version: "1.2.0", newer: true, published: "2026-10-20T12:00:00Z", size: 61865472, sha256: "0".repeat(64), pageUrl: "https://github.com/sethosint/ai-tweaker/releases",
+      notes: "## AI Tweaker 1.2.0\n\n### Что нового\n\n- **Своя схема питания** AI Tweaker.\n- **Обновление в одну кнопку.**\n- Значки программ.\n\n---\n\n**English.**\n\n- **Own power plan.**\n- **One-click updates.**\n- Program badges." }),
+    "update.install": async () => { for (let i = 0; i <= 20; i++) { emit("update.progress", i / 20); await sleep(80); } return true; },
+    "app.init": async () => ({ version: "1.1.0", isAdmin: true, machine: "DEMO-RIG", system: { accent: "#0078D4", dark: false }, settings: { ...mock.settings }, categories: D.categories, programIds: D.programs.map((p) => p.id), log: [], demo: true, rebootPending: mock.rebootPending, firstRun: /[?&]firstrun/.test(location.search) }),
     "system.scan": async () => {
       log("info", "scan", "scanning hardware and Windows configuration…");
       await sleep(1400);
@@ -278,18 +282,7 @@
       return true;
     },
     "task.cancel": async () => true,
-    "ai.analyze": async () => {
-      if (!mock.settings.hasKey) throw new Error(mock.settings.language === "en" ? "Add your Claude API key in AI settings first." : "Сначала добавьте API-ключ Claude в настройках AI.");
-      await sleep(1800);
-      return {
-        summary: mock.settings.language === "en" ? "Strong gaming desktop held back by 60 Hz, disabled EXPO and HVCI." : "Мощный игровой ПК, которому мешают 60 Гц на мониторе, выключенный EXPO и HVCI.",
-        recommendations: [{ id: "display.maxhz", reason: "180 Hz monitor at 60 Hz." }, { id: "devices.interrupt-affinity", reason: "8 cores: GPU/NIC/USB interrupts off core 0." }, { id: "gaming.hags", reason: "RTX 50: needed for DLSS frame generation." }],
-        avoid: [],
-        tips: ["Enable EXPO I in BIOS (Ai Tweaker → Ai Overclock Tuner).", "Cap FPS at 177 with G-SYNC + Reflex."],
-        model: mock.settings.model,
-      };
-    },
-    "settings.set": async (p) => { Object.assign(mock.settings, p); if ("apiKey" in p) mock.settings.hasKey = !!p.apiKey; delete mock.settings.apiKey; return { hasKey: mock.settings.hasKey }; },
+    "settings.set": async (p) => { Object.assign(mock.settings, p); return true; },
     "report.export": async () => { log("ok", "report", "demo: report would be saved to the desktop"); return "Desktop\\AI-Tweaker-report.html"; },
     "shell.open": async ({ url }) => { window.open(url, "_blank", "noopener"); return true; },
     "shell.folder": async () => true,

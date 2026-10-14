@@ -38,11 +38,11 @@
     "id": "system.sysmain.off",
     "category": "system",
     "level": 3,
-    "when": "disk.systemSsd && ram.gb >= 16",
+    "when": "disk.systemSsd && !disk.hdd && ram.gb >= 16",
     "name": { "ru": "Отключить SysMain (Superfetch)", "en": "Disable SysMain (Superfetch)" },
     "description": {
-      "ru": "На SSD и 16+ ГБ памяти предзагрузка почти ничего не даёт, но периодически грузит диск и CPU. На HDD или с малым объёмом ОЗУ не применяется.",
-      "en": "With an SSD and 16+ GB RAM prefetching barely helps but periodically loads the disk and CPU. Skipped on HDDs or low-RAM systems."
+      "ru": "На SSD и 16+ ГБ памяти предзагрузка почти ничего не даёт, но периодически грузит диск и CPU. Если в ПК есть хоть один HDD или мало ОЗУ — не применяется: там SysMain заметно ускоряет запуск программ.",
+      "en": "With an SSD and 16+ GB RAM prefetching barely helps but periodically loads the disk and CPU. Skipped when the PC has any HDD or little RAM: there SysMain noticeably speeds up launching programs."
     },
     "actions": [
       { "type": "service", "name": "SysMain", "startup": "disabled" }
@@ -631,6 +631,48 @@
     },
     "actions": [
       { "type": "registry", "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "name": "DisplayParameters", "kind": "dword", "value": 1 }
+    ]
+  },
+  {
+    "id": "system.ai-service.manual",
+    "category": "system",
+    "level": 2,
+    "when": "os.win11",
+    "name": { "ru": "Служба ИИ Windows — по запросу", "en": "Windows AI service on demand" },
+    "description": {
+      "ru": "Служба ИИ-функций Windows (WSAIFabricSvc) не стартует вместе с системой, а запускается, когда эти функции действительно нужны. Меньше фоновой нагрузки и памяти; сами функции продолжают работать.",
+      "en": "The Windows AI features service (WSAIFabricSvc) doesn't start with the system but when those features are actually used. Less background load and memory; the features keep working."
+    },
+    "actions": [
+      { "type": "service", "name": "WSAIFabricSvc", "startup": "manual" }
+    ]
+  },
+  {
+    "id": "system.gpu-energy.off",
+    "category": "system",
+    "level": 3,
+    "when": "!system.laptop",
+    "name": { "ru": "Отключить учёт энергии видеокарты", "en": "Turn off GPU energy accounting" },
+    "description": {
+      "ru": "Драйвер GpuEnergyDrv только считает, сколько энергии тратит видеокарта, для графиков Windows. Без него на одну фоновую задачу меньше; в диспетчере задач пропадёт столбец энергопотребления GPU. Так делают Atlas и ReviOS.",
+      "en": "The GpuEnergyDrv driver only estimates how much power the GPU uses, for Windows' charts. Without it there is one background task less; Task Manager loses its GPU power column. Atlas and ReviOS do the same."
+    },
+    "actions": [
+      { "type": "service", "name": "GpuEnergyDrv", "startup": "disabled" }
+    ]
+  },
+  {
+    "id": "system.search-power-mode",
+    "category": "system",
+    "level": 1,
+    "when": "system.laptop",
+    "name": { "ru": "Индексация поиска следует режиму питания", "en": "Search indexing follows the power mode" },
+    "description": {
+      "ru": "В режиме экономии и от батареи индексатор поиска притормаживает, а не нагружает диск и процессор. Поиск продолжает работать.",
+      "en": "In battery saver and on battery the search indexer backs off instead of loading the disk and CPU. Search keeps working."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows Search\\Gather\\Windows\\SystemIndex", "name": "RespectPowerModes", "kind": "dword", "value": 1 }
     ]
   }
 ]

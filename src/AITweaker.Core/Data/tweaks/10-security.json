@@ -11,5 +11,19 @@
     "actions": [
       { "type": "powershell", "script": "try { $s = Get-MpComputerStatus -ErrorAction Stop } catch { return }; if ($s.AMRunningMode -ne 'Normal') { return }; Set-MpPreference -EnableLowCpuPriority $true -ScanAvgCPULoadFactor 20 -ScanOnlyIfIdleEnabled $true", "undo": "try { Set-MpPreference -EnableLowCpuPriority $false -ScanAvgCPULoadFactor 50 -ErrorAction Stop } catch { }", "check": "try { $p = Get-MpPreference -ErrorAction Stop; if ($p.EnableLowCpuPriority -and $p.ScanAvgCPULoadFactor -le 20) { 1 } else { 0 } } catch { 0 }" }
     ]
+  },
+  {
+    "id": "security.autorun.off",
+    "category": "security",
+    "level": 1,
+    "name": { "ru": "Без автозапуска с флешек и дисков", "en": "No AutoRun from sticks and discs" },
+    "description": {
+      "ru": "Подключённые флешки, диски и карты памяти ничего не запускают сами. Защищает от вирусов, которые распространяются через USB; открыть содержимое можно как обычно в Проводнике.",
+      "en": "Connected sticks, discs and memory cards run nothing by themselves. Protects against malware that spreads over USB; you open their contents in Explorer as usual."
+    },
+    "actions": [
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "name": "NoDriveTypeAutoRun", "kind": "dword", "value": 255 },
+      { "type": "registry", "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "name": "NoAutorun", "kind": "dword", "value": 1 }
+    ]
   }
 ]
