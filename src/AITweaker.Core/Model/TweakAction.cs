@@ -108,10 +108,11 @@ public sealed class PowerSchemeAction : TweakAction
     /// <summary>aitweaker (our own scheme, see <see cref="Base"/>) | ultimate | high | balanced</summary>
     public string Scheme { get; init; } = "high";
     /// <summary>
-    /// What the "AI Tweaker" scheme is copied from: ultimate (Ultimate → High → Balanced, whichever Windows offers) or
-    /// current (the active plan, so a laptop keeps its maker's tuning; High/Ultimate/Power saver fall back to Balanced).
+    /// What the "AI Tweaker" scheme is copied from: balanced (Windows' Balanced plan, which the power tweaks then tune —
+    /// power modes and Game Mode only work on Balanced-derived plans) or current (the active plan, so a laptop keeps its
+    /// maker's tuning; High/Ultimate/Power saver fall back to Balanced).
     /// </summary>
-    public string Base { get; init; } = "ultimate";
+    public string Base { get; init; } = "balanced";
     /// <summary>Optional power mode overlay: best-performance | balanced | efficiency.</summary>
     public string? Overlay { get; init; }
 

@@ -40,6 +40,27 @@ public static class GameSession
     [DllImport("ntdll.dll")]
     private static extern int NtSetTimerResolution(uint desired, bool set, out uint current);
 
+    /// <summary>0.506 ms (100 ns units): measured to give steadier Sleep(1) than exactly 0.5 ms on most PCs (Atlas ships the same).</summary>
+    private const uint TimerRequest = 5060;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PowerThrottlingState { public uint Version, ControlMask, StateMask; }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PowerThrottlingState info, uint size);
+
+    /// <summary>
+    /// Windows 11 ignores the timer request of a process whose window is minimized or covered — exactly where AI Tweaker
+    /// sits during a game. Opting out (PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION in the control mask, cleared in
+    /// the state mask) keeps the request honoured.
+    /// </summary>
+    private static void KeepTimerWhenHidden()
+    {
+        var state = new PowerThrottlingState { Version = 1, ControlMask = 0x4, StateMask = 0 };
+        if (!SetProcessInformation(System.Diagnostics.Process.GetCurrentProcess().Handle, 4 /* ProcessPowerThrottling */, ref state, (uint)Marshal.SizeOf<PowerThrottlingState>()))
+            AppLog.Warn("game", $"timer request may be ignored while minimized (error {Marshal.GetLastWin32Error()})");
+    }
+
     public static bool Active => _active is not null;
 
     /// <summary>What the button would do right now (when off) or what it did (when on).</summary>
@@ -163,7 +184,10 @@ public static class GameSession
             }
 
             if (want.Contains("timer") && TimerAvailable())
-                timer = NtSetTimerResolution(5000, true, out _) == 0;
+            {
+                KeepTimerWhenHidden();
+                timer = NtSetTimerResolution(TimerRequest, true, out _) == 0;
+            }
 
             _active = state with { Timer = timer, FreedBytes = freed };
             Save(_active);
@@ -181,7 +205,7 @@ public static class GameSession
         {
             var s = _active ?? Load();
             if (s is null) return false;
-            if (s.Timer) NtSetTimerResolution(5000, false, out _);
+            if (s.Timer) NtSetTimerResolution(TimerRequest, false, out _);
             foreach (var name in s.Wifi ?? [])
                 await ProcessRunner.RunAsync("netsh.exe", $"wlan set autoconfig enabled=yes interface=\"{name}\"", TimeSpan.FromSeconds(15));
             if (Guid.TryParse(s.Scheme, out var scheme)) Native.SetActiveScheme(scheme);

@@ -92,14 +92,15 @@ public static class PowerOps
             await ProcessRunner.RunAsync("powercfg.exe", $"-delete {own}");
         }
 
+        // OEM balanced plans keep the maker's tuning (laptops); otherwise Windows' own Balanced, then whatever is active
         var sources = baseKind == "current"
-            ? [IsNonBalanced(active) || !schemes.Contains(active) ? Balanced : active]
-            : new[] { UltimateTemplate, High, Balanced };
-        foreach (var src in sources)
+            ? [IsNonBalanced(active) || !schemes.Contains(active) ? Balanced : active, Balanced]
+            : new[] { Balanced, active };
+        foreach (var src in sources.Distinct())
         {
             var r = await ProcessRunner.RunAsync("powercfg.exe", $"-duplicatescheme {src}");
             var m = GuidRx.Match(r.Output);
-            if (!r.Success || !m.Success) continue; // Ultimate/High are hidden on Modern Standby laptops
+            if (!r.Success || !m.Success) continue;
             var guid = Guid.Parse(m.Value);
             await ProcessRunner.RunAsync("powercfg.exe", $"-changename {guid} \"{OwnName}\" \"{Describe(src)}\"");
             s.OwnSchemeGuid = guid.ToString();
@@ -113,14 +114,13 @@ public static class PowerOps
     }
 
     private static string Describe(Guid src) =>
-        src == UltimateTemplate ? "Lowest latency: based on Ultimate Performance, tuned by AI Tweaker"
-        : src == High ? "Lowest latency: based on High performance, tuned by AI Tweaker"
+        src == Balanced ? "Lowest latency, tuned by AI Tweaker; Windows power modes and Game Mode keep working"
         : "Based on your PC's balanced plan, tuned by AI Tweaker";
 
-    /// <summary>High, Ultimate or our scheme copied from them: Game Mode has nothing to raise.</summary>
+    /// <summary>High, Ultimate or the desktop AI Tweaker plan (tuned to the same level): Game Mode has nothing to raise.</summary>
     public static bool IsPerformancePlan(Guid g) =>
         g == High || g == UltimateTemplate || g.ToString() == SettingsStore.Current.UltimateSchemeGuid
-        || (IsOwn(g) && SettingsStore.Current.OwnSchemeBase == "ultimate");
+        || (IsOwn(g) && SettingsStore.Current.OwnSchemeBase == "balanced");
 
     private static bool IsOwn(Guid g) => g.ToString() == SettingsStore.Current.OwnSchemeGuid;
 
@@ -170,7 +170,7 @@ public static class PowerOps
 
     private static readonly Guid PowerSaver = new("a1841308-3541-4fab-bc81-f71556f20b4a");
 
-    /// <summary>Plans that aren't balanced-like: High, Ultimate, Power saver and our own scheme when it was copied from Ultimate/High.</summary>
+    /// <summary>Plans that don't behave like Balanced: High, Ultimate, Power saver and the tuned desktop AI Tweaker plan.</summary>
     private static bool IsNonBalanced(Guid g) => g == PowerSaver || IsPerformancePlan(g);
 
     public static async Task RevertSchemeAsync(ChangeRecord r)

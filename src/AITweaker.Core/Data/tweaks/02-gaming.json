@@ -197,13 +197,13 @@
   {
     "id": "gaming.dynamic-tick.off",
     "category": "gaming",
-    "level": 3,
+    "level": 0,
     "when": "system.desktop && !system.vm",
     "reboot": true,
     "name": { "ru": "Отключить dynamic tick", "en": "Disable dynamic tick" },
     "description": {
-      "ru": "Ядро не пропускает тики таймера ради экономии энергии — меньше джиттер прерываний. Только для ПК (на ноутбуке сократит время работы от батареи).",
-      "en": "The kernel stops skipping timer ticks to save power — less interrupt jitter. Desktops only (it would cost battery life on laptops)."
+      "ru": "Ядро не пропускает тики таймера ради экономии энергии. Популярный твик, но в замерах (valleyofdoom, djdallmann) выигрыша в задержке не нашли, а энергопотребление в простое растёт — поэтому только вручную. Только для ПК.",
+      "en": "The kernel stops skipping timer ticks to save power. A popular tweak, but measurements (valleyofdoom, djdallmann) found no latency gain while idle power goes up — so it is manual only. Desktops only."
     },
     "actions": [
       { "type": "bcd", "element": "disabledynamictick", "value": "yes" }
@@ -231,8 +231,8 @@
     "level": 0,
     "name": { "ru": "Отключить MPO (мерцание/чёрные экраны)", "en": "Disable MPO (flicker / black screens)" },
     "description": {
-      "ru": "Отключает Multiplane Overlay. Помогает при мерцании, чёрных вспышках и подтормаживании браузера поверх игры на некоторых драйверах. Включайте только при таких проблемах.",
-      "en": "Disables Multiplane Overlay. Fixes flicker, black flashes and browser stutter over games on some drivers. Only enable it if you have these issues."
+      "ru": "Отключает Multiplane Overlay. Помогает при мерцании, чёрных вспышках и подтормаживании браузера поверх игры на некоторых драйверах. Включайте только при таких проблемах. В Windows 11 24H2 и новее этот способ, по отзывам, может уже не действовать.",
+      "en": "Turns off Multiplane Overlay. Helps with flicker, black flashes and a stuttering browser over a game on some drivers. Use it only for such problems. On Windows 11 24H2 and newer this method reportedly may no longer take effect."
     },
     "reboot": true,
     "actions": [

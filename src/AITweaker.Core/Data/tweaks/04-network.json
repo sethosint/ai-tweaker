@@ -16,7 +16,7 @@
     "id": "network.nagle.off",
     "category": "network",
     "level": 0,
-    "name": { "ru": "Отключить алгоритм Нейгла", "en": "Disable Nagle's algorithm" },
+    "name": { "ru": "Отключить отложенные TCP-подтверждения (Delayed ACK)", "en": "Turn off delayed TCP ACKs (Delayed ACK)" },
     "description": {
       "ru": "TCP-подтверждения отправляются сразу. Помогает только играм, которые работают по TCP (World of Warcraft, часть MMO); большинство игр используют UDP, и им это не даёт ничего. Microsoft советует оставлять по умолчанию, поэтому — только вручную.",
       "en": "TCP acknowledgements are sent immediately. Only helps games that run over TCP (World of Warcraft, some MMOs); most games use UDP and get nothing from it. Microsoft advises keeping the default, so it's manual only."

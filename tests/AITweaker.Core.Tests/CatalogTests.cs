@@ -115,7 +115,7 @@ public class CatalogTests
                     break;
                 case PowerSchemeAction s:
                     Assert.Contains(s.Scheme, new[] { "aitweaker", "ultimate", "high", "balanced" });
-                    Assert.Contains(s.Base, new[] { "ultimate", "current" });
+                    Assert.Contains(s.Base, new[] { "balanced", "current" });
                     if (s.Overlay is not null) Assert.Contains(s.Overlay, new[] { "best-performance", "balanced", "efficiency" });
                     break;
                 case ServiceAction s:
