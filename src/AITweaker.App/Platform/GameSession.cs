@@ -31,7 +31,8 @@ public static class GameSession
         ("AdobeCollabSync", "Adobe Acrobat"), ("Skype", "Skype"), ("Cortana", "Cortana"),
     ];
 
-    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes, List<string>? Wifi = null);
+    /// <param name="Game">Set when automatic Game Mode started the session for this game; it ends when the game closes.</param>
+    private sealed record State(DateTime Started, List<string> Groups, List<string> Services, List<string> Apps, string? Scheme, string? Overlay, bool Timer, ulong FreedBytes, List<string>? Wifi = null, string? Game = null);
 
     private static State? _active;
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -63,6 +64,9 @@ public static class GameSession
 
     public static bool Active => _active is not null;
 
+    /// <summary>The game an automatically started session belongs to (null for a session started by hand).</summary>
+    public static string? AutoGame => _active?.Game;
+
     /// <summary>What the button would do right now (when off) or what it did (when on).</summary>
     public static object Describe(SystemProfile profile)
     {
@@ -71,6 +75,7 @@ public static class GameSession
             {
                 active = true,
                 started = s.Started,
+                game = s.Game,
                 groups = s.Groups,
                 services = s.Services,
                 apps = s.Apps.Select(a => Path.GetFileNameWithoutExtension(a)).Distinct(),
@@ -104,7 +109,7 @@ public static class GameSession
         return names.Count == 0 ? null : new { id = "apps", items = names };
     }
 
-    public static async Task<object> StartAsync(IReadOnlyCollection<string> groups, SystemProfile profile)
+    public static async Task<object> StartAsync(IReadOnlyCollection<string> groups, SystemProfile profile, string? game = null)
     {
         await Gate.WaitAsync();
         try
@@ -117,7 +122,7 @@ public static class GameSession
             ulong freed = 0;
 
             // Saved before anything changes, so a crash or power loss is still undone on the next start.
-            var state = new State(DateTime.Now, [.. want], stopped, closed, null, null, false, 0);
+            var state = new State(DateTime.Now, [.. want], stopped, closed, null, null, false, 0, Game: game);
             Save(state);
 
             var running = RunningServices();
@@ -256,7 +261,8 @@ public static class GameSession
     }
 
     private static string PowerPlanName(SystemProfile profile) =>
-        !profile.Machine.IsLaptop && !(profile.Cpu.IsX3D && profile.Cpu.Cores > 8) ? "high" : "overlay";
+        profile.Machine.IsLaptop || (profile.Cpu.IsX3D && profile.Cpu.Cores > 8) ? "overlay"
+        : PowerOps.IsPerformancePlan(Native.GetActiveScheme()) ? "kept" : "high";
 
     /// <summary>Only worth holding when Windows applies timer requests globally (the "global timer resolution" tweak).</summary>
     private static bool TimerAvailable()

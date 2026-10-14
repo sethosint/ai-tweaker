@@ -44,6 +44,10 @@ public static partial class GameProfiles
         return new { twoGpus = TwoGpus(profile), games };
     }
 
+    /// <summary>Every game exe we know: Steam and Epic libraries plus the ones added by hand.</summary>
+    public static IEnumerable<string> KnownExes() =>
+        Detect().Select(g => g.Exe).Concat(LoadAdded()).Distinct(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Two graphics adapters (integrated + discrete): only then does the GPU choice mean anything.</summary>
     public static bool TwoGpus(SystemProfile profile) => profile.Gpus.Count >= 2;
 

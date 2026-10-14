@@ -25,6 +25,10 @@ public sealed class AppSettings
     public bool FirstRunDone { get; set; }
     /// <summary>Look for a new AI Tweaker release on every start.</summary>
     public bool CheckUpdates { get; set; } = true;
+    /// <summary>Turn Game Mode on by itself while a known game runs.</summary>
+    public bool AutoGameMode { get; set; }
+    /// <summary>What automatic Game Mode turns on: the choices from the last time the user started it.</summary>
+    public List<string>? AutoGameGroups { get; set; }
     /// <summary>Build stamp the WebView2 disk cache belongs to.</summary>
     public string? WebCacheStamp { get; set; }
 }

@@ -123,6 +123,7 @@
     API.on("log", pushLog);
     API.on("telemetry", pushTelemetry);
     API.on("sensors", pushSensors);
+    API.on("gamemode.auto", (e) => App.gmAuto(e));
     API.on("system.theme", (sys) => { S.system = sys; applyPalette(); if (S.view === "dashboard") Views.dashboard(); });
     try {
       S.init = await API.call("app.init");

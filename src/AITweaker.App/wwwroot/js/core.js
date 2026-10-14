@@ -340,6 +340,7 @@
       title: t("settings"),
       body: html`<div class="set-ver"><div><span>${t("settings.version")}</span><b>AI Tweaker ${esc(S.init.version)}</b></div><button class="btn sm" id="setUpd">${icon("update")}${t("upd.check")}</button></div>
         <label class="check"><input type="checkbox" id="setCu" ${s.checkUpdates !== false ? "checked" : ""}><span class="box"></span>${t("settings.checkUpdates")}</label>
+        <label class="check"><input type="checkbox" id="setAg" ${s.autoGameMode ? "checked" : ""}><span class="box"></span>${t("settings.autoGame")}</label>
         <label class="field">${t("settings.accent")}
           <select class="input" id="setAccent">${["industrial", "system", "mono"].map((m) => `<option value="${m}" ${S.accentMode === m ? "selected" : ""}>${t("settings.accent." + m)}</option>`).join("")}</select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
@@ -355,10 +356,12 @@
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
         const checkUpdates = $("#setCu", ov).checked;
+        const autoGameMode = $("#setAg", ov).checked;
+        if (autoGameMode !== !!s.autoGameMode) await call("gamemode.auto", { enabled: autoGameMode });
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
         await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates, accent: S.accentMode });
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates });
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates, autoGameMode });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });

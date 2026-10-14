@@ -35,6 +35,27 @@ public sealed class ApiService
         _engine = new RecommendationEngine(_catalog);
         _onUi = onUi;
         _emit = emit;
+        _watcher = new GameWatcher(ProfileAsync, emit);
+        if (SettingsStore.Current.AutoGameMode) _watcher.Start();
+    }
+
+    private readonly GameWatcher _watcher;
+
+    /// <summary>The game list changed: automatic Game Mode reads it again.</summary>
+    private bool Refreshed()
+    {
+        _watcher.Refresh();
+        return true;
+    }
+
+    /// <summary>Saves the automatic Game Mode choice (and what it turns on) and starts or stops watching for games.</summary>
+    private void SetAutoGame(bool enabled, IReadOnlyCollection<string>? groups)
+    {
+        var s = SettingsStore.Current;
+        s.AutoGameMode = enabled;
+        if (groups is { Count: > 0 }) s.AutoGameGroups = [.. groups];
+        SettingsStore.Save();
+        if (enabled) _watcher.Start(); else _watcher.Stop();
     }
 
     public async Task<object?> InvokeAsync(string method, JsonElement p) => method switch
@@ -141,10 +162,16 @@ public sealed class ApiService
         "games.list" => await Task.Run(async () => GameProfiles.List(await ProfileAsync())),
         "games.set" => await GameProfiles.SetAsync(Str(p, "exe") ?? "", Bool(p, "priority"), Bool(p, "gpu"), Bool(p, "qos"), Bool(p, "noFso")),
         "games.all" => await GameProfiles.SetAllAsync(await ProfileAsync()),
-        "games.add" => await _onUi(PickGame) is string exe && GameProfiles.Add(exe),
-        "games.remove" => await GameProfiles.RemoveAsync(Str(p, "exe") ?? ""),
+        "games.add" => await _onUi(PickGame) is string exe && GameProfiles.Add(exe) && Refreshed(),
+        "games.remove" => await GameProfiles.RemoveAsync(Str(p, "exe") ?? "") && Refreshed(),
         "gamemode.state" => GameSession.Describe(await ProfileAsync()),
-        "gamemode.start" => await Exclusive(async () => await GameSession.StartAsync(Ids(p, "groups") ?? [], await ProfileAsync())),
+        "gamemode.start" => await Exclusive(async () =>
+        {
+            var groups = Ids(p, "groups") ?? [];
+            if (Bool(p, "auto") is { } auto) SetAutoGame(auto, groups);
+            return await GameSession.StartAsync(groups, await ProfileAsync());
+        }),
+        "gamemode.auto" => Do(() => SetAutoGame(Bool(p, "enabled") ?? false, Ids(p, "groups"))),
         "gamemode.stop" => await GameSession.StopAsync(),
         "explorer.restart" => await RestartExplorer(),
         "update.check" => await Updater.CheckAsync(),
@@ -181,6 +208,7 @@ public sealed class ApiService
                 createRestorePoint = s.CreateRestorePoint,
                 autoRestartSeconds = s.AutoRestartSeconds,
                 checkUpdates = s.CheckUpdates,
+                autoGameMode = s.AutoGameMode,
             },
             rebootPending = SettingsStore.RebootPending,
             image = InstalledImage(),
