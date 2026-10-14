@@ -104,7 +104,7 @@
         <div class="actions"><button class="btn sm" id="bulkApply">${t("tweaks.applySel")}</button><button class="btn sm danger" id="bulkRevert">${t("tweaks.revertSel")}</button></div></div>
       <div class="toolbar">
         <input class="input" id="tf" placeholder="${t("tweaks.filter")}" value="${esc(tweakFilter)}">
-        <div class="tabs" id="catTabs"><button data-c="all" class="${tweakCat === "all" ? "on" : ""}">${t("all")}<span class="n">${S.catalog.length}</span></button>${S.init.categories.map((c) => `<button data-c="${c.id}" class="${tweakCat === c.id ? "on" : ""}">${esc(L(c.name).split(" ")[0])}<span class="n">${S.catalog.filter((x) => x.category === c.id).length}</span></button>`).join("")}</div>
+        <div class="tabs" id="catTabs"><button data-c="all" class="${tweakCat === "all" ? "on" : ""}">${t("all")}<span class="n">${S.catalog.length}</span></button>${S.init.categories.map((c) => `<button data-c="${c.id}" class="${tweakCat === c.id ? "on" : ""}">${esc(L(c.short || c.name))}<span class="n">${S.catalog.filter((x) => x.category === c.id).length}</span></button>`).join("")}</div>
         <label class="check"><input type="checkbox" id="onlyApp" ${onlyApplicable ? "checked" : ""}><span class="box"></span>${t("tweaks.onlyApplicable")}</label>
       </div>
       ${cats.map((c) => html`<div class="cat-group"><div class="cat-h">${esc(L(c.name))}<span class="n">${list.filter((x) => x.category === c.id).length}</span></div>
@@ -124,7 +124,7 @@
 
   function row(tw, ok) {
     const st = S.status[tw.id];
-    return html`<div class="trow" data-row="${tw.id}" style="${ok ? "" : "opacity:.55"}">
+    return html`<div class="trow ${ok ? "" : "na"}" data-row="${tw.id}">
       <label class="check"><input type="checkbox" data-pick="${tw.id}" ${picked.has(tw.id) ? "checked" : ""} ${ok ? "" : "disabled"}><span class="box"></span></label>
       <div><div class="tt">${esc(L(tw.name))}</div><div class="td">${esc(L(tw.description))}</div>
         ${tw.confirmText ? `<div class="td" style="color:var(--crit)">${esc(L(tw.confirmText))}</div>` : ""}
@@ -406,7 +406,8 @@
   const rein = { source: "dl", mode: "clean", lang: "English" };
   const img = { edition: "", level: 2, look: true, updates: true, removeApps: true, removeComponents: true, drivers: false, cleanup: true, extraApps: [] };
   const EXTRA = [["Microsoft.WindowsStore", "Microsoft Store"], ["Microsoft.GamingApp", "Xbox"], ["Microsoft.XboxGamingOverlay", "Xbox Game Bar"], ["Microsoft.YourPhone", "Phone Link"], ["Microsoft.OutlookForWindows", "Outlook"]];
-  const TZ = [["Kaliningrad Standard Time", "UTC+2 Калининград"], ["Russian Standard Time", "UTC+3 Москва"], ["Belarus Standard Time", "UTC+3 Минск"], ["FLE Standard Time", "UTC+2 Киев"], ["Samara Standard Time", "UTC+4 Самара"], ["Ekaterinburg Standard Time", "UTC+5 Екатеринбург"], ["West Asia Standard Time", "UTC+5 Ташкент"], ["Omsk Standard Time", "UTC+6 Омск"], ["Central Asia Standard Time", "UTC+6 Астана"], ["N. Central Asia Standard Time", "UTC+7 Новосибирск"], ["North Asia Standard Time", "UTC+7 Красноярск"], ["North Asia East Standard Time", "UTC+8 Иркутск"], ["Yakutsk Standard Time", "UTC+9 Якутск"], ["Vladivostok Standard Time", "UTC+10 Владивосток"], ["Magadan Standard Time", "UTC+11 Магадан"], ["Russia Time Zone 11", "UTC+12 Камчатка"], ["GMT Standard Time", "UTC+0 London"], ["W. Europe Standard Time", "UTC+1 Berlin"], ["Eastern Standard Time", "UTC−5 New York"], ["Pacific Standard Time", "UTC−8 Los Angeles"]];
+  // Windows time zone id, UTC offset, city in Russian and in English
+  const TZ = [["Kaliningrad Standard Time", "UTC+2", "Калининград", "Kaliningrad"], ["Russian Standard Time", "UTC+3", "Москва", "Moscow"], ["Belarus Standard Time", "UTC+3", "Минск", "Minsk"], ["FLE Standard Time", "UTC+2", "Киев", "Kyiv"], ["Samara Standard Time", "UTC+4", "Самара", "Samara"], ["Ekaterinburg Standard Time", "UTC+5", "Екатеринбург", "Yekaterinburg"], ["West Asia Standard Time", "UTC+5", "Ташкент", "Tashkent"], ["Omsk Standard Time", "UTC+6", "Омск", "Omsk"], ["Central Asia Standard Time", "UTC+6", "Астана", "Astana"], ["N. Central Asia Standard Time", "UTC+7", "Новосибирск", "Novosibirsk"], ["North Asia Standard Time", "UTC+7", "Красноярск", "Krasnoyarsk"], ["North Asia East Standard Time", "UTC+8", "Иркутск", "Irkutsk"], ["Yakutsk Standard Time", "UTC+9", "Якутск", "Yakutsk"], ["Vladivostok Standard Time", "UTC+10", "Владивосток", "Vladivostok"], ["Magadan Standard Time", "UTC+11", "Магадан", "Magadan"], ["Russia Time Zone 11", "UTC+12", "Камчатка", "Kamchatka"], ["GMT Standard Time", "UTC+0", "London", "London"], ["W. Europe Standard Time", "UTC+1", "Berlin", "Berlin"], ["Eastern Standard Time", "UTC−5", "New York", "New York"], ["Pacific Standard Time", "UTC−8", "Los Angeles", "Los Angeles"]];
   const imgOptions = () => ({ edition: img.edition || undefined, level: img.level, look: img.look, updates: img.updates, removeApps: img.removeApps, removeComponents: img.removeComponents, drivers: img.drivers, cleanup: img.cleanup, extraApps: img.extraApps });
 
   V.image = async () => {
@@ -457,7 +458,7 @@
             <label class="field">${t("usb.user")}<input class="input" data-o="userName" value="${esc(o.userName)}"></label>
             <label class="field">${t("usb.pass")}<input class="input" type="password" data-o="password" value="${esc(o.password)}"></label>
             <label class="field">${t("usb.pc")}<input class="input" data-o="computerName" value="${esc(o.computerName)}"></label>
-            <label class="field">${t("usb.tz")}<select class="input" data-o="timeZone">${TZ.map(([id, n]) => `<option value="${id}" ${o.timeZone === id ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+            <label class="field">${t("usb.tz")}<select class="input" data-o="timeZone">${TZ.map(([id, off, ru, en]) => `<option value="${id}" ${o.timeZone === id ? "selected" : ""}>${off} ${S.lang === "ru" ? ru : en}</option>`).join("")}</select></label>
             <label class="field">${t("usb.locale")}<select class="input" data-o="locale">${["ru-RU", "en-US", "uk-UA", "kk-KZ", "be-BY"].map((l) => `<option ${o.locale === l ? "selected" : ""}>${l}</option>`).join("")}</select></label></div>
             <div style="display:grid;gap:8px;margin-top:10px">
               ${[["bypass", "usb.bypass"], ["copyTweaker", "usb.copy"], ["runAfterSetup", "usb.runAfter"], ["disableBitLocker", "usb.bitlocker"]].map(([k, l]) => `<label class="check"><input type="checkbox" data-b="${k}" ${o[k] ? "checked" : ""}><span class="box"></span>${t(l)}</label>`).join("")}</div>
@@ -523,7 +524,7 @@
       const pv = await call("image.preview", { options: imgOptions() });
       modal({
         title: t("ib.preview"), wide: true,
-        body: html`<div class="kv"><b>${t("ib.pvTweaks")}</b><span>${pv.tweaks.length} · ${pv.registryValues} registry · ${pv.services.length} services</span><b>${t("ib.pvApps")}</b><span>${pv.apps.length}</span><b>${t("ib.pvComponents")}</b><span>${pv.capabilities.length}</span><b>${t("ib.pvAfter")}</b><span>${pv.afterInstall}</span></div>
+        body: html`<div class="kv"><b>${t("ib.pvTweaks")}</b><span>${pv.tweaks.length} · ${t("ib.pvRegistry").replace("{n}", pv.registryValues)} · ${t("ib.pvServices").replace("{n}", pv.services.length)}</span><b>${t("ib.pvApps")}</b><span>${pv.apps.length}</span><b>${t("ib.pvComponents")}</b><span>${pv.capabilities.length}</span><b>${t("ib.pvAfter")}</b><span>${pv.afterInstall}</span></div>
           <div class="pre">${esc(pv.tweaks.map((x) => `+ ${L(x.name)}  [${x.id}]`).join("\n"))}\n\n${esc(pv.apps.map((x) => `− ${x}`).join("\n"))}\n\n${esc(pv.capabilities.map((x) => `− ${x}*`).join("\n"))}</div>`,
         buttons: [{ label: t("close"), cls: "ghost" }],
       });
@@ -626,10 +627,10 @@
         <div class="actions"><button class="btn sm" id="rpNow">${t("backup.rp")}</button><button class="btn sm" id="rstrui">${t("backup.rstrui")}${icon("external")}</button><button class="btn sm ghost" id="bkFolder">${t("backup.folder")}</button><button class="btn sm ghost" id="logFolder">${t("backup.logs")}</button></div></div>
       <div class="grid cols-2" style="align-items:start">
         <div class="panel"><div class="panel-h">${t("backup.applied")}<span class="right">${b.applied.length ? `<button class="btn sm danger" id="revertAll">${t("backup.revertAll")}</button>` : ""}</span></div><div class="panel-b flush">
-          ${b.applied.length ? b.applied.map((x) => `<div class="trow" style="grid-template-columns:1fr auto;padding:9px 12px"><div><div class="tt">${esc(L(x.name) || x.tweakId)}</div><div class="tm"><span class="tid">${esc(x.tweakId)} · ${fmtDate(x.appliedAt)} ${fmtTime(x.appliedAt)} · ${x.changes} changes</span></div></div><button class="btn sm danger" data-rv="${esc(x.tweakId)}">${t("revert")}</button></div>`).join("") : `<div class="empty" style="margin:12px">${t("backup.none")}</div>`}
+          ${b.applied.length ? b.applied.map((x) => `<div class="trow" style="grid-template-columns:1fr auto;padding:9px 12px"><div><div class="tt">${esc(L(x.name) || x.tweakId)}</div><div class="tm"><span class="tid">${esc(x.tweakId)} · ${fmtDate(x.appliedAt)} ${fmtTime(x.appliedAt)} · ${x.changes} changes</span></div></div><button class="btn sm danger" data-rv="${esc(x.tweakId)}">${t("revert")}</button></div>`).join("") : `<div class="empty empty-state" style="margin:12px">${icon("check")}${t("backup.none")}</div>`}
         </div></div>
         <div class="panel"><div class="panel-h">${t("backup.sessions")}</div><div class="panel-b flush">
-          ${b.sessions.length ? b.sessions.map((x) => `<div class="setting" style="padding:8px 12px"><div><div class="sn"><b>${x.kind.toUpperCase()}</b> ${esc(x.profile || "")} · ${fmtDate(x.time)} ${fmtTime(x.time)}</div><div class="snote">${x.applied.length} ok · ${x.failed.length} failed${x.restorePoint ? " · restore point" : ""}</div></div><span class="val ${x.failed.length ? "" : "on"}">${x.failed.length ? t("bk.errors") : t("bk.ok")}</span></div>`).join("") : `<div class="empty" style="margin:12px">—</div>`}
+          ${b.sessions.length ? b.sessions.map((x) => `<div class="setting" style="padding:8px 12px"><div><div class="sn"><b>${x.kind.toUpperCase()}</b> ${esc(x.profile || "")} · ${fmtDate(x.time)} ${fmtTime(x.time)}</div><div class="snote">${x.applied.length} ok · ${x.failed.length} failed${x.restorePoint ? " · restore point" : ""}</div></div><span class="val ${x.failed.length ? "" : "on"}">${x.failed.length ? t("bk.errors") : t("bk.ok")}</span></div>`).join("") : `<div class="empty empty-state" style="margin:12px">${icon("backup")}${t("backup.noHistory")}</div>`}
         </div></div>
       </div>`;
     v.querySelectorAll("[data-rv]").forEach((x) => (x.onclick = () => App.revert([x.dataset.rv])));

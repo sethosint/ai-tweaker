@@ -1,13 +1,13 @@
 [
-  { "id": "privacy",   "icon": "eye-off",   "name": { "ru": "Приватность и телеметрия", "en": "Privacy & telemetry" } },
-  { "id": "gaming",    "icon": "gamepad",   "name": { "ru": "Игры и задержка кадра",    "en": "Gaming & frame latency" } },
-  { "id": "input",     "icon": "mouse",     "name": { "ru": "Мышь и клавиатура",        "en": "Mouse & keyboard" } },
-  { "id": "network",   "icon": "wifi",      "name": { "ru": "Сеть и пинг",              "en": "Network & ping" } },
-  { "id": "power",     "icon": "bolt",      "name": { "ru": "Электропитание",           "en": "Power" } },
-  { "id": "devices",   "icon": "cpu",       "name": { "ru": "Устройства и прерывания",  "en": "Devices & interrupts" } },
-  { "id": "system",    "icon": "gear",      "name": { "ru": "Система и службы",         "en": "System & services" } },
-  { "id": "interface", "icon": "layout",    "name": { "ru": "Интерфейс и кастомизация", "en": "Interface & customization" } },
-  { "id": "look",      "icon": "palette",   "name": { "ru": "Внешний вид AI Tweaker",   "en": "AI Tweaker look" } },
-  { "id": "apps",      "icon": "apps",      "name": { "ru": "Программы",                "en": "Applications" } },
-  { "id": "security",  "icon": "shield",    "name": { "ru": "Безопасность ↔ FPS",       "en": "Security ↔ FPS" } }
+  { "id": "privacy",   "icon": "eye-off",   "name": { "ru": "Приватность и телеметрия", "en": "Privacy & telemetry" }, "short": { "ru": "Приватность", "en": "Privacy" } },
+  { "id": "gaming",    "icon": "gamepad",   "name": { "ru": "Игры и задержка кадра",    "en": "Gaming & frame latency" }, "short": { "ru": "Игры", "en": "Gaming" } },
+  { "id": "input",     "icon": "mouse",     "name": { "ru": "Мышь и клавиатура",        "en": "Mouse & keyboard" }, "short": { "ru": "Ввод", "en": "Input" } },
+  { "id": "network",   "icon": "wifi",      "name": { "ru": "Сеть и пинг",              "en": "Network & ping" }, "short": { "ru": "Сеть", "en": "Network" } },
+  { "id": "power",     "icon": "bolt",      "name": { "ru": "Электропитание",           "en": "Power" }, "short": { "ru": "Питание", "en": "Power" } },
+  { "id": "devices",   "icon": "cpu",       "name": { "ru": "Устройства и прерывания",  "en": "Devices & interrupts" }, "short": { "ru": "Устройства", "en": "Devices" } },
+  { "id": "system",    "icon": "gear",      "name": { "ru": "Система и службы",         "en": "System & services" }, "short": { "ru": "Система", "en": "System" } },
+  { "id": "interface", "icon": "layout",    "name": { "ru": "Интерфейс и кастомизация", "en": "Interface & customization" }, "short": { "ru": "Интерфейс", "en": "Interface" } },
+  { "id": "look",      "icon": "palette",   "name": { "ru": "Внешний вид AI Tweaker",   "en": "AI Tweaker look" }, "short": { "ru": "Вид", "en": "Look" } },
+  { "id": "apps",      "icon": "apps",      "name": { "ru": "Программы",                "en": "Applications" }, "short": { "ru": "Программы", "en": "Apps" } },
+  { "id": "security",  "icon": "shield",    "name": { "ru": "Безопасность ↔ FPS",       "en": "Security ↔ FPS" }, "short": { "ru": "Защита", "en": "Security" } }
 ]

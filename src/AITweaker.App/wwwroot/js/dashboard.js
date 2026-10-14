@@ -291,7 +291,7 @@
 
   const passFilter = (e) => logFilter === "all" || (logFilter === "warn" ? e.level === "warn" || e.level === "error" : e.level === "error");
   const logRow = (e, fresh) => `<div class="row${fresh ? " new" : ""}"><span class="t">${fmtTime(e.time)}</span><span class="lv ${e.level}">${e.level === "error" ? "ERR" : e.level.toUpperCase()}</span><span class="msg"><b>${esc(e.source)}</b>${esc(e.text)}</span></div>`;
-  const logRows = () => S.log.filter(passFilter).slice(0, 150).map(logRow).join("") || `<div class="empty">—</div>`;
+  const logRows = () => S.log.filter(passFilter).slice(0, 150).map(logRow).join("") || `<div class="empty empty-state">${icon("check")}${t("log.empty")}</div>`;
 
   function issue(i, n = 0) {
     const st = ticketState(i);

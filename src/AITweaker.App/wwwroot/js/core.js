@@ -264,7 +264,7 @@
         </div>
       </header>
       <nav class="nav"><div class="nav-glider"></div>
-        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === "backup" ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
+        ${navList().map(([v], i, all) => `${v === "tune" || v === "drivers" || v === "backup" ? '<div class="nav-sep"></div>' : ""}<div class="nav-item ${S.view === v ? "on" : ""}" data-view="${v}" role="button" tabindex="0"><span class="nc">${String(i + 1).padStart(2, "0")}</span>${icon(v)}<span>${t("nav." + v)}</span><span class="nav-badge" id="badge-${v}" hidden></span></div>`).join("")}
         <div class="nav-foot">${t("nav.foot")}<br><br><span class="mono">AI TWEAKER ${esc((S.init && S.init.version) || "1.0.0")}${S.init && S.init.machine ? " · " + esc(S.init.machine) : ""}</span></div>
       </nav>
       <main class="main">${NAV.map(([v]) => `<section class="view ${S.view === v ? "on" : ""}" id="v-${v}"></section>`).join("")}</main>
@@ -273,6 +273,7 @@
     $$(".view").forEach((sec) => kickerWatch.observe(sec, { childList: true, subtree: true }));
     requestAnimationFrame(moveGlider);
     $(".nav").addEventListener("click", (e) => { const n = e.target.closest(".nav-item"); if (n) go(n.dataset.view); });
+    $(".nav").addEventListener("keydown", (e) => { const n = e.target.closest(".nav-item"); if (n && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go(n.dataset.view); } });
     $("#searchBtn").onclick = openSearch;
     $("#settingsBtn").onclick = openSettings;
     $("#rebootChip").onclick = () => App.restartPrompt("reboot");

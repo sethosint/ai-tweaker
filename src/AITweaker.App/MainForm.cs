@@ -9,7 +9,7 @@ namespace AITweaker.App;
 public sealed class MainForm : Form
 {
     private const string Host = "https://app.aitweaker";
-    private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(0xEC, 0xE8, 0xDE) };
+    private readonly WebView2 _web = new() { Dock = DockStyle.Fill };
     private readonly Dictionary<string, string> _resources;
     /// <summary>Changes with every build: index.html asks for js/css with it, so a cached old file is never used.</summary>
     private readonly string _stamp = $"{Updater.Current.ToString(3)}-{File.GetLastWriteTimeUtc(Environment.ProcessPath ?? typeof(MainForm).Assembly.Location).Ticks:x}";
@@ -22,7 +22,9 @@ public sealed class MainForm : Form
         MinimumSize = new Size(1100, 720);
         Size = new Size(1480, 920);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.FromArgb(0xEC, 0xE8, 0xDE);
+        // the page background of the saved theme from the first frame: no light flash before the UI loads
+        BackColor = Night(SettingsStore.Current.Theme) ? NightBg : DayBg;
+        _web.DefaultBackgroundColor = BackColor;
         try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!); } catch { /* default icon */ }
         Controls.Add(_web);
 
@@ -71,11 +73,18 @@ public sealed class MainForm : Form
         ApplyTheme(SettingsStore.Current.Theme);
     }
 
+    /// <summary>The CSS --bg colours (app.css), so the window and the page never show two shades.</summary>
+    private static readonly Color DayBg = Color.FromArgb(0xEE, 0xED, 0xE8), NightBg = Color.FromArgb(0x07, 0x08, 0x0A);
+
+    private static bool Night(string theme) => theme == "night" || (theme == "auto" && SystemThemeReader.Read().Dark);
+
     public void ApplyTheme(string theme)
     {
-        bool night = theme == "night" || (theme == "auto" && SystemThemeReader.Read().Dark);
-        Native.StyleTitleBar(Handle, night, night ? 0x0E0F0C : 0xECE8DE, night ? 0xF2A93B : 0x1D1D1B);
-        BackColor = night ? Color.FromArgb(0x0E, 0x0F, 0x0C) : Color.FromArgb(0xEC, 0xE8, 0xDE);
+        bool night = Night(theme);
+        var bg = night ? NightBg : DayBg;
+        Native.StyleTitleBar(Handle, night, bg.R << 16 | bg.G << 8 | bg.B, night ? 0xF2A93B : 0x1D1D1B);
+        BackColor = bg;
+        if (_web.CoreWebView2 is not null) _web.DefaultBackgroundColor = bg;
     }
 
     private async Task InitAsync()
@@ -170,6 +179,7 @@ public sealed class MainForm : Form
         if (path == "index.html")
         {
             var html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            html = html.Replace("data-theme=\"night\"", $"data-theme=\"{(Night(SettingsStore.Current.Theme) ? "night" : "day")}\"");
             html = System.Text.RegularExpressions.Regex.Replace(html, @"(src|href)=""((?:js|css|vendor)/[^""?]+\.(?:js|css))""", m => $"{m.Groups[1].Value}=\"{m.Groups[2].Value}?v={_stamp}\"");
             ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(html));
         }

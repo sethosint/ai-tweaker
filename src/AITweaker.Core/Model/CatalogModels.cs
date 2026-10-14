@@ -4,6 +4,8 @@ public sealed class TweakCategory
 {
     public required string Id { get; init; }
     public required LocalizedText Name { get; init; }
+    /// <summary>One word for tabs.</summary>
+    public LocalizedText? Short { get; init; }
     public string Icon { get; init; } = "";
 }
 
