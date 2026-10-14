@@ -188,7 +188,11 @@
   }
   const kickerWatch = new MutationObserver((list) => {
     const seen = new Set();
-    list.forEach((m) => { const sec = m.target.closest(".view"); if (sec && !seen.has(sec)) { seen.add(sec); kicker(sec); if (window.HW3D) HW3D.scan(sec, HWLOAD); } });
+    list.forEach((m) => {
+      if (m.target.closest("[data-live]")) return; // live numbers on the dashboard: nothing new to decorate
+      const sec = m.target.closest(".view");
+      if (sec && !seen.has(sec)) { seen.add(sec); kicker(sec); if (window.HW3D) HW3D.scan(sec, HWLOAD); }
+    });
   });
 
   /** Slides the highlight in the menu to the current page. */
@@ -196,7 +200,7 @@
     const g = $(".nav-glider"), on = $(".nav-item.on");
     if (!g) return;
     g.style.opacity = on ? 1 : 0;
-    if (on) g.style.top = on.offsetTop + "px";
+    if (on) g.style.transform = `translateY(${on.offsetTop}px)`;
   }
 
   window.go = (view, opts = {}) => {
@@ -216,7 +220,14 @@
     }
     const r = Views[view];
     if (r) r(opts);
+    if (window.HW3D && HW3D.wake) HW3D.wake();
   };
+
+  // A game in front or the window minimized: CSS animations pause (see :root.idle in app.css).
+  const idle = () => document.documentElement.classList.toggle("idle", document.hidden || !document.hasFocus());
+  window.addEventListener("blur", idle);
+  window.addEventListener("focus", idle);
+  document.addEventListener("visibilitychange", idle);
 
   function renderShell() {
     document.documentElement.lang = S.lang;

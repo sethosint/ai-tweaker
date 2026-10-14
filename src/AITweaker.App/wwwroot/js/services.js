@@ -47,7 +47,8 @@
       </div>`;
 
     const q = $("#svcQ");
-    q.oninput = () => { st.q = q.value; const pos = q.selectionStart; V.services(); const n = $("#svcQ"); n.focus(); n.setSelectionRange(pos, pos); };
+    // redraw once typing pauses, not on every key (the list has hundreds of rows)
+    q.oninput = () => { clearTimeout(st.qt); st.qt = setTimeout(() => { st.q = q.value; const pos = q.selectionStart; V.services(); const n = $("#svcQ"); n.focus(); n.setSelectionRange(pos, pos); }, 150); };
     $("#svcReload").onclick = () => { st.list = null; V.services(); };
     v.querySelectorAll("#svcF [data-f]").forEach((b) => (b.onclick = () => { st.filter = b.dataset.f; V.services(); }));
     v.querySelectorAll("[data-start]").forEach((sel) => (sel.onchange = () => setStart(sel.dataset.start, sel.value)));

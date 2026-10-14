@@ -11,6 +11,8 @@ public sealed class MainForm : Form
     private const string Host = "https://app.aitweaker";
     private readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(0xEC, 0xE8, 0xDE) };
     private readonly Dictionary<string, string> _resources;
+    /// <summary>Changes with every build: index.html asks for js/css with it, so a cached old file is never used.</summary>
+    private readonly string _stamp = $"{Updater.Current.ToString(3)}-{File.GetLastWriteTimeUtc(Environment.ProcessPath ?? typeof(MainForm).Assembly.Location).Ticks:x}";
     private BridgeHost? _bridge;
     private Telemetry? _telemetry;
 
@@ -30,6 +32,13 @@ public sealed class MainForm : Form
             .ToDictionary(n => n.Replace('\\', '/')[4..], n => n, StringComparer.OrdinalIgnoreCase);
 
         Load += async (_, _) => await InitAsync();
+        // minimized: the page stops drawing (WebView2 reports it hidden) and the live sampling slows down
+        Resize += (_, _) =>
+        {
+            bool minimized = WindowState == FormWindowState.Minimized;
+            if (_telemetry is not null) _telemetry.Background = minimized;
+            if (_web.CoreWebView2 is not null && _web.Visible == minimized) _web.Visible = !minimized;
+        };
         FormClosed += (_, _) =>
         {
             _telemetry?.Dispose();
@@ -69,6 +78,14 @@ public sealed class MainForm : Form
         }
 
         var core = _web.CoreWebView2;
+        // UI files are cached for good (they live inside the exe); a new or rebuilt exe starts from an empty cache
+        if (SettingsStore.Current.WebCacheStamp != _stamp)
+        {
+            try { await core.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.DiskCache); }
+            catch (Exception ex) { AppLog.Warn("app", "web cache not cleared: " + ex.Message); }
+            SettingsStore.Current.WebCacheStamp = _stamp;
+            SettingsStore.Save();
+        }
         var s = core.Settings;
 #if !DEBUG
         s.AreDevToolsEnabled = false;
@@ -132,6 +149,12 @@ public sealed class MainForm : Form
 
         var ms = new MemoryStream();
         using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)!) s.CopyTo(ms);
+        if (path == "index.html")
+        {
+            var html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+            html = System.Text.RegularExpressions.Regex.Replace(html, @"(src|href)=""((?:js|css|vendor)/[^""?]+\.(?:js|css))""", m => $"{m.Groups[1].Value}=\"{m.Groups[2].Value}?v={_stamp}\"");
+            ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(html));
+        }
         ms.Position = 0;
         var type = Path.GetExtension(path).ToLowerInvariant() switch
         {
@@ -146,6 +169,7 @@ public sealed class MainForm : Form
             ".woff2" => "font/woff2",
             _ => "application/octet-stream",
         };
-        return env.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type: {type}\nCache-Control: no-cache");
+        var cache = path == "index.html" ? "no-cache" : "max-age=31536000, immutable";
+        return env.CreateWebResourceResponse(ms, 200, "OK", $"Content-Type: {type}\nCache-Control: {cache}");
     }
 }

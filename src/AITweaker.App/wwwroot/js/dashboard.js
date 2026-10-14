@@ -26,8 +26,8 @@
     const auto = S.plan ? [...S.selected].filter((id) => S.status[id] !== "applied").length : 0;
     const man = S.scan ? App.manualLeft() : { left: 0, total: 0 };
     const appsPending = S.guides ? new Set(S.guides.filter((g) => g.installed).flatMap((g) => (g.autoTweaks || []).filter((id) => S.byId[id] && S.status[id] !== "applied" && S.status[id] !== "n/a"))).size : null;
-    const step = (n, id, state, done, btn) => html`<div class="step ${done ? "done" : ""}" data-step="${id}">
-      <span class="step-n">${done ? icon("check") : n}</span>
+    const step = (n, id, state, done, btn) => html`<div class="dash-step ${done ? "done" : ""}" data-step="${id}">
+      <span class="dash-step-n">${done ? icon("check") : n}</span>
       <div><b>${t("step." + id)}</b><span>${state}</span></div>
       <button class="btn sm ${done ? "ghost" : "primary"}" data-go-step="${id}">${btn}</button></div>`;
     return [
@@ -99,11 +99,11 @@
         </div>
       </section>
 
-      <div class="steps" id="dashSteps">${steps()}</div>
+      <div class="dash-steps" id="dashSteps">${steps()}</div>
 
       ${fresh ? `<div class="callout ok" style="margin-bottom:22px;display:flex;gap:12px;align-items:center">${t("h.fresh")}<button class="btn sm primary" style="margin-left:auto" id="freshTune">${t("dash.tune")}</button></div>` : ""}
 
-      <div class="hw-strip">${PARTS.map((x) => `<div class="hw-tile" data-go="${x.go}"><div class="hw-model" data-hw="${x.hw}" data-load="${x.hw}" data-key="dash-${x.id}" data-yaw="${x.yaw}"></div><div class="hw-data" id="hd-${x.id}">${x.data()}</div></div>`).join("")}</div>
+      <div class="hw-strip">${PARTS.map((x) => `<div class="hw-tile" data-go="${x.go}"><div class="hw-model" data-hw="${x.hw}" data-load="${x.hw}" data-key="dash-${x.id}" data-yaw="${x.yaw}"></div><div class="hw-data" id="hd-${x.id}" data-live>${x.data()}</div></div>`).join("")}</div>
 
       <div class="dash-row">
         <div class="panel">
@@ -268,9 +268,18 @@
     f("#tgPing", l.pingMs, "ms");
   }
 
+  /** Rewrites only the tiles whose numbers changed: no DOM churn while the values hold still. */
   function updateParts() {
-    PARTS.forEach((x) => { const el = $("#hd-" + x.id); if (el) el.innerHTML = x.data(); });
-    bindHints();
+    let changed = false;
+    PARTS.forEach((x) => {
+      const el = $("#hd-" + x.id);
+      if (!el) return;
+      const next = x.data();
+      if (el._html === next) return;
+      el.innerHTML = el._html = next;
+      changed = true;
+    });
+    if (changed) bindHints();
     tags();
   }
 
@@ -281,7 +290,7 @@
   // ------------------------------------------------------------------ events / issues / charts
 
   const passFilter = (e) => logFilter === "all" || (logFilter === "warn" ? e.level === "warn" || e.level === "error" : e.level === "error");
-  const logRow = (e) => `<div class="row"><span class="t">${fmtTime(e.time)}</span><span class="lv ${e.level}">${e.level === "error" ? "ERR" : e.level.toUpperCase()}</span><span class="msg"><b>${esc(e.source)}</b>${esc(e.text)}</span></div>`;
+  const logRow = (e, fresh) => `<div class="row${fresh ? " new" : ""}"><span class="t">${fmtTime(e.time)}</span><span class="lv ${e.level}">${e.level === "error" ? "ERR" : e.level.toUpperCase()}</span><span class="msg"><b>${esc(e.source)}</b>${esc(e.text)}</span></div>`;
   const logRows = () => S.log.filter(passFilter).slice(0, 150).map(logRow).join("") || `<div class="empty">—</div>`;
 
   function issue(i, n = 0) {
@@ -317,6 +326,14 @@
 
   // ------------------------------------------------------------------ monitoring canvas
 
+  // Theme colours for the chart, read once per palette instead of forcing a style recalc on every tick.
+  let palKey = "", pal = {};
+  function flowColor(n) {
+    const key = `${S.theme}|${S.accentMode}|${S.system && S.system.accent}`;
+    if (key !== palKey) { palKey = key; pal = {}; }
+    return (pal[n] ||= getComputedStyle(document.documentElement).getPropertyValue(n).trim());
+  }
+
   function drawFlow() {
     const c = $("#flowCanvas");
     if (!c) return;
@@ -327,8 +344,7 @@
     const g = c.getContext("2d");
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
-    const css = getComputedStyle(document.documentElement);
-    const col = (n) => css.getPropertyValue(n).trim();
+    const col = flowColor;
     const data = S.telemetry.slice(-120);
     const n = 120, step = w / (n - 1), off = n - data.length;
     g.strokeStyle = col("--line"); g.lineWidth = 1;
@@ -361,7 +377,7 @@
       const s = $("#stream");
       if (!s || !passFilter(e)) return;
       if (s.querySelector(".empty")) s.innerHTML = "";
-      s.insertAdjacentHTML("afterbegin", logRow(e));
+      s.insertAdjacentHTML("afterbegin", logRow(e, true));
       while (s.children.length > 150) s.lastChild.remove();
     },
     tick(sm) {

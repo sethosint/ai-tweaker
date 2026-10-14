@@ -82,6 +82,21 @@ internal static partial class Native
         return GlobalMemoryStatusEx(ref m) ? (m.dwMemoryLoad, m.ullTotalPhys, m.ullAvailPhys) : (0, 0, 0);
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PERFORMANCE_INFORMATION
+    {
+        public uint cb;
+        public UIntPtr CommitTotal, CommitLimit, CommitPeak, PhysicalTotal, PhysicalAvailable, SystemCache, KernelTotal, KernelPaged, KernelNonpaged, PageSize;
+        public uint HandleCount, ProcessCount, ThreadCount;
+    }
+
+    [DllImport("psapi.dll", SetLastError = true)]
+    private static extern bool GetPerformanceInfo(out PERFORMANCE_INFORMATION info, uint size);
+
+    /// <summary>Number of running processes without opening each one (Process.GetProcesses allocates hundreds of objects).</summary>
+    public static int ProcessCount() =>
+        GetPerformanceInfo(out var p, (uint)Marshal.SizeOf<PERFORMANCE_INFORMATION>()) ? (int)p.ProcessCount : 0;
+
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool GetSystemTimes(out long idleTime, out long kernelTime, out long userTime);
 

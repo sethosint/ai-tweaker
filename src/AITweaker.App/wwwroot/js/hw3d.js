@@ -8,6 +8,8 @@
   let renderer = null, canvas = null, envMap = null, clock = null, failed = false, solo = false;
   // Software rendering (no GPU driver, RDP, some VMs): draw a few frames a second so the rest of the UI stays smooth.
   let slow = false, lastDraw = 0, lastFrame = 0, gapAvg = 16, frames = 0;
+  // The loop only runs while a model is on screen; otherwise it sleeps and is woken by navigation, focus or scrolling.
+  let running = false, drawn = false, idleTimer = 0;
   const MAX_RATIO = 1.25; // sharp enough for small models, far cheaper than a 2x canvas
   const accentColor = () => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f5a524");
 
@@ -311,41 +313,78 @@
     if (slow) renderer.setPixelRatio(1);
     envMap = makeEnv();
     clock = new THREE.Clock();
-    requestAnimationFrame(loop);
+    document.addEventListener("visibilitychange", HW.wake);
+    window.addEventListener("focus", HW.wake);
+    window.addEventListener("resize", HW.wake);
+    document.addEventListener("scroll", HW.wake, { capture: true, passive: true });
+    HW.wake();
     return true;
   }
 
-  function loop(now) {
+  /** Starts the render loop if it sleeps (cheap to call often). */
+  HW.wake = () => {
+    if (!renderer || running) return;
+    clearTimeout(idleTimer);
+    running = true;
+    lastFrame = 0; frames = 0; gapAvg = 16;
+    clock.getDelta(); // no jump after a long sleep
     requestAnimationFrame(loop);
-    if (!slots.size || document.hidden) return;
-    // a dialog covers the page: keep the last frame under its blur
-    if (!solo && document.querySelector(".overlay, .busy-veil")) return;
-    if (lastFrame && !slow) {
-      gapAvg = gapAvg * 0.95 + (now - lastFrame) * 0.05;
-      // the page itself is struggling: drop to a light mode instead of making everything stutter
-      if (++frames > 120 && gapAvg > 26) { slow = true; renderer.setPixelRatio(1); }
-    }
-    lastFrame = now;
-    // 40 fps is plenty for slowly turning models; a window in the background (a game in front) gets 8 fps
-    const minGap = !document.hasFocus() ? 125 : slow ? 50 : 24;
-    if (now - lastDraw < minGap) return;
-    lastDraw = now;
-    const dt = Math.min(0.15, clock.getDelta()), t = clock.elapsedTime;
-    const w = window.innerWidth, h = window.innerHeight;
-    if (canvas.width !== Math.floor(w * renderer.getPixelRatio()) || canvas.height !== Math.floor(h * renderer.getPixelRatio())) renderer.setSize(w, h, false);
+  };
+
+  /** Stops drawing. A window in the background or Game Mode waits for focus; anything else re-checks now and then. */
+  function rest() {
+    running = false;
+    if (!document.hidden && document.hasFocus()) idleTimer = setTimeout(HW.wake, 700);
+  }
+
+  function erase() {
+    if (!drawn) return;
     renderer.setScissorTest(false);
     renderer.clear();
-    renderer.setScissorTest(true);
+    drawn = false;
+  }
+
+  function loop(now) {
+    if (!running) return;
+    // hidden, behind a game, in Game Mode or under a dialog: keep the last frame and stop
+    if (!slots.size || document.hidden || !document.hasFocus() || (window.S && S.gameMode) || (!solo && document.querySelector(".overlay, .busy-veil"))) {
+      if (!slots.size) erase();
+      return rest();
+    }
+    if (lastFrame && !slow) {
+      gapAvg = gapAvg * 0.95 + (now - lastFrame) * 0.05;
+      // the page itself keeps struggling while models are drawn: drop to a light mode instead of making everything stutter
+      if (++frames > 240 && gapAvg > 26) { slow = true; renderer.setPixelRatio(1); }
+    }
+    lastFrame = now;
+    // 40 fps is plenty for slowly turning models
+    if (now - lastDraw < (slow ? 50 : 24)) { requestAnimationFrame(loop); return; }
+
+    const h = window.innerHeight, visible = [];
     for (const s of slots) {
       // A re-rendered view may hand the same element back (see data-key), so give it a moment before freeing.
       if (!s.el.isConnected) { s.goneAt ||= now; if (now - s.goneAt > 1500) dispose(s); continue; }
       s.goneAt = 0;
       if (solo && !s.el.closest(".apply-stage")) continue;
+      if (!s.el.offsetParent) continue;
       const r = s.el.getBoundingClientRect();
       const clip = s.el.closest(".view, .apply-stage, .modal") || document.body;
       const c = clip.getBoundingClientRect();
       const left = Math.max(r.left, c.left), right = Math.min(r.right, c.right), top = Math.max(r.top, c.top), bottom = Math.min(r.bottom, c.bottom);
-      if (right <= left || bottom <= top || r.width < 4 || !s.el.offsetParent) continue;
+      if (right <= left || bottom <= top || r.width < 4) continue;
+      visible.push({ s, r, left, right, top, bottom });
+    }
+    // another page, or the models scrolled away: clear once and sleep
+    if (!visible.length) { erase(); return rest(); }
+
+    lastDraw = now;
+    const dt = Math.min(0.15, clock.getDelta()), t = clock.elapsedTime;
+    const w = window.innerWidth;
+    if (canvas.width !== Math.floor(w * renderer.getPixelRatio()) || canvas.height !== Math.floor(h * renderer.getPixelRatio())) renderer.setSize(w, h, false);
+    renderer.setScissorTest(false);
+    renderer.clear();
+    renderer.setScissorTest(true);
+    for (const { s, r, left, right, top, bottom } of visible) {
       animate(s, dt, t);
       s.camera.aspect = r.width / r.height;
       s.camera.updateProjectionMatrix();
@@ -353,6 +392,8 @@
       renderer.setScissor(left, h - bottom, right - left, bottom - top);
       renderer.render(s.scene, s.camera);
     }
+    drawn = true;
+    requestAnimationFrame(loop);
   }
 
   function animate(s, dt, t) {
@@ -411,6 +452,7 @@
     el.addEventListener("pointerup", stop);
     el.addEventListener("pointerleave", () => { s.tiltY = 0; stop(); });
     slots.add(s);
+    HW.wake();
     return { slot: s, boost(on) { s.boost = on; }, dispose: () => dispose(s) };
   };
 

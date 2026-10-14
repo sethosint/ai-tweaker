@@ -111,7 +111,7 @@
         ${list.filter((x) => x.category === c.id).map((tw) => row(tw, planIds.has(tw.id))).join("")}</div>`).join("") || `<div class="empty">${t("res.none")}</div>`}`;
 
     const tf = $("#tf");
-    tf.oninput = () => { tweakFilter = tf.value; const pos = tf.selectionStart; V.tweaks(); const n = $("#tf"); n.focus(); n.setSelectionRange(pos, pos); };
+    tf.oninput = () => { clearTimeout(tf._t); tf._t = setTimeout(() => { tweakFilter = tf.value; const pos = tf.selectionStart; V.tweaks(); const n = $("#tf"); n.focus(); n.setSelectionRange(pos, pos); }, 150); };
     $("#catTabs").onclick = (e) => { const b = e.target.closest("button"); if (b) { tweakCat = b.dataset.c; V.tweaks(); } };
     $("#onlyApp").onchange = (e) => { onlyApplicable = e.target.checked; V.tweaks(); };
     v.querySelectorAll("input[data-pick]").forEach((cb) => (cb.onchange = () => (cb.checked ? picked.add(cb.dataset.pick) : picked.delete(cb.dataset.pick))));

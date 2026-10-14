@@ -25,6 +25,8 @@ public sealed class AppSettings
     public bool FirstRunDone { get; set; }
     /// <summary>Look for a new AI Tweaker release on every start.</summary>
     public bool CheckUpdates { get; set; } = true;
+    /// <summary>Build stamp the WebView2 disk cache belongs to.</summary>
+    public string? WebCacheStamp { get; set; }
 }
 
 public static class SettingsStore
