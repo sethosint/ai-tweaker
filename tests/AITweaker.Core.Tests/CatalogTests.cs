@@ -114,7 +114,8 @@ public class CatalogTests
                     Assert.True(p.Ac.HasValue || p.Dc.HasValue, t.Id);
                     break;
                 case PowerSchemeAction s:
-                    Assert.Contains(s.Scheme, new[] { "ultimate", "high", "balanced" });
+                    Assert.Contains(s.Scheme, new[] { "aitweaker", "ultimate", "high", "balanced" });
+                    Assert.Contains(s.Base, new[] { "ultimate", "current" });
                     if (s.Overlay is not null) Assert.Contains(s.Overlay, new[] { "best-performance", "balanced", "efficiency" });
                     break;
                 case ServiceAction s:

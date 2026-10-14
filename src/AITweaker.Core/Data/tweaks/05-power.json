@@ -4,17 +4,17 @@
     "category": "power",
     "level": 2,
     "when": "system.desktop && !cpu.x3dMultiCcd",
-    "name": { "ru": "Схема «Максимальная производительность»", "en": "Ultimate Performance power plan" },
+    "name": { "ru": "Своя схема питания AI Tweaker", "en": "AI Tweaker power plan" },
     "description": {
-      "ru": "Создаёт и включает скрытую схему Ultimate Performance: ядра не паркуются, частоты не сбрасываются между кадрами, нет микрозадержек выхода из сна.",
-      "en": "Creates and activates the hidden Ultimate Performance plan: no core parking, no clock drops between frames, no wake-up micro-latency."
+      "ru": "Создаёт и включает схему «AI Tweaker» — копию скрытой «Максимальной производительности» (если Windows её не даёт — «Высокой производительности»). В неё пишутся все настройки питания ниже: ядра не паркуются, частоты не сбрасываются между кадрами, нет задержек выхода из энергосбережения. Откат включает прежнюю схему и удаляет эту.",
+      "en": "Creates and activates the \"AI Tweaker\" plan — a copy of the hidden Ultimate Performance plan (or High performance where Windows doesn't offer it). Every power setting below is written into it: no core parking, no clock drops between frames, no wake-up latency from power saving. Rollback switches back to your previous plan and deletes this one."
     },
     "why": {
       "ru": "Настольный ПК: экономия энергии здесь только добавляет задержку.",
       "en": "Desktop PC: power saving only adds latency here."
     },
     "actions": [
-      { "type": "powerScheme", "scheme": "ultimate" }
+      { "type": "powerScheme", "scheme": "aitweaker", "base": "ultimate" }
     ]
   },
   {
@@ -40,13 +40,13 @@
     "category": "power",
     "level": 2,
     "when": "system.laptop",
-    "name": { "ru": "Ноутбук: режим «Лучшая производительность»", "en": "Laptop: Best performance mode" },
+    "name": { "ru": "Ноутбук: схема AI Tweaker + «Лучшая производительность»", "en": "Laptop: AI Tweaker plan + Best performance" },
     "description": {
-      "ru": "Оставляет сбалансированную схему (её требуют современные ноутбуки с Modern Standby), но переключает режим питания на максимальную производительность.",
-      "en": "Keeps the Balanced plan (required by modern laptops with Modern Standby) but switches the power mode to best performance."
+      "ru": "Создаёт схему «AI Tweaker» как копию текущей сбалансированной схемы ноутбука — настройки производителя и Modern Standby сохраняются — и включает режим питания «Лучшая производительность». Настройки питания ниже пишутся в неё, от батареи ноутбук по-прежнему экономит заряд. Откат возвращает прежнюю схему.",
+      "en": "Creates the \"AI Tweaker\" plan as a copy of the laptop's current balanced plan — the maker's tuning and Modern Standby stay — and sets the power mode to Best performance. The power settings below are written into it; on battery the laptop still saves charge. Rollback restores the previous plan."
     },
     "actions": [
-      { "type": "powerScheme", "scheme": "balanced", "overlay": "best-performance" }
+      { "type": "powerScheme", "scheme": "aitweaker", "base": "current", "overlay": "best-performance" }
     ]
   },
   {

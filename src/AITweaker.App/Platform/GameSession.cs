@@ -223,8 +223,7 @@ public static class GameSession
     private static async Task RaisePowerAsync(SystemProfile profile, Guid active)
     {
         bool x3d = profile.Cpu.IsX3D && profile.Cpu.Cores > 8; // dual-CCD X3D needs the Balanced plan for core parking
-        if (!profile.Machine.IsLaptop && !x3d && active != PowerOps.High && active != PowerOps.UltimateTemplate
-            && active.ToString() != SettingsStore.Current.UltimateSchemeGuid && (await PowerOps.ListSchemesAsync()).Contains(PowerOps.High))
+        if (!profile.Machine.IsLaptop && !x3d && !PowerOps.IsPerformancePlan(active) && (await PowerOps.ListSchemesAsync()).Contains(PowerOps.High))
         {
             Native.SetActiveScheme(PowerOps.High);
             return;

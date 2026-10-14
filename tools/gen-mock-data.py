@@ -32,7 +32,8 @@ def describe(a):
     if t == "powercfg":
         return f"powercfg {a.get('alias', a['setting'])} AC={a.get('ac', '-')} DC={a.get('dc', '-')}"
     if t == "powerScheme":
-        return f"power scheme -> {a.get('scheme', 'high')}" + (f" (overlay {a['overlay']})" if a.get("overlay") else "")
+        scheme = f"AI Tweaker (copy of {a.get('base', 'ultimate')})" if a.get("scheme") == "aitweaker" else a.get("scheme", "high")
+        return f"power scheme -> {scheme}" + (f" (overlay {a['overlay']})" if a.get("overlay") else "")
     if t == "bcd":
         return f"bcdedit /set {a['element']} {a['value']}" if a.get("value") else f"bcdedit /deletevalue {a['element']}"
     if t == "command":

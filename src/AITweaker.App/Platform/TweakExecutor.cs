@@ -30,6 +30,8 @@ public sealed class TweakExecutor(SystemProfile profile)
         var ctx = new ExecContext(profile, ct);
         var results = new List<TweakResult>();
         bool restartExplorer = false, reboot = false, logoff = false;
+        // the power plan goes first: power settings are written into whichever scheme is active
+        tweaks = tweaks.OrderBy(t => t.Actions.Any(a => a is PowerSchemeAction) ? 0 : 1).ToList();
 
         for (int i = 0; i < tweaks.Count; i++)
         {

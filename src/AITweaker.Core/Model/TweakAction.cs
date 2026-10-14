@@ -105,12 +105,17 @@ public sealed class PowerSettingAction : TweakAction
 /// <summary>Activates (creating if needed) a power scheme and optionally sets the power mode overlay.</summary>
 public sealed class PowerSchemeAction : TweakAction
 {
-    /// <summary>ultimate | high | balanced</summary>
+    /// <summary>aitweaker (our own scheme, see <see cref="Base"/>) | ultimate | high | balanced</summary>
     public string Scheme { get; init; } = "high";
+    /// <summary>
+    /// What the "AI Tweaker" scheme is copied from: ultimate (Ultimate → High → Balanced, whichever Windows offers) or
+    /// current (the active plan, so a laptop keeps its maker's tuning; High/Ultimate/Power saver fall back to Balanced).
+    /// </summary>
+    public string Base { get; init; } = "ultimate";
     /// <summary>Optional power mode overlay: best-performance | balanced | efficiency.</summary>
     public string? Overlay { get; init; }
 
-    public override string Describe() => $"power scheme -> {Scheme}{(Overlay is null ? "" : $" (overlay {Overlay})")}";
+    public override string Describe() => $"power scheme -> {(Scheme == "aitweaker" ? $"AI Tweaker (copy of {Base})" : Scheme)}{(Overlay is null ? "" : $" (overlay {Overlay})")}";
 }
 
 public sealed class BcdAction : TweakAction

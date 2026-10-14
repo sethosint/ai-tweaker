@@ -30,13 +30,15 @@ public static class PowerOps
         return Task.CompletedTask;
     }
 
-    public static Task RevertSettingAsync(ChangeRecord r)
+    public static async Task RevertSettingAsync(ChangeRecord r)
     {
         uint? ac = uint.TryParse(r["ac"], out var a) ? a : null;
         uint? dc = uint.TryParse(r["dc"], out var d) ? d : null;
-        if (ac is null && dc is null) return Task.CompletedTask;
-        Native.WritePowerSetting(Guid.Parse(r["scheme"]!), Guid.Parse(r["subgroup"]!), Guid.Parse(r["setting"]!), ac, dc);
-        return Task.CompletedTask;
+        if (ac is null && dc is null) return;
+        var scheme = Guid.Parse(r["scheme"]!);
+        // the value lived in the AI Tweaker scheme, which its own rollback already deleted: nothing left to restore
+        if (!(await ListSchemesAsync()).Contains(scheme)) return;
+        Native.WritePowerSetting(scheme, Guid.Parse(r["subgroup"]!), Guid.Parse(r["setting"]!), ac, dc);
     }
 
     public static bool? CheckSetting(PowerSettingAction a)
@@ -75,6 +77,53 @@ public static class PowerOps
         return guid;
     }
 
+    public const string OwnName = "AI Tweaker";
+
+    /// <summary>Our own "AI Tweaker" scheme, copied from <paramref name="baseKind"/> the first time; returns it and whether it was created now.</summary>
+    private static async Task<(Guid Scheme, bool Created)?> EnsureOwnAsync(string baseKind, Guid active, ExecContext ctx)
+    {
+        var schemes = await ListSchemesAsync();
+        var s = SettingsStore.Current;
+        if (Guid.TryParse(s.OwnSchemeGuid, out var own) && schemes.Contains(own))
+        {
+            if (s.OwnSchemeBase == baseKind) return (own, false);
+            // made for another kind of PC (the profile changed): start over from the right base
+            if (active == own) Native.SetActiveScheme(schemes.Contains(Balanced) ? Balanced : schemes.First(g => g != own));
+            await ProcessRunner.RunAsync("powercfg.exe", $"-delete {own}");
+        }
+
+        var sources = baseKind == "current"
+            ? [IsNonBalanced(active) || !schemes.Contains(active) ? Balanced : active]
+            : new[] { UltimateTemplate, High, Balanced };
+        foreach (var src in sources)
+        {
+            var r = await ProcessRunner.RunAsync("powercfg.exe", $"-duplicatescheme {src}");
+            var m = GuidRx.Match(r.Output);
+            if (!r.Success || !m.Success) continue; // Ultimate/High are hidden on Modern Standby laptops
+            var guid = Guid.Parse(m.Value);
+            await ProcessRunner.RunAsync("powercfg.exe", $"-changename {guid} \"{OwnName}\" \"{Describe(src)}\"");
+            s.OwnSchemeGuid = guid.ToString();
+            s.OwnSchemeBase = baseKind;
+            SettingsStore.Save();
+            ctx.Log($"created the {OwnName} power scheme {guid} from {src}");
+            return (guid, true);
+        }
+        ctx.Log("powercfg could not copy any power scheme");
+        return null;
+    }
+
+    private static string Describe(Guid src) =>
+        src == UltimateTemplate ? "Lowest latency: based on Ultimate Performance, tuned by AI Tweaker"
+        : src == High ? "Lowest latency: based on High performance, tuned by AI Tweaker"
+        : "Based on your PC's balanced plan, tuned by AI Tweaker";
+
+    /// <summary>High, Ultimate or our scheme copied from them: Game Mode has nothing to raise.</summary>
+    public static bool IsPerformancePlan(Guid g) =>
+        g == High || g == UltimateTemplate || g.ToString() == SettingsStore.Current.UltimateSchemeGuid
+        || (IsOwn(g) && SettingsStore.Current.OwnSchemeBase == "ultimate");
+
+    private static bool IsOwn(Guid g) => g.ToString() == SettingsStore.Current.OwnSchemeGuid;
+
     private static Guid? OverlayGuid(string? name) => name switch
     {
         "best-performance" => OverlayBestPerformance,
@@ -87,6 +136,20 @@ public static class PowerOps
     {
         var prevScheme = Native.GetActiveScheme();
         var prevOverlay = Native.GetOverlay();
+        if (a.Scheme == "aitweaker")
+        {
+            var own = await EnsureOwnAsync(a.Base, prevScheme, ctx);
+            ctx.Record(ChangeRecord.Of("power-scheme", ("scheme", (IsOwn(prevScheme) ? Balanced : prevScheme).ToString()), ("overlay", prevOverlay?.ToString()),
+                ("created", own is { Created: true } o ? o.Scheme.ToString() : null)));
+            if (own is { } x)
+            {
+                Native.SetActiveScheme(x.Scheme);
+                ctx.Log($"active power scheme -> {OwnName} {x.Scheme}");
+            }
+            if (OverlayGuid(a.Overlay) is { } ov && !Native.SetOverlay(ov))
+                ctx.Log("power mode overlay could not be set on this system");
+            return;
+        }
         ctx.Record(ChangeRecord.Of("power-scheme", ("scheme", prevScheme.ToString()), ("overlay", prevOverlay?.ToString())));
 
         Guid? target = a.Scheme switch
@@ -107,14 +170,23 @@ public static class PowerOps
 
     private static readonly Guid PowerSaver = new("a1841308-3541-4fab-bc81-f71556f20b4a");
 
-    private static bool IsNonBalanced(Guid g) =>
-        g == High || g == UltimateTemplate || g == PowerSaver || g.ToString() == SettingsStore.Current.UltimateSchemeGuid;
+    /// <summary>Plans that aren't balanced-like: High, Ultimate, Power saver and our own scheme when it was copied from Ultimate/High.</summary>
+    private static bool IsNonBalanced(Guid g) => g == PowerSaver || IsPerformancePlan(g);
 
-    public static Task RevertSchemeAsync(ChangeRecord r)
+    public static async Task RevertSchemeAsync(ChangeRecord r)
     {
-        if (Guid.TryParse(r["scheme"], out var scheme)) Native.SetActiveScheme(scheme);
+        if (Guid.TryParse(r["scheme"], out var scheme))
+        {
+            var schemes = await ListSchemesAsync();
+            Native.SetActiveScheme(schemes.Contains(scheme) ? scheme : Balanced);
+        }
         if (Guid.TryParse(r["overlay"], out var overlay)) Native.SetOverlay(overlay);
-        return Task.CompletedTask;
+        // the AI Tweaker scheme this change created goes away with it
+        if (Guid.TryParse(r["created"], out var created) && Native.GetActiveScheme() != created)
+        {
+            await ProcessRunner.RunAsync("powercfg.exe", $"-delete {created}");
+            if (IsOwn(created)) { SettingsStore.Current.OwnSchemeGuid = null; SettingsStore.Current.OwnSchemeBase = null; SettingsStore.Save(); }
+        }
     }
 
     public static bool? CheckScheme(PowerSchemeAction a)
@@ -122,6 +194,7 @@ public static class PowerOps
         var active = Native.GetActiveScheme();
         bool schemeOk = a.Scheme switch
         {
+            "aitweaker" => IsOwn(active) && SettingsStore.Current.OwnSchemeBase == a.Base,
             "ultimate" => active == UltimateTemplate || active.ToString() == SettingsStore.Current.UltimateSchemeGuid,
             "high" => active == High,
             _ => !IsNonBalanced(active),

@@ -13,6 +13,9 @@ public sealed class AppSettings
     public string Profile { get; set; } = "Extreme";
     public string PingHost { get; set; } = "1.1.1.1";
     public string? UltimateSchemeGuid { get; set; }
+    /// <summary>The "AI Tweaker" power scheme created by the power plan tweak, and what it was copied from.</summary>
+    public string? OwnSchemeGuid { get; set; }
+    public string? OwnSchemeBase { get; set; }
     public bool CreateRestorePoint { get; set; } = true;
     /// <summary>When changes that need a reboot were made; cleared once Windows has booted after that.</summary>
     public DateTime? RebootPendingSince { get; set; }
