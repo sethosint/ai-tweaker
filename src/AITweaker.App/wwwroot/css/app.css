@@ -848,3 +848,25 @@ details.cat-group > summary::-webkit-details-marker { display: none; }
 .bn-game-h b { font: 700 16px/1.2 var(--font-head); }
 .metrics.bn-big { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 700px) { .metrics.bn-big { grid-template-columns: 1fr; } }
+
+/* updates */
+.upd-pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px 0 10px; border-radius: 99px; border: 0; cursor: pointer; font: 600 11px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent); box-shadow: 0 0 0 0 var(--glow); animation: upd-pulse 2.4s ease-out 3; }
+.upd-pill .ico { width: 15px; height: 15px; }
+.upd-pill b { font-weight: 700; opacity: .8; }
+.upd-pill:hover { filter: brightness(1.08); }
+@keyframes upd-pulse { 0% { box-shadow: 0 0 0 0 var(--glow); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.upd-head { display: flex; align-items: center; gap: 14px; padding: 4px 0 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.upd-head > .ico { width: 18px; height: 18px; color: var(--muted); }
+.upd-v span { display: block; font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.upd-v b { font: 700 22px/1 var(--font-head); letter-spacing: .04em; }
+.upd-v.new b { color: var(--accent); }
+.upd-m { margin-left: auto; font: 500 11px/1 var(--font-mono); color: var(--muted); }
+.upd-notes { max-height: 300px; overflow: auto; padding: 4px 4px 4px 0; font-size: 13px; line-height: 1.5; }
+.upd-notes h4 { margin: 12px 0 6px; font: 700 12px/1.2 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.upd-notes p { margin: 6px 0; }
+.upd-notes ul { margin: 6px 0; padding-left: 18px; }
+.upd-notes li { margin: 4px 0; }
+.upd-notes li::marker { color: var(--accent); }
+.set-ver { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: var(--r); background: var(--surface-2); }
+.set-ver span { display: block; font: 600 10px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.set-ver b { font: 700 15px/1 var(--font-head); letter-spacing: .05em; }

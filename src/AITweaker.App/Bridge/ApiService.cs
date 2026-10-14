@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
 using AITweaker.App.Platform;
@@ -148,6 +147,14 @@ public sealed class ApiService
         "gamemode.start" => await Exclusive(async () => await GameSession.StartAsync(Ids(p, "groups") ?? [], await ProfileAsync())),
         "gamemode.stop" => await GameSession.StopAsync(),
         "explorer.restart" => await RestartExplorer(),
+        "update.check" => await Updater.CheckAsync(),
+        "update.install" => await Exclusive(async () =>
+        {
+            await Updater.InstallAsync(v => _emit("update.progress", v), NewLongTask());
+            // answer the UI first, then close: the new version is already starting and waits for this one to exit
+            _ = Task.Delay(600).ContinueWith(_ => _onUi(() => { Application.Exit(); return null; }));
+            return true;
+        }),
         _ => throw new InvalidOperationException($"Unknown method {method}"),
     };
 
@@ -159,7 +166,8 @@ public sealed class ApiService
         var s = SettingsStore.Current;
         return new
         {
-            version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
+            version = Updater.Current.ToString(3),
+            updated = Environment.GetCommandLineArgs().Contains(Updater.RestartArg, StringComparer.OrdinalIgnoreCase),
             isAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator),
             machine = Environment.MachineName,
             system = SystemThemeReader.Read(),
@@ -172,6 +180,7 @@ public sealed class ApiService
                 pingHost = s.PingHost,
                 createRestorePoint = s.CreateRestorePoint,
                 autoRestartSeconds = s.AutoRestartSeconds,
+                checkUpdates = s.CheckUpdates,
             },
             rebootPending = SettingsStore.RebootPending,
             image = InstalledImage(),
@@ -542,6 +551,7 @@ public sealed class ApiService
         if (Str(p, "pingHost") is { Length: > 0 } host) s.PingHost = host;
         if (Bool(p, "createRestorePoint") is { } rp) s.CreateRestorePoint = rp;
         if (Int(p, "autoRestartSeconds") is { } ar) s.AutoRestartSeconds = Math.Clamp(ar, 0, 600);
+        if (Bool(p, "checkUpdates") is { } cu) s.CheckUpdates = cu;
         SettingsStore.Save();
         return true;
     }

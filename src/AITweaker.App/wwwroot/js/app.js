@@ -142,6 +142,7 @@
     go("dashboard");
     API.start();
     App.gmRefresh();
+    App.updateOnStart();
     await App.scan();
     if (S.init.firstRun) App.firstRun();
   }

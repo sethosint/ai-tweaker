@@ -234,6 +234,7 @@
           <div class="seg" id="shiftSeg" title="${t("shift.title")}"><button data-v="auto" class="${S.themeMode === "auto" ? "on" : ""}">${t("shift.auto")}</button><button data-v="day" class="${S.themeMode === "day" ? "on" : ""}">${t("shift.day")}</button><button data-v="night" class="${S.themeMode === "night" ? "on" : ""}">${t("shift.night")}</button></div>
           <div class="seg" id="langSeg"><button data-v="ru" class="${S.lang === "ru" ? "on" : ""}">RU</button><button data-v="en" class="${S.lang === "en" ? "on" : ""}">EN</button></div>
           ${S.demo ? `<span class="demo-pill">${t("demo")}</span>` : ""}
+          <span id="updSlot"></span>
           <button class="icon-btn" id="settingsBtn" title="${t("settings")}">${icon("settings")}</button>
           <div class="clock" id="clock">${fmtTime()}</div>
         </div>
@@ -255,6 +256,7 @@
     $("#shiftSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setTheme(b.dataset.v); };
     $("#langSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setLang(b.dataset.v); };
     updateBadges();
+    if (App.updatePill) App.updatePill();
   }
   window.renderShell = renderShell;
 
@@ -311,7 +313,9 @@
     const s = S.init.settings;
     await modal({
       title: t("settings"),
-      body: html`<label class="field">${t("settings.accent")}
+      body: html`<div class="set-ver"><div><span>${t("settings.version")}</span><b>AI Tweaker ${esc(S.init.version)}</b></div><button class="btn sm" id="setUpd">${icon("update")}${t("upd.check")}</button></div>
+        <label class="check"><input type="checkbox" id="setCu" ${s.checkUpdates !== false ? "checked" : ""}><span class="box"></span>${t("settings.checkUpdates")}</label>
+        <label class="field">${t("settings.accent")}
           <select class="input" id="setAccent">${["industrial", "system", "mono"].map((m) => `<option value="${m}" ${S.accentMode === m ? "selected" : ""}>${t("settings.accent." + m)}</option>`).join("")}</select></label>
         <div class="td" style="display:flex;gap:8px;align-items:center"><span class="swatch" style="background:${esc(S.system.accent)}"></span>${t("settings.accent.current")} ${esc(S.system.accent)} · ${S.system.dark ? t("shift.night") : t("shift.day")}</div>
         <label class="field">${t("settings.ping")}<input class="input" id="setPing" value="${esc(s.pingHost)}"></label>
@@ -319,14 +323,17 @@
           <select class="input" id="setAr">${[0, 30, 60, 120, 300].map((n) => `<option value="${n}" ${(s.autoRestartSeconds ?? 60) === n ? "selected" : ""}>${n ? n + " " + t("rs.sec") : t("settings.autoRestart.off")}</option>`).join("")}</select></label>
         <label class="check"><input type="checkbox" id="setRp" ${s.createRestorePoint ? "checked" : ""}><span class="box"></span>${t("settings.rp")}</label>`,
       buttons: [{ label: t("cancel"), value: false, cls: "ghost" }, { label: t("settings.save"), value: true, cls: "primary" }],
-      onOpen: (ov) => { ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
+      onOpen: (ov) => {
+        $("#setUpd", ov).onclick = async (e) => { e.currentTarget.disabled = true; await App.checkUpdate(true); e.currentTarget.disabled = false; };
+        ov.querySelector(".modal-f [data-i='1']").addEventListener("click", async () => {
         const pingHost = $("#setPing", ov).value.trim();
         const createRestorePoint = $("#setRp", ov).checked;
         const autoRestartSeconds = +$("#setAr", ov).value;
+        const checkUpdates = $("#setCu", ov).checked;
         S.accentMode = $("#setAccent", ov).value;
         applyPalette();
-        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, accent: S.accentMode });
-        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds });
+        await call("settings.set", { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates, accent: S.accentMode });
+        Object.assign(s, { pingHost, createRestorePoint, autoRestartSeconds, checkUpdates });
         toast(t("toast.saved"), "ok");
       }, { capture: true }); },
     });

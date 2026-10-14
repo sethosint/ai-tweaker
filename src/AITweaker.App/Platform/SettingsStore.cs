@@ -20,6 +20,8 @@ public sealed class AppSettings
     public int AutoRestartSeconds { get; set; } = 60;
     /// <summary>The post-install welcome (scan → auto-tune → look → restart) was completed or dismissed for good.</summary>
     public bool FirstRunDone { get; set; }
+    /// <summary>Look for a new AI Tweaker release on every start.</summary>
+    public bool CheckUpdates { get; set; } = true;
 }
 
 public static class SettingsStore
