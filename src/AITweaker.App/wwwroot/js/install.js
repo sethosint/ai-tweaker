@@ -30,8 +30,9 @@
         <div class="cat-h">${t("inst.g." + g)}<span class="n">${list.filter((p) => st.sel.has(p.id)).length}/${list.length}</span></div>
         ${g === "store" ? html`<div class="callout ${d.store ? "" : "warn"}" style="margin:10px 0;display:flex;gap:12px;align-items:center;justify-content:space-between">
           <span>${d.store ? t("inst.storeD") : t("inst.storeMissing")}</span>${d.store ? "" : `<button class="btn sm" id="iStore">${t("inst.storeRestore")}</button>`}</div>` : ""}
-        ${list.map((p) => html`<div class="trow ${p.installed ? "is-installed" : ""}" data-row="${p.id}">
+        ${list.map((p) => html`<div class="trow inst ${p.installed ? "is-installed" : ""}" data-row="${p.id}">
           <label class="check"><input type="checkbox" data-id="${p.id}" ${st.sel.has(p.id) ? "checked" : ""} ${p.store && !d.store ? "disabled" : ""}><span class="box"></span></label>
+          ${brandIcon(p.id, p.name, "sm")}
           <div><div class="tt">${esc(p.name)} ${p.paid ? `<span class="chip warn">${t("inst.paid")}</span>` : ""}</div>
             ${p.note ? `<div class="td">${esc(L(p.note))}</div>` : ""}
             <div class="tm"><span class="tid">${p.store ? `Microsoft Store · ${esc(p.store)}` : p.direct ? `${esc(p.source || "")} · ${t("inst.portable")}` : p.source ? `${esc(p.source)} · ${t(p.silent ? "inst.silent" : "inst.wizard")}` : p.winget ? "winget · " + esc(p.winget) : p.direct ? t("inst.official") : esc(p.url || "")}</span></div></div>
@@ -44,8 +45,8 @@
           <span>${t("inst.extDesc")}</span>
           ${extTweak ? (extApplied ? `<span class="status applied">${t("inst.extOn")}</span>` : `<button class="btn primary sm" id="iExt">${t("inst.extAuto")}</button>`) : ""}
         </div>
-        ${d.extensions.map((e) => html`<div class="trow">
-          <span class="ext-dot"></span>
+        ${d.extensions.map((e) => html`<div class="trow inst">
+          <span></span>${brandIcon(e.id, e.name, "sm")}
           <div><div class="tt">${esc(e.name)}</div><div class="td">${esc(L(e.note))}</div>
             <div class="tm"><span class="tid">${e.minVersion ? esc(e.minVersion) + "+" : t("inst.latest")}</span></div></div>
           <div class="tr"><button class="btn ghost sm" data-url="${esc(e.storeUrl)}">${t("inst.store")}</button></div></div>`).join("")}

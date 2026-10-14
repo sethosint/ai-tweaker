@@ -336,9 +336,6 @@
 
   // ------------------------------------------------------------------ [06] app guides
 
-  // Brand colour of each program's badge in the list.
-  const BRAND = { discord: "#5865f2", steam: "#1a9fff", "nvidia-app": "#76b900", "amd-software": "#e3262d", obs: "#476be6", spotify: "#1ed760", epic: "#26bbff" };
-
   /** Full-size screenshot over the page; click anywhere or Esc closes it. */
   function zoomShot(src) {
     const o = document.createElement("div");
@@ -368,7 +365,7 @@
           <div class="actions">${allPending.length ? `<button class="btn primary" id="appsAuto">${t("apps.autoAll")} (${allPending.length})</button>` : `<button class="btn done" disabled>${icon("check")}${t("apps.autoAllDone")}</button>`}</div></div>
         <div class="apps-legend"><span><i class="lg-auto"></i>${t("apps.legendAuto")}</span><span><i class="lg-man"></i>${t("apps.legendManual")}</span></div>
         <div class="cards">${S.guides.map((x) => { const a = autoOf(x), pend = pendingOf(x); return html`<div class="card ${x.installed ? "" : "dim"}" data-g="${x.id}">
-          <div class="cn"><span class="app-ico" style="--app-c:${BRAND[x.id] || "var(--accent)"}">${esc(x.name.slice(0, 2).toUpperCase())}</span>${esc(x.name)}</div>
+          <div class="cn">${brandIcon(x.id, x.name)}${esc(x.name)}</div>
           <div class="cs">${esc(L(x.summary))}</div>
           <div class="cf">${x.installed ? "" : `<span class="chip">${t("apps.notInstalled")}</span>`}
             ${a.length ? `<span class="chip ${pend.length ? "info" : "ok"}">${t("apps.autoN")} ${a.length - pend.length}/${a.length}</span>` : ""}
@@ -380,7 +377,7 @@
     }
     const auto = autoOf(g), pend = pendingOf(g);
     v.innerHTML = html`
-      <div class="page-h"><div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
+      <div class="page-h">${brandIcon(g.id, g.name, "lg")}<div><h1>${esc(g.name)}</h1><p>${esc(L(g.summary))}</p></div>
         <div class="actions">${!g.installed && (S.init.programIds || []).includes(g.id) ? `<button class="btn primary sm" id="gInstall">${icon("download")}${t("apps.install")}</button>` : ""}<button class="btn ghost sm" id="gBack">${icon("arrow", "flip")}${t("apps.back")}</button></div></div>
       ${auto.length ? html`<div class="app-block auto">
         <div class="ab-h">${icon("tune")}<div><b>${t("apps.autoT")}</b><span>${t("apps.autoD")}</span></div>

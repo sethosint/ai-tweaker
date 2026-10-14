@@ -160,8 +160,8 @@
   // ------------------------------------------------------------------ navigation
 
   const NAV = [
-    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "06"], ["services", "07"],
-    ["drivers", "07"], ["apps", "08"], ["manual", "09"], ["image", "10"], ["backup", "11"],
+    ["dashboard", "01"], ["tune", "02"], ["tweaks", "03"], ["debloat", "04"], ["install", "05"], ["tools", "06"], ["bench", "07"], ["services", "08"],
+    ["drivers", "09"], ["apps", "10"], ["manual", "11"], ["image", "12"], ["backup", "13"],
   ];
   window.NAV = NAV;
   const CODES = { dashboard: "OVERVIEW", tune: "OPTIMIZE", tweaks: "CATALOG", debloat: "DEBLOAT", install: "SOFTWARE", tools: "TOOLS", bench: "BENCH", services: "SERVICES", drivers: "DRIVERS", apps: "CONFIGS", manual: "MANUAL", image: "IMAGE", backup: "ROLLBACK" };
@@ -184,7 +184,7 @@
     const i = navList().findIndex(([v]) => v === view);
     head.insertAdjacentHTML("afterbegin", `<span class="kicker">SEC ${String(i + 1).padStart(2, "0")} · ${CODES[view] || ""}</span>`);
     // 3D lives on the console only; other pages get their own flat emblem
-    if (!ph.querySelector(".ph-icon")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
+    if (!ph.querySelector(".ph-icon, :scope > .app-ico")) ph.insertAdjacentHTML("afterbegin", `<div class="ph-icon">${icon(view)}</div>`);
   }
   const kickerWatch = new MutationObserver((list) => {
     const seen = new Set();
