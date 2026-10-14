@@ -1,23 +1,16 @@
-## AI Tweaker 1.1.0 для Windows 11
+## AI Tweaker 1.2.0 для Windows 11
 
 Настраивает Windows под ваш компьютер: сам определяет железо и применяет то, что подходит именно ему. Всё, что отключает нужное, спрашивается отдельно. Всё обратимо.
 
 ### Что нового
 
-- **Оптимизация в одну кнопку.** Один план под ваш ПК вместо четырёх профилей. Каждое заметное изменение — отдельный вопрос: что получите, если применить, и что останется, если не трогать.
-- **Игровой режим.** На время игры ставит на паузу обновления, индексацию, телеметрию и печать, закрывает фоновые помощники, поднимает схему питания, держит таймер 0,5 мс и останавливает фоновый поиск сетей Wi-Fi. При выключении или после сбоя всё возвращается.
-- **Замеры до и после.**
-  - Система в простое: нагрузка, DPC и прерывания, точность таймера, пинг до роутера и до интернета, загрузка Windows.
-  - В игре через Intel PresentMon: средний FPS, 1% и 0.1% low, фризы, задержка до экрана и во что упирается FPS.
-- **BIOS под ваш производитель.** ASUS, MSI, Gigabyte, ASRock, Lenovo, HP, Dell/Alienware, Acer, Razer, Surface: клавиши входа, путь к каждому пункту. На ноутбуке — режим «Производительность» и видеокарта напрямую через MUX.
-- **Драйверы под каждый компонент.** Правильный официальный источник для видеокарты, чипсета, сети, Wi-Fi, Bluetooth и звука. Отмечаются стандартные драйверы Windows и устаревшие версии.
-- **Настройки для каждой игры.** Приоритет сетевого трафика (QoS), видеокарта, по желанию — приоритет CPU и отключение оптимизации во весь экран.
-- **Новые вкладки.**
-  - «Ручная настройка»: BIOS, видеокарта, настройки CS2 / Valorant / Fortnite, Windows, железо.
-  - «Конфиги софта».
-  - Очистка автозагрузки и Autoruns.
-  - Установщики программ напрямую от производителей; приложения только из Microsoft Store собраны отдельно.
-- **Каталог — 136 твиков.** Защиту Windows программа не выключает: антивирус, UAC, SmartScreen, брандмауэр, целостность памяти и защита от Spectre/Meltdown остаются как есть.
+- **Своя схема питания «AI Tweaker».** Копия сбалансированной схемы Windows, доведённая до уровня «Максимальной производительности»: ядра не паркуются, частота поднимается сразу, порты, диски, NVMe и сеть не засыпают. Режимы питания и игровой режим Windows на ней продолжают работать. На ноутбуке от сети без ограничений, от батареи всё как у производителя.
+- **Обновление в одну кнопку.** Новая версия появляется кнопкой в верхней панели: программа скачивает её с GitHub, сверяет контрольную сумму и перезапускается. Обновиться с 1.1.0 нужно один раз вручную, дальше — кнопкой.
+- **Автоматический игровой режим.** По желанию включается сам, когда запускается игра из Steam, Epic или вашего списка, и выключается после неё. Таймер 0,5 мс теперь держится, даже когда AI Tweaker свёрнут.
+- **Каталог — 147 твиков.** Сверен с лучшими открытыми твикерами и исследованиями (PC-Tuning, djdallmann, Atlas, ReviOS): новые настройки отклика процессора, NVMe без энергосбережения, служба ИИ Windows по запросу, без автозапуска с флешек. То, что по замерам не работает, переведено в ручные.
+- **Сборщик образа надёжнее.** Восстанавливается после сбоя, есть кнопка «Отмена», старый образ не теряется, пока новый не готов. Выбор Pro или Home, проверка версии и архитектуры ISO. Меньше места на диске.
+- **Плавный интерфейс.** 3D-модели рисуются только на обзоре, анимации останавливаются, когда окно в фоне или свёрнуто, ничего не тормозит игру. Настоящие значки программ, понятная работа с клавиатуры, светлая тема без вспышек.
+- Вкладка «Советник» убрана.
 
 ### Как установить
 
@@ -42,13 +35,11 @@
 
 **English.** Download **AITweaker.exe** from Assets and run it (no install, it asks for admin rights). If SmartScreen warns about an unknown publisher, choose *More info → Run anyway*. Windows 10 2004+ / Windows 11 x64.
 
-New in 1.1.0:
-- Optimization: one plan with a question per change.
-- Game Mode.
-- Bench: before/after numbers for the idle system, plus PresentMon frame times in games.
-- BIOS guidance per board and laptop maker.
-- Drivers per component.
-- Per-game settings.
-- By hand and Software configs tabs, startup cleanup.
-- Direct installers.
-- 136 tweaks. Windows protection always stays on.
+New in 1.2.0:
+- Own "AI Tweaker" power plan: Balanced-based, tuned to Ultimate level; power modes and Game Mode keep working. Laptops: no limits on AC, maker's behaviour on battery.
+- One-click updates from GitHub with SHA-256 check (update from 1.1.0 once by hand).
+- Automatic Game Mode around games; the 0.5 ms timer holds while minimized.
+- 147 tweaks, checked against PC-Tuning, djdallmann, Atlas and ReviOS research.
+- Sturdier image builder: crash recovery, Cancel, Pro/Home, ISO checks.
+- Smoother UI, real program icons, keyboard focus, no theme flash. The Advisor tab is gone.
+- Windows protection always stays on.
