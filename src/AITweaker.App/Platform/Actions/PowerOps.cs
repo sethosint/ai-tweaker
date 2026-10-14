@@ -23,6 +23,12 @@ public static class PowerOps
         var sub = Guid.Parse(a.Subgroup);
         var set = Guid.Parse(a.Setting);
         var (ac, dc) = Native.ReadPowerSetting(scheme, sub, set);
+        // some hidden settings exist only on some PCs (NVMe, hybrid-CPU classes, older builds): skip them instead of failing the tweak
+        if (ac is null && dc is null)
+        {
+            ctx.Log($"power setting {a.Alias ?? a.Setting} doesn't exist on this PC, skipped");
+            return Task.CompletedTask;
+        }
         ctx.Record(ChangeRecord.Of("power-setting",
             ("scheme", scheme.ToString()), ("subgroup", a.Subgroup), ("setting", a.Setting),
             ("ac", a.Ac.HasValue ? ac?.ToString() : null), ("dc", a.Dc.HasValue ? dc?.ToString() : null)));
@@ -44,6 +50,7 @@ public static class PowerOps
     public static bool? CheckSetting(PowerSettingAction a)
     {
         var (ac, dc) = Native.ReadPowerSetting(Native.GetActiveScheme(), Guid.Parse(a.Subgroup), Guid.Parse(a.Setting));
+        if (ac is null && dc is null) return null; // not on this PC: decided by the tweak's other settings
         if (a.Ac is { } wantAc && ac != wantAc) return false;
         if (a.Dc is { } wantDc && dc != wantDc) return false;
         return true;
@@ -138,14 +145,12 @@ public static class PowerOps
         var prevOverlay = Native.GetOverlay();
         if (a.Scheme == "aitweaker")
         {
-            var own = await EnsureOwnAsync(a.Base, prevScheme, ctx);
+            var own = await EnsureOwnAsync(a.Base, prevScheme, ctx)
+                ?? throw new InvalidOperationException("Windows didn't let powercfg create the AI Tweaker power plan");
             ctx.Record(ChangeRecord.Of("power-scheme", ("scheme", (IsOwn(prevScheme) ? Balanced : prevScheme).ToString()), ("overlay", prevOverlay?.ToString()),
-                ("created", own is { Created: true } o ? o.Scheme.ToString() : null)));
-            if (own is { } x)
-            {
-                Native.SetActiveScheme(x.Scheme);
-                ctx.Log($"active power scheme -> {OwnName} {x.Scheme}");
-            }
+                ("created", own.Created ? own.Scheme.ToString() : null)));
+            Native.SetActiveScheme(own.Scheme);
+            ctx.Log($"active power scheme -> {OwnName} {own.Scheme}");
             if (OverlayGuid(a.Overlay) is { } ov && !Native.SetOverlay(ov))
                 ctx.Log("power mode overlay could not be set on this system");
             return;

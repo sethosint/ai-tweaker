@@ -78,7 +78,7 @@ public sealed class GameWatcher : IDisposable
             if (DateTime.UtcNow - _gamesRead > TimeSpan.FromMinutes(10))
             {
                 try { _games = GameProfiles.KnownExes().Select(Path.GetFileName).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase); }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { AppLog.Warn("game", "game list not read: " + ex.Message); }
+                catch (Exception ex) { AppLog.Warn("game", "game list not read: " + ex.Message); } // a broken library file must not break every process start
                 _gamesRead = DateTime.UtcNow;
             }
             return _games.Contains(exeName);
